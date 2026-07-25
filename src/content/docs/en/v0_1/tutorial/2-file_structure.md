@@ -3,7 +3,7 @@ title: File Structure
 description: How ThaiMusicXML files are organized
 ---
 
-Building on the [Hello World](/en/v0_1/tutorial/1-hello_world/) example, let's look at what a full ThaiMusicXML file adds: multiple instruments, structure annotations, performance directions, and section repeats.
+The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument and one section. This example adds multiple instruments, structure annotations, performance directions, and section repeats.
 
 ## Example XML
 
@@ -75,7 +75,7 @@ The `<header>` can include a `<composer>` alongside `<title>`:
 
 ## Structure
 
-The `<structure>` element mixes several types of children to describe the score layout:
+The `<structure>` element can contain several child types that describe the score layout:
 
 ```xml
 <structure>
@@ -90,9 +90,9 @@ The `<structure>` element mixes several types of children to describe the score 
 </structure>
 ```
 
-- **`<annotation>`** — Free-form comments that can appear anywhere. They are ignored by playback. The `target` attribute (optional) specifies what the annotation refers to.
-- **`<direction>`** — Performance directions. Here we set the ชั้น (`<chan>`) and tempo (`<bpm>`). ชั้น (chan) is the Thai rhythmic layer system — `value="1"` means ชั้นเดียว.
-- **`<section>`** — Defines a named section. The `repeat` attribute indicates how many times the section is played.
+- **`<annotation>`**: Free-form comments that can appear anywhere. Playback ignores them. The optional `target` attribute specifies what the annotation refers to.
+- **`<direction>`**: Performance directions. This example sets the ชั้น (`<chan>`) and tempo (`<bpm>`). ชั้น (chan) is the Thai rhythmic layer system. `value="1"` means ชั้นเดียว.
+- **`<section>`**: A named section. The `repeat` attribute indicates how many times it is played.
 
 ## Multiple Instruments
 
@@ -109,11 +109,11 @@ The `<ensemble>` can list multiple parts:
 </ensemble>
 ```
 
-Each instrument gets its own `<part-data>` element with a matching `id`. In this example, P1 is a Ranat Ek (ระนาดเอก, a Thai xylophone) and P2 is a Ching (ฉิ่ง, small cymbals).
+Each instrument gets its own `<part-data>` element with a matching `id`. Here, P1 is a Ranat Ek (ระนาดเอก, a Thai xylophone) and P2 is a Ching (ฉิ่ง, small cymbals).
 
 ## Part Data
 
-Each `<part-data>` links to a section via `<section-ref>`. The Ching part includes an instrument-specific annotation explaining its notation:
+Each `<part-data>` links to a section through `<section-ref>`. The Ching part includes an annotation explaining its notation:
 
 ```xml
 <part-data id="P2">
@@ -127,4 +127,4 @@ Each `<part-data>` links to a section via `<section-ref>`. The Ching part includ
 </part-data>
 ```
 
-The `target="instrument"` attribute tells us this comment applies specifically to the instrument. It documents the Ching notation convention: `0` means ฉิ่ง (open) and `1` means ฉับ (closed).
+The `target="instrument"` attribute limits this comment to the instrument. It documents the Ching notation convention: `0` means ฉิ่ง (open) and `1` means ฉับ (closed).

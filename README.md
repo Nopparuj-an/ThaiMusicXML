@@ -6,12 +6,12 @@ An open, royalty-free digital notation standard for Thai traditional music (เ�
 
 ## About
 
-ThaiMusicXML is a lightweight XML schema designed specifically for Thai traditional music. It models native Thai primitives including 7-tone scales, 8-measure grid systems, and structural speed levels (ชั้น/Chan).
+ThaiMusicXML is a lightweight XML schema for Thai traditional music. It models Thai musical concepts such as 7-tone scales, 8-measure grid systems, and structural speed levels (ชั้น/Chan).
 
-Western music theory does not natively map to Thai music. ThaiMusicXML addresses this by modeling:
+Western music theory does not map directly to Thai music. ThaiMusicXML models:
 
-- **7-Tone System** — Represented via solfège (ด, ร, ม, ฟ, ซ, ล, ท) or digits (1–7)
-- **Octave Markers** — Represented via explicit attributes (low, middle, high) or native dot symbols
+- **7-Tone System**: Represented via solfège (ด, ร, ม, ฟ, ซ, ล, ท) or digits (1-7)
+- **Octave Markers**: Represented via explicit attributes (low, middle, high) or native dot symbols
 
 ## Development
 
@@ -24,7 +24,7 @@ pnpm dev
 
 ## Contributing
 
-We are looking for software developers, ethnomusicologists, Thai traditional musicians, and technical writers to help shape this standard.
+Contributions are welcome from software developers, ethnomusicologists, Thai traditional musicians, and technical writers.
 
 ## License
 

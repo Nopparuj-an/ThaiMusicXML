@@ -3,7 +3,7 @@ title: Hello World
 description: Your first ThaiMusicXML file
 ---
 
-Welcome to ThaiMusicXML. Let's look at a simple score for one instrument. A Ranat Ek (ระนาดเอก) playing first line of a song:
+This example shows a simple score for one instrument: a Ranat Ek (ระนาดเอก) playing the first line of a song.
 
 ## Example XML
 
@@ -56,19 +56,19 @@ Welcome to ThaiMusicXML. Let's look at a simple score for one instrument. A Rana
 
 ## Explanations
 
-Let's look at each element in turn.
+The following sections explain each element.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 ```
 
-This is the XML declaration required of all XML documents. We have specified that the characters are written in the Unicode encoding UTF-8.
+This XML declaration identifies the document as XML and specifies UTF-8 encoding.
 
 ```xml
 <thai-score version="0.1">
 ```
 
-This is the root element of a ThaiMusicXML document. The `version` attribute indicates which version of ThaiMusicXML is being used.
+The `<thai-score>` element is the root of a ThaiMusicXML document. Its `version` attribute identifies the ThaiMusicXML version.
 
 ```xml
 <header>
@@ -76,7 +76,7 @@ This is the root element of a ThaiMusicXML document. The `version` attribute ind
 </header>
 ```
 
-The `<header>` element contains metadata about the score. At minimum, you need a `<title>`. Here we use the title of a well-known Thai song.
+The `<header>` element contains score metadata. It must include a `<title>`, which is the title of a Thai song in this example.
 
 ```xml
 <structure>
@@ -84,7 +84,7 @@ The `<header>` element contains metadata about the score. At minimum, you need a
 </structure>
 ```
 
-The `<structure>` element defines the layout of the score. Each `<section>` has an `id` that is referenced later in `<section-ref>` to attach music data. The `number` attribute gives the section order, and `name` is a human-readable label.
+The `<structure>` element defines the score layout. Each `<section>` has an `id` that `<section-ref>` uses later to attach music data. The `number` attribute gives the section order, and `name` is a label for readers.
 
 ```xml
 <ensemble>
@@ -94,7 +94,7 @@ The `<structure>` element defines the layout of the score. Each `<section>` has 
 </ensemble>
 ```
 
-The `<ensemble>` element lists all instruments. Each `<part>` has a unique `id` and an `<instrument-name>`. Here we have one Ranat Ek (ระนาดเอก, a Thai xylophone).
+The `<ensemble>` element lists the instruments. Each `<part>` has a unique `id` and an `<instrument-name>`. This example has one Ranat Ek (ระนาดเอก, a Thai xylophone).
 
 ```xml
 <part-data id="P1">
@@ -115,7 +115,7 @@ The `<ensemble>` element lists all instruments. Each `<part>` has a unique `id` 
 </part-data>
 ```
 
-The `<part-data>` element holds the actual music for a part. The `id` matches a part in `<ensemble>`. Inside, `<section-ref>` links to a section defined in `<structure>`. The music is organized into `<line>` elements (visual lines on the page), each containing `<measure>` elements. Each measure has a `number` attribute.
+The `<part-data>` element holds the music for a part. Its `id` matches a part in `<ensemble>`. Inside it, `<section-ref>` links to a section in `<structure>`. The music is organized into `<line>` elements, each containing `<measure>` elements with a `number` attribute.
 
 Notes use Thai scale names in the `pitch` attribute:
 
@@ -135,6 +135,6 @@ Adding ํ (Nikhahit) after a note name raises it by an octave. Adding ฺ (Pint
 <rest/>
 ```
 
-A rest is a self-closing element — it takes no attributes. Its duration is implied by context (one beat in this score).
+A rest is a self-closing element with no attributes. Its duration comes from the context, one beat in this score.
 
-That's it. A complete ThaiMusicXML file. Next, we'll look at [File Structure](/en/v0_1/tutorial/2-file_structure/) to see how to add multiple instruments, sections, and performance directions.
+This is a complete ThaiMusicXML file. Next, see [File Structure](/en/v0_1/tutorial/2-file_structure/) to learn how to add multiple instruments, sections, and performance directions.

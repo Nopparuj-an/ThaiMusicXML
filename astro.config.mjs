@@ -76,6 +76,27 @@ export default defineConfig({
                 },
               ],
             },
+            {
+              label: "Updates",
+              items: [
+                {
+                  label: "Breaking Changes",
+                  slug: "v0_1/updates/breaking-changes",
+                },
+                {
+                  label: "Roadmap",
+                  items: [
+                    { autogenerate: { directory: "v0_1/updates/roadmap" } },
+                  ],
+                },
+                {
+                  label: "Erratum",
+                  items: [
+                    { autogenerate: { directory: "v0_1/updates/erratum" } },
+                  ],
+                },
+              ],
+            },
           ],
         },
       ],
