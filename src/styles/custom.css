@@ -26,7 +26,7 @@
 
   /* Middle region automatically loses the right sidebar’s width */
   [data-has-sidebar][data-has-toc] .main-pane {
-    --sl-content-margin-inline: auto 0;
+    --sl-content-margin-inline: 0;
 
     width: min(
       calc(100% - var(--sl-toc-width)),
