@@ -16,6 +16,7 @@ export default defineConfig({
       logo: {
         dark: "./src/assets/logo-dark.svg",
         light: "./src/assets/logo-light.svg",
+        replacesTitle: true,
       },
       customCss: ["./src/styles/custom.css"],
       social: [
@@ -42,6 +43,7 @@ export default defineConfig({
           lang: "th",
         },
       },
+      lastUpdated: true,
       sidebar: [
         { label: "Home", slug: "index" },
         { label: "About", slug: "about" },
