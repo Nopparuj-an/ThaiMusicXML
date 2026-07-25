@@ -1,5 +1,13 @@
+# ThaiMusicXML
+
+Unless specified otherwise, do everything in English version first.
+This includes plan, commit message, issue description, and PR description.
+
+# Astro
+
 ## Development
 
+Normally, the user will start dev server themself.
 When starting the dev server, use background mode:
 
 ```

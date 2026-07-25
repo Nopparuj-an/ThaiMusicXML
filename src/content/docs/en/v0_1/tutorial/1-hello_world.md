@@ -137,4 +137,4 @@ Adding ํ (Nikhahit) after a note name raises it by an octave. Adding ฺ (Pint
 
 A rest is a self-closing element — it takes no attributes. Its duration is implied by context (one beat in this score).
 
-That's it. A complete ThaiMusicXML file. Next, we'll look at [File Structure](/v0_1/tutorial/2-file_structure/) to see how to add multiple instruments, sections, and performance directions.
+That's it. A complete ThaiMusicXML file. Next, we'll look at [File Structure](/en/v0_1/tutorial/2-file_structure/) to see how to add multiple instruments, sections, and performance directions.

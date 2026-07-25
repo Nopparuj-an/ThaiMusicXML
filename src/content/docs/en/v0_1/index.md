@@ -10,4 +10,4 @@ This format models native Thai primitives—7-tone scales, 8-measure grid system
 
 ## About this project
 
-Please visit [about](/about/) page for more information.
+Please visit [about](/en/about/) page for more information.

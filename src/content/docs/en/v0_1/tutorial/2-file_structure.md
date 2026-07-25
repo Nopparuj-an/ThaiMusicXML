@@ -3,7 +3,7 @@ title: File Structure
 description: How ThaiMusicXML files are organized
 ---
 
-Building on the [Hello World](/v0_1/tutorial/1-hello_world/) example, let's look at what a full ThaiMusicXML file adds: multiple instruments, structure annotations, performance directions, and section repeats.
+Building on the [Hello World](/en/v0_1/tutorial/1-hello_world/) example, let's look at what a full ThaiMusicXML file adds: multiple instruments, structure annotations, performance directions, and section repeats.
 
 ## Example XML
 

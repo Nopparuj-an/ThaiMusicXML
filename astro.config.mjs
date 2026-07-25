@@ -4,6 +4,9 @@ import starlight from "@astrojs/starlight";
 
 // https://astro.build/config
 export default defineConfig({
+  redirects: {
+    "/": "/en/",
+  },
   integrations: [
     starlight({
       title: "ThaiMusicXML",
@@ -23,6 +26,16 @@ export default defineConfig({
       components: {
         Sidebar: "./src/components/Sidebar.astro",
         Pagination: "./src/components/Pagination.astro",
+      },
+      defaultLocale: "en",
+      locales: {
+        en: {
+          label: "English",
+        },
+        th: {
+          label: "ไทย",
+          lang: "th",
+        },
       },
       sidebar: [
         { label: "Home", slug: "index" },

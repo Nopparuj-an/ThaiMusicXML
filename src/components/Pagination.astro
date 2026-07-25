@@ -2,13 +2,13 @@
 import Default from '@astrojs/starlight/components/Pagination.astro';
 
 const currentPath = Astro.url.pathname;
-const versionMatch = currentPath.match(/^\/(v\d+_\d+)\//);
+const versionMatch = currentPath.match(/^\/(?:en|th)\/(v\d+_\d+)\//);
 const currentVersion = versionMatch?.[1]?.replace('_', '.');
 const { pagination } = Astro.locals.starlightRoute;
 
 function isSameVersion(href: string | undefined): boolean {
   if (!href || !currentVersion) return true;
-  return href.startsWith(`/${currentVersion.replace('.', '_')}/`);
+  return href.includes(`/${currentVersion.replace('.', '_')}/`);
 }
 
 if (currentVersion) {
