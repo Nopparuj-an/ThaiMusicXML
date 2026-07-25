@@ -1,3 +1,7 @@
+[data-theme="dark"] .hero img {
+  filter: invert(1);
+}
+
 :root {
   --sl-sidebar-width: 16rem;       /* left navigation */
   --sl-toc-width: 12rem;           /* right sidebar */

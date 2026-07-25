@@ -1,49 +1,31 @@
-# Starlight Starter Kit: Basics
+# ThaiMusicXML
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+An open, royalty-free digital notation standard for Thai traditional music (เพลงไทยเดิม/Phleng Thai Doem).
 
-```
-pnpm create astro@latest -- --template starlight
-```
+[![GPLv3 License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.txt)
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## About
 
-## 🚀 Project Structure
+ThaiMusicXML is a lightweight XML schema designed specifically for Thai traditional music. It models native Thai primitives including 7-tone scales, 8-measure grid systems, and structural speed levels (ชั้น/Chan).
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+Western music theory does not natively map to Thai music. ThaiMusicXML addresses this by modeling:
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+- **7-Tone System** — Represented via solfège (ด, ร, ม, ฟ, ซ, ล, ท) or digits (1–7)
+- **Octave Markers** — Represented via explicit attributes (low, middle, high) or native dot symbols
+
+## Development
+
+This project is built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build/).
+
+```sh
+pnpm install
+pnpm dev
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+## Contributing
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+We are looking for software developers, ethnomusicologists, Thai traditional musicians, and technical writers to help shape this standard.
 
-Static assets, like favicons, can be placed in the `public/` directory.
+## License
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+This project is licensed under the [GNU General Public License v3.0](LICENSE.txt).

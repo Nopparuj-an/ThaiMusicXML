@@ -7,6 +7,11 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "ThaiMusicXML",
+      favicon: "/favicon.ico",
+      logo: {
+        dark: "./src/assets/logo-dark.svg",
+        light: "./src/assets/logo-light.svg",
+      },
       customCss: ["./src/styles/custom.css"],
       social: [
         {
