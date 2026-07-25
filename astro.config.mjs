@@ -41,11 +41,20 @@ export default defineConfig({
             },
             {
               label: "Reference",
-              items: [{ autogenerate: { directory: "v0_1/reference" } }],
-            },
-            {
-              label: "Examples",
-              items: [{ autogenerate: { directory: "v0_1/examples" } }],
+              items: [
+                {
+                  label: "Elements",
+                  items: [
+                    { autogenerate: { directory: "v0_1/reference/elements" } },
+                  ],
+                },
+                {
+                  label: "Examples",
+                  items: [
+                    { autogenerate: { directory: "v0_1/reference/examples" } },
+                  ],
+                },
+              ],
             },
           ],
         },
