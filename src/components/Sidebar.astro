@@ -6,16 +6,6 @@ import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter';
 const { sidebar } = Astro.locals.starlightRoute;
 const currentPath = Astro.url.pathname;
 
-function matchesVersion(entry: typeof sidebar[number], version: string): boolean {
-  if (entry.type === 'link') {
-    return entry.href.includes(`/${version}/`);
-  }
-  if (entry.type === 'group') {
-    return entry.entries.some(e => matchesVersion(e, version));
-  }
-  return false;
-}
-
 function isVersionGroup(entry: typeof sidebar[number]): boolean {
   return entry.type === 'group' && /^v\d+\.\d+$/.test(entry.label);
 }

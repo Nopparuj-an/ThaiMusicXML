@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thaimusicxml.anan.ovh/sitemap-index.xml

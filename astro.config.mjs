@@ -1,9 +1,11 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import sitemap from "@astrojs/sitemap";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://thaimusicxml.anan.ovh",
   redirects: {
     "/": "/en/",
   },
@@ -23,6 +25,9 @@ export default defineConfig({
           href: "https://github.com/Nopparuj-an/ThaiMusicXML",
         },
       ],
+      editLink: {
+        baseUrl: "https://github.com/Nopparuj-an/ThaiMusicXML/edit/main/",
+      },
       components: {
         Sidebar: "./src/components/Sidebar.astro",
         Pagination: "./src/components/Pagination.astro",
@@ -73,5 +78,6 @@ export default defineConfig({
         },
       ],
     }),
+    sitemap(),
   ],
 });
