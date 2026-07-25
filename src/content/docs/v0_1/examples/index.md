@@ -1,12 +1,6 @@
 ---
 title: Examples
-description: Code examples for ThaiMusicXML
+description: Examples for ThaiMusicXML
 ---
-
-# Examples
-
-Code examples for working with ThaiMusicXML.
-
-## Basic Usage
 
 coming soon...
