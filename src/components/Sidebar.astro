@@ -1,0 +1,47 @@
+---
+import SidebarPersister from '@astrojs/starlight/components/SidebarPersister.astro';
+import SidebarSublist from '@astrojs/starlight/components/SidebarSublist.astro';
+import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter';
+
+const { sidebar } = Astro.locals.starlightRoute;
+const currentPath = Astro.url.pathname;
+
+function matchesVersion(entry: typeof sidebar[number], version: string): boolean {
+  if (entry.type === 'link') {
+    return entry.href.startsWith(`/${version}/`);
+  }
+  if (entry.type === 'group') {
+    return entry.entries.some(e => matchesVersion(e, version));
+  }
+  return false;
+}
+
+function isVersionGroup(entry: typeof sidebar[number]): boolean {
+  return entry.type === 'group' && /^v\d+\.\d+$/.test(entry.label);
+}
+
+const versionMatch = currentPath.match(/^\/(v\d+_\d+)\//);
+const currentVersion = versionMatch?.[1]?.replace('_', '.');
+
+let activeSidebar: typeof sidebar;
+
+if (currentVersion) {
+  // On a version page: find the matching version group and show its entries
+  const versionGroup = sidebar.find(
+    (e): e is typeof sidebar[number] & { type: 'group' } =>
+      isVersionGroup(e) && e.label === currentVersion
+  );
+  activeSidebar = versionGroup?.entries ?? [];
+} else {
+  // On non-version pages: show everything except version groups
+  activeSidebar = sidebar.filter(e => !isVersionGroup(e));
+}
+---
+
+<SidebarPersister>
+	<SidebarSublist sublist={activeSidebar} />
+</SidebarPersister>
+
+<div class="md:sl-hidden">
+	<MobileMenuFooter />
+</div>
