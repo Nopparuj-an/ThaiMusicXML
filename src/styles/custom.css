@@ -1,0 +1,46 @@
+:root {
+  --sl-sidebar-width: 16rem;       /* left navigation */
+  --sl-toc-width: 12rem;           /* right sidebar */
+  --sl-content-width: 50rem;        /* actual article width */
+}
+
+@media (width >= 72rem) {
+  /* Space allocated to the right sidebar */
+  .right-sidebar-container {
+    width: max(
+      var(--sl-toc-width),
+      calc(
+        var(--sl-toc-width) +
+        (
+          100% -
+          var(--sl-content-width) -
+          var(--sl-toc-width)
+        ) / 2
+      )
+    ) !important;
+  }
+
+  /* Middle region automatically loses the right sidebar’s width */
+  [data-has-sidebar][data-has-toc] .main-pane {
+    --sl-content-margin-inline: auto 0;
+
+    width: min(
+      calc(100% - var(--sl-toc-width)),
+      calc(
+        var(--sl-content-width) +
+        (
+          100% -
+          var(--sl-content-width) -
+          var(--sl-toc-width)
+        ) / 2
+      )
+    ) !important;
+  }
+
+  /* Visible contents inside the allocated right column */
+  .right-sidebar-panel {
+    width: calc(
+      var(--sl-toc-width) - 2 * var(--sl-sidebar-pad-x)
+    ) !important;
+  }
+}
