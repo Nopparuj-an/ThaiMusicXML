@@ -3,24 +3,11 @@ title: ThaiMusicXML v0.1
 description: Getting started with ThaiMusicXML v0.1
 ---
 
-# ThaiMusicXML v0.1
+## Abstracts
 
-Welcome to ThaiMusicXML v0.1 documentation.
+ThaiMusicXML is an open, lightweight XML schema designed specifically for Thai traditional music (เพลงไทยเดิม/Phleng Thai Doem).
+This format models native Thai primitives—7-tone scales, 8-measure grid systems, and structural speed levels (ชั้น/Chan).
 
-## What is ThaiMusicXML?
+## About this project
 
-ThaiMusicXML is a library for working with MusicXML files containing Thai music notation.
-
-## Quick Start
-
-Install ThaiMusicXML:
-
-```bash
-npm install thaimusicxml
-```
-
-## Next Steps
-
-- [Tutorial](/v0_1/tutorial/) - Learn the basics
-- [Reference](/v0_1/reference/) - API documentation
-- [Examples](/v0_1/examples/) - Code examples
+Please visit [about](/about/) page for more information.

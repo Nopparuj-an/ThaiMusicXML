@@ -21,6 +21,7 @@ export default defineConfig({
       },
       sidebar: [
         { label: "Home", slug: "index" },
+        { label: "About", slug: "about" },
         {
           label: "Versions",
           items: [{ label: "v0.1", slug: "v0_1" }],
@@ -28,7 +29,7 @@ export default defineConfig({
         {
           label: "v0.1",
           items: [
-            { label: "Getting Started", slug: "v0_1" },
+            { label: "Introduction", slug: "v0_1" },
             {
               label: "Tutorial",
               items: [{ autogenerate: { directory: "v0_1/tutorial" } }],
@@ -43,7 +44,6 @@ export default defineConfig({
             },
           ],
         },
-        { label: "About", slug: "about" },
       ],
     }),
   ],
