@@ -3,6 +3,10 @@ title: ThaiMusicXML v0.1
 description: Getting started with ThaiMusicXML v0.1
 ---
 
+:::caution[Work in progress]
+This version is under active development. Parts of the specification may be incomplete or change without notice.
+:::
+
 ## Abstract
 
 ThaiMusicXML is an open, lightweight XML schema for Thai traditional music (เพลงไทยเดิม/Phleng Thai Doem).
