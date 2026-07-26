@@ -6,9 +6,6 @@ import sitemap from "@astrojs/sitemap";
 // https://astro.build/config
 export default defineConfig({
   site: "https://thaimusicxml.anan.ovh",
-  redirects: {
-    "/": "/en/",
-  },
   integrations: [
     starlight({
       title: "ThaiMusicXML",
@@ -29,6 +26,46 @@ export default defineConfig({
       editLink: {
         baseUrl: "https://github.com/Nopparuj-an/ThaiMusicXML/edit/main/",
       },
+      head: [
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:image",
+            content: "https://thaimusicxml.anan.ovh/ThaiMusicXMLOG.png",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:width", content: "1200" },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:height", content: "630" },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:image",
+            content: "https://thaimusicxml.anan.ovh/ThaiMusicXMLOG.png",
+          },
+        },
+        {
+          tag: "script",
+          attrs: { type: "application/ld+json" },
+          content: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareSourceCode",
+            name: "ThaiMusicXML",
+            description:
+              "An open digital notation standard for Thai Traditional Music.",
+            url: "https://thaimusicxml.anan.ovh/en/",
+            codeRepository: "https://github.com/Nopparuj-an/ThaiMusicXML",
+            programmingLanguage: "XML",
+            license:
+              "https://github.com/Nopparuj-an/ThaiMusicXML/blob/main/LICENSE.txt",
+          }),
+        },
+      ],
       components: {
         Sidebar: "./src/components/Sidebar.astro",
         Pagination: "./src/components/Pagination.astro",
@@ -114,6 +151,8 @@ export default defineConfig({
         },
       ],
     }),
-    sitemap(),
+    sitemap({
+      filter: (page) => page !== "https://thaimusicxml.anan.ovh/",
+    }),
   ],
 });
