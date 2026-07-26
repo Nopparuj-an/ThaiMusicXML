@@ -45,31 +45,40 @@ export default defineConfig({
       },
       lastUpdated: true,
       sidebar: [
-        { label: "Home", slug: "index" },
-        { label: "About", slug: "about" },
+        { label: "Home", translations: { th: "หน้าหลัก" }, slug: "index" },
+        { label: "About", translations: { th: "เกี่ยวกับ" }, slug: "about" },
         {
           label: "Versions",
+          translations: { th: "เวอร์ชัน" },
           items: [{ label: "v0.1", slug: "v0_1" }],
         },
         {
           label: "v0.1",
           items: [
-            { label: "Introduction", slug: "v0_1" },
+            {
+              label: "Introduction",
+              translations: { th: "บทนำ" },
+              slug: "v0_1",
+            },
             {
               label: "Tutorial",
+              translations: { th: "บทช่วยสอน" },
               items: [{ autogenerate: { directory: "v0_1/tutorial" } }],
             },
             {
               label: "Reference",
+              translations: { th: "ข้อมูลอ้างอิง" },
               items: [
                 {
                   label: "Elements",
+                  translations: { th: "องค์ประกอบ" },
                   items: [
                     { autogenerate: { directory: "v0_1/reference/elements" } },
                   ],
                 },
                 {
                   label: "Examples",
+                  translations: { th: "ตัวอย่าง" },
                   items: [
                     { autogenerate: { directory: "v0_1/reference/examples" } },
                   ],
@@ -78,19 +87,23 @@ export default defineConfig({
             },
             {
               label: "Updates",
+              translations: { th: "การอัปเดต" },
               items: [
                 {
                   label: "Breaking Changes",
+                  translations: { th: "การเปลี่ยนแปลงสำคัญ" },
                   slug: "v0_1/updates/breaking-changes",
                 },
                 {
                   label: "Roadmap",
+                  translations: { th: "แผนงาน" },
                   items: [
                     { autogenerate: { directory: "v0_1/updates/roadmap" } },
                   ],
                 },
                 {
                   label: "Erratum",
+                  translations: { th: "ข้อผิดพลาด" },
                   items: [
                     { autogenerate: { directory: "v0_1/updates/erratum" } },
                   ],

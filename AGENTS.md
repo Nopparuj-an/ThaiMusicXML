@@ -3,6 +3,11 @@
 Unless specified otherwise, do everything in English version first.
 This includes plan, commit message, issue description, and PR description.
 
+## Writing and translations
+
+- Utilize `humanizer` skill.
+- Refer to ราชบัณฑิตยสภา spelling for Thai words.
+
 # Astro
 
 ## Development

@@ -4,16 +4,33 @@ import Default from '@astrojs/starlight/components/Pagination.astro';
 const currentPath = Astro.url.pathname;
 const versionMatch = currentPath.match(/^\/(?:en|th)\/(v\d+_\d+)\//);
 const currentVersion = versionMatch?.[1]?.replace('_', '.');
-const { pagination } = Astro.locals.starlightRoute;
+const { pagination, sidebar } = Astro.locals.starlightRoute;
 
 function isSameVersion(href: string | undefined): boolean {
   if (!href || !currentVersion) return true;
   return href.includes(`/${currentVersion.replace('.', '_')}/`);
 }
 
+function normalizePath(path: string): string {
+  return path.endsWith('/') ? path : `${path}/`;
+}
+
+function flattenLinks(entries: typeof sidebar): NonNullable<typeof pagination.next>[] {
+  return entries.flatMap(entry => entry.type === 'group' ? flattenLinks(entry.entries) : [entry]);
+}
+
 if (currentVersion) {
   pagination.prev = isSameVersion(pagination.prev?.href) ? pagination.prev : undefined;
   pagination.next = isSameVersion(pagination.next?.href) ? pagination.next : undefined;
+
+  if (normalizePath(pagination.next?.href ?? '') === normalizePath(currentPath)) {
+    const versionGroup = sidebar.find(
+      entry => entry.type === 'group' && entry.label === currentVersion
+    );
+    const versionLinks = versionGroup?.type === 'group' ? flattenLinks(versionGroup.entries) : [];
+    const currentIndex = versionLinks.findIndex(link => normalizePath(link.href) === normalizePath(currentPath));
+    pagination.next = versionLinks[currentIndex + 1];
+  }
 }
 ---
 
