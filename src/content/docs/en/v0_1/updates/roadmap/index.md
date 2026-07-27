@@ -5,17 +5,19 @@ description: ThaiMusicXML v0.1 Roadmap
 
 ## Version v0.1 (Development Phase)
 
-The **ThaiMusicXML v0.1** release represents the initial **development milestone** of ThaiMusicXML. At this stage, the standard is being defined and implemented, focusing on core concepts and basic functionality.
+ThaiMusicXML v0.1 is the first version. The standard is being defined and implemented, focusing on core concepts and basic functionality.
 
-### Key Features
+### Scope
 
-- **Core Concepts**: Establishing fundamental principles for Thai music representation.
-- **Basic Implementation**: Initial support for core elements and structures.
+- Core schema for Thai music representation (7-tone scales, 8-measure grid, ชั้น levels)
+- Basic element support: notes, rests, measures, lines, sections, parts
 
-### Next Steps
+### Next steps
 
-- Continue core development and feature implementation.
-- Gather community feedback for refinement.
-- Prepare for future version releases.
+- Continue core development and feature implementation
+- Develop validator and parsers based on the core schema
+- Develop a renderer
+- Gather community feedback
+- Prepare for future versions
 
 ---

@@ -21,7 +21,9 @@ The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument 
       <bpm>65</bpm>
     </direction>
     <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
-    <section id="s1" name="ท่อน 1" repeat="2" />
+    <section id="s1" name="ท่อน 1">
+      <repeat times="2"/>
+    </section>
     <annotation>End of section 1 message</annotation>
   </structure>
   <ensemble>
@@ -85,7 +87,9 @@ The `<structure>` element can contain several child types that describe the scor
     <bpm>65</bpm>
   </direction>
   <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
-  <section id="s1" name="ท่อน 1" repeat="2" />
+  <section id="s1" name="ท่อน 1">
+    <repeat times="2"/>
+  </section>
   <annotation>End of section 1 message</annotation>
 </structure>
 ```
@@ -102,7 +106,7 @@ The `<structure>` element can contain several child types that describe the scor
 
   The `align` value can be `left`, `center`, or `right`. Do not mix plain text with `<text>` children.
 - **`<direction>`**: Performance directions. This example sets the ชั้น (`<chan>`) and tempo (`<bpm>`). ชั้น (chan) is the Thai rhythmic layer system. `value="1"` means ชั้นเดียว.
-- **`<section>`**: A named section. The `repeat` attribute indicates how many times it is played.
+- **`<section>`**: A named section. Its `<repeat>` child indicates how many times it is played.
 
 Line and measure numbers are local to their parent elements. Lines start at `1` in each `<section-ref>`, and measures start at `1` in each `<line>`:
 

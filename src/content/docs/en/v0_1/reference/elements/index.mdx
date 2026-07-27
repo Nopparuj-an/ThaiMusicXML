@@ -44,7 +44,11 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
                 { name: "<bpm>", slug: "bpm" },
               ],
             },
-            { name: "<section>", slug: "section" },
+            {
+              name: "<section>",
+              slug: "section",
+              children: [{ name: "<repeat>", slug: "repeat" }],
+            },
           ],
         },
         {
@@ -83,6 +87,8 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
                       children: [
                         { name: "<note>", slug: "note" },
                         { name: "<rest>", slug: "rest" },
+                        { name: "<parenthesis>", slug: "parenthesis" },
+                        { name: "<tie>", slug: "tie" },
                       ],
                     },
                   ],

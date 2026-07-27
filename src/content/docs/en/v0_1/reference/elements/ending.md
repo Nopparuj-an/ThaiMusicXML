@@ -3,7 +3,7 @@ title: <ending>
 description: A per-instrument variation played on specific repeat passes
 ---
 
-The `<ending>` element overrides or extends specific `<line>` elements for one or more passes of a repeated `<section>`, so a part can play something different on, say, the second time through without restructuring the rest of its `<section-ref>`.
+The `<ending>` element overrides or extends specific `<line>` elements for one or more passes of a repeated `<section>`, so a part can play something different on a given pass without restructuring its `<section-ref>`.
 
 ## Parent
 
@@ -29,15 +29,15 @@ Each `<line number="N">` inside an `<ending>` either:
 - **overrides** line `N`, if a line with that number already exists directly in the `<section-ref>`, replacing it for the pass(es) listed, or
 - **extends** the section, if `N` continues sequentially past the highest line number in the `<section-ref>` (e.g. a coda line added only on the final pass).
 
-For a pass not covered by any `<ending>`, the part plays its regular `<line>` elements unchanged. A `<section-ref>` with no `<ending>` elements at all plays identically on every pass, exactly as before this element existed.
+For a pass not covered by any `<ending>`, the part plays its regular `<line>` elements unchanged. A `<section-ref>` with no `<ending>` elements plays identically on every pass.
 
 Two `<ending>` elements must not cover the same line number for the same pass. That is a conflict.
 
-`<ending>` is only valid inside a `<section-ref>` whose referenced `<section>` has a `repeat` greater than `1`, and every value in `pass` must be within `1..repeat`.
+`<ending>` is only valid inside a `<section-ref>` whose referenced `<section>` has a whole-section [`<repeat>`](/en/v0_1/reference/elements/repeat/) (one without `first`/`last`) with `times` greater than `1`, and every value in `pass` must be within `1..times`.
 
 ## Conformance
 
-An `<ending>` line that overrides an existing line number must have the same number of `<measure>` elements as the line it overrides. This preserves the [cross-part synchronization rule](/en/v0_1/reference/elements/section-ref/#conformance): for any given pass, once every part's `<ending>` overrides are resolved, all parts referencing the same section must still agree on line count and per-line measure count for that pass. Only the notes within a measure are free to vary.
+An `<ending>` line that overrides an existing line number must have the same number of `<measure>` elements as the line it overrides. This preserves the [cross-part synchronization rule](/en/v0_1/reference/elements/section-ref/#conformance): for any given pass, once every part's `<ending>` overrides are resolved, all parts referencing the same section must still agree on line count and per-line measure count. Only the notes within a measure are free to vary.
 
 ## Example
 

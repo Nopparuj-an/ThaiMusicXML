@@ -35,7 +35,7 @@ All `<part-data>` elements whose `<section-ref>` reference the same `<section>` 
 
 The number of `<note>`/`<rest>` children within a corresponding measure is not required to match across parts, a measure's duration is shared, but each instrument may subdivide it differently.
 
-If the section repeats, this rule applies per resolved pass: for each pass, resolve every part's [`<ending>`](/en/v0_1/reference/elements/ending/) overrides first, then compare line and measure counts across parts for that pass.
+If the section repeats, this rule applies per resolved pass: resolve every part's [`<ending>`](/en/v0_1/reference/elements/ending/) overrides first, then compare line and measure counts across parts.
 
 ## Example
 

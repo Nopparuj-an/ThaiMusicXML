@@ -34,7 +34,9 @@ A score's section order is the order in which `<section>` elements appear in `<s
     <bpm>65</bpm>
   </direction>
   <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
-  <section id="s1" name="ท่อน 1" repeat="2" />
+  <section id="s1" name="ท่อน 1">
+    <repeat times="2"/>
+  </section>
   <annotation>End of section 1 message</annotation>
 </structure>
 ```
