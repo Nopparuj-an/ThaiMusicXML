@@ -13,11 +13,15 @@ The `<line>` element contains a musical line or phrase within a section.
 
 | Attribute | Required | Type | Description |
 |-----------|----------|------|-------------|
-| `number` | Yes | integer | Line number within the section. |
+| `number` | Yes | integer | 1-based line number within the containing `<section-ref>`. |
 
 ## Children
 
 One or more [`<measure>`](/en/v0_1/reference/elements/measure/) elements.
+
+## Numbering
+
+Line numbers are local to the containing `<section-ref>`. They start at `1` for each section reference and increase by one for each line.
 
 ## Example
 

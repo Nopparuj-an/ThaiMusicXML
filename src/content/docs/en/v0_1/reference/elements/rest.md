@@ -9,10 +9,6 @@ The `<rest>` element represents a silence whose duration is determined by contex
 
 [`<measure>`](/en/v0_1/reference/elements/measure/)
 
-## Attributes
-
-None.
-
 ## Example
 
 ```xml

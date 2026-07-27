@@ -90,9 +90,41 @@ The `<structure>` element can contain several child types that describe the scor
 </structure>
 ```
 
-- **`<annotation>`**: Free-form comments that can appear anywhere. Playback ignores them. The optional `target` attribute specifies what the annotation refers to.
+- **`<annotation>`**: Free-form comments that can appear anywhere. Playback ignores them. The optional `target` attribute specifies what the annotation refers to. An annotation can contain plain text, which is left aligned, or up to one `<text>` child for each alignment:
+
+  ```xml
+  <annotation>
+    <text align="left">ท่อน 1</text>
+    <text align="center">Lao Duang Duen</text>
+    <text align="right">หน้า 1</text>
+  </annotation>
+  ```
+
+  The `align` value can be `left`, `center`, or `right`. Do not mix plain text with `<text>` children.
 - **`<direction>`**: Performance directions. This example sets the ชั้น (`<chan>`) and tempo (`<bpm>`). ชั้น (chan) is the Thai rhythmic layer system. `value="1"` means ชั้นเดียว.
 - **`<section>`**: A named section. The `repeat` attribute indicates how many times it is played.
+
+Line and measure numbers are local to their parent elements. Lines start at `1` in each `<section-ref>`, and measures start at `1` in each `<line>`:
+
+```xml
+<section-ref id="s1">
+  <line number="1">
+    <measure number="1">...</measure>
+    <measure number="2">...</measure>
+  </line>
+  <line number="2">
+    <measure number="1">...</measure>
+  </line>
+</section-ref>
+
+<section-ref id="s2">
+  <line number="1">
+    <measure number="1">...</measure>
+  </line>
+</section-ref>
+```
+
+The section's `number` attribute records its order in `<structure>`. It does not continue line or measure numbering across sections, and repeating a section does not change these numbers.
 
 ## Multiple Instruments
 

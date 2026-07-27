@@ -5,41 +5,93 @@ sidebar:
   order: 1
 ---
 
-import TreeView from '@/components/TreeView.astro';
+import TreeView from "@/components/TreeView.astro";
 
 This reference lists the elements in a ThaiMusicXML v0.1 document and their relationships.
 
 ## Document Hierarchy
 
-<TreeView base="/en/v0_1/reference/elements" nodes={[
-  { name: "<thai-score>", slug: "thai-score", children: [
-    { name: "<header>", slug: "header", children: [
-      { name: "<title>", slug: "title" },
-      { name: "<composer>", slug: "composer" },
-      { name: "<structure>", slug: "structure", children: [
-        { name: "<annotation>", slug: "annotation" },
-        { name: "<direction>", slug: "direction", children: [
-          { name: "<chan>", slug: "chan" },
-          { name: "<bpm>", slug: "bpm" }
-        ]},
-        { name: "<section>", slug: "section" }
-      ]}
-    ]},
-    { name: "<ensemble>", slug: "ensemble", children: [
-      { name: "<part>", slug: "part", children: [
-        { name: "<instrument-name>", slug: "instrument-name" }
-      ]}
-    ]},
-    { name: "<part-data>", slug: "part-data", children: [
-      { name: "<section-ref>", slug: "section-ref", children: [
-        { name: "<annotation target=\"instrument\">", color: "var(--sl-color-gray-4)", note: "Same element as <structure> > <annotation> above" },
-        { name: "<line>", slug: "line", children: [
-          { name: "<measure>", slug: "measure", children: [
-            { name: "<note>", slug: "note" },
-            { name: "<rest>", slug: "rest" }
-          ]}
-        ]}
-      ]}
-    ]}
+<TreeView
+  base="/en/v0_1/reference/elements"
+  nodes={[
+    {
+      name: "<thai-score>",
+      slug: "thai-score",
+      children: [
+        {
+          name: "<header>",
+          slug: "header",
+          children: [
+            { name: "<title>", slug: "title" },
+            { name: "<composer>", slug: "composer" },
+            {
+              name: "<structure>",
+              slug: "structure",
+              children: [
+                {
+                  name: "<annotation>",
+                  slug: "annotation",
+                  children: [{ name: "<text>", slug: "annotation#content" }],
+                },
+                { name: "<br>", slug: "br" },
+                {
+                  name: "<direction>",
+                  slug: "direction",
+                  children: [
+                    { name: "<chan>", slug: "chan" },
+                    { name: "<bpm>", slug: "bpm" },
+                  ],
+                },
+                { name: "<section>", slug: "section" },
+              ],
+            },
+          ],
+        },
+        {
+          name: "<ensemble>",
+          slug: "ensemble",
+          children: [
+            {
+              name: "<part>",
+              slug: "part",
+              children: [
+                { name: "<instrument-name>", slug: "instrument-name" },
+              ],
+            },
+          ],
+        },
+        {
+          name: "<part-data>",
+          slug: "part-data",
+          children: [
+            {
+              name: "<section-ref>",
+              slug: "section-ref",
+              children: [
+                {
+                  name: '<annotation target="instrument">',
+                  color: "var(--sl-color-gray-4)",
+                  note: "Same element as <structure> > <annotation> above",
+                },
+                {
+                  name: "<line>",
+                  slug: "line",
+                  children: [
+                    {
+                      name: "<measure>",
+                      slug: "measure",
+                      children: [
+                        { name: "<note>", slug: "note" },
+                        { name: "<rest>", slug: "rest" },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
   ]}
-]} />
+/>

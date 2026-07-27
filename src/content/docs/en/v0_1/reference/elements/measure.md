@@ -13,11 +13,15 @@ The `<measure>` element contains the notes and rests in a single measure (ห้
 
 | Attribute | Required | Type | Description |
 |-----------|----------|------|-------------|
-| `number` | Yes | integer | Measure number within the line. |
+| `number` | Yes | integer | 1-based measure number within the containing `<line>`. |
 
 ## Children
 
 A sequence of [`<note>`](/en/v0_1/reference/elements/note/) and [`<rest>`](/en/v0_1/reference/elements/rest/) elements.
+
+## Numbering
+
+Measure numbers are local to the containing `<line>`. They start at `1` for each line and increase by one for each measure.
 
 ## Example
 
