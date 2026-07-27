@@ -1,0 +1,86 @@
+---
+interface TreeNode {
+  /** Rendered as-is, e.g. "<note>" - include your own angle brackets, or omit them for plain text. */
+  name: string;
+  slug?: string;
+  children: TreeNode[];
+  /** Any CSS color value, e.g. "var(--sl-color-gray-3)" or "#e06c75". */
+  color?: string;
+  /** Shown as a hover tooltip, e.g. to explain why a node is greyed out. */
+  note?: string;
+}
+
+interface Props {
+  base?: string;
+  nodes: TreeNode[];
+  root?: boolean;
+}
+
+const { base = "", nodes, root = true } = Astro.props;
+---
+
+<ul class:list={["tree", { "tree-root": root }]} role="tree">
+  {
+    nodes.map((node) => {
+      const hasChildren = node.children && node.children.length > 0;
+      const tag = (
+        <span
+          class="tree-tag"
+          style={node.color ? `color: ${node.color}` : undefined}
+          title={node.note}
+        >
+          {node.name}
+        </span>
+      );
+      return (
+        <li
+          class="tree-item"
+          role="treeitem"
+          aria-expanded={hasChildren ? "true" : undefined}
+        >
+          {hasChildren ? (
+            <details class="tree-details" open>
+              <summary class="tree-summary">
+                <svg
+                  class="tree-chevron"
+                  viewBox="0 0 24 24"
+                  width="12"
+                  height="12"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M9 6l6 6-6 6"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                {node.slug ? (
+                  <a class="tree-link" href={`${base}/${node.slug}/`}>
+                    {tag}
+                  </a>
+                ) : (
+                  tag
+                )}
+              </summary>
+              <Astro.self base={base} nodes={node.children} root={false} />
+            </details>
+          ) : (
+            <div class="tree-leaf">
+              <span class="tree-leaf-dot" aria-hidden="true" />
+              {node.slug ? (
+                <a class="tree-link" href={`${base}/${node.slug}/`}>
+                  {tag}
+                </a>
+              ) : (
+                tag
+              )}
+            </div>
+          )}
+        </li>
+      );
+    })
+  }
+</ul>

@@ -1,0 +1,24 @@
+---
+title: <direction>
+description: Performance directions for the score
+---
+
+The `<direction>` element contains performance directions for the score.
+
+## Parent
+
+[`<structure>`](/en/v0_1/reference/elements/structure/)
+
+## Children
+
+- [`<chan>`](/en/v0_1/reference/elements/chan/) - ชั้น (rhythmic layer)
+- [`<bpm>`](/en/v0_1/reference/elements/bpm/) - tempo
+
+## Example
+
+```xml
+<direction>
+  <chan value="1" />
+  <bpm>65</bpm>
+</direction>
+```
