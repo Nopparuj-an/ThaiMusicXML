@@ -17,7 +17,7 @@ The `<line>` element contains a musical line or phrase within a section.
 
 ## Children
 
-One or more [`<measure>`](/en/v0_1/reference/elements/measure/) elements.
+One to eight [`<measure>`](/en/v0_1/reference/elements/measure/) elements. Eight is the conventional maximum line length; many lines have fewer, depending on the song.
 
 ## Numbering
 

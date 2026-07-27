@@ -1,5 +1,5 @@
 ---
-title: Elements Reference
+title: ★ Elements Reference
 description: ThaiMusicXML v0.1 elements reference
 sidebar:
   order: 1
@@ -24,27 +24,27 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
           children: [
             { name: "<title>", slug: "title" },
             { name: "<composer>", slug: "composer" },
+          ],
+        },
+        {
+          name: "<structure>",
+          slug: "structure",
+          children: [
             {
-              name: "<structure>",
-              slug: "structure",
+              name: "<annotation>",
+              slug: "annotation",
+              children: [{ name: "<text>", slug: "annotation#content" }],
+            },
+            { name: "<br>", slug: "br" },
+            {
+              name: "<direction>",
+              slug: "direction",
               children: [
-                {
-                  name: "<annotation>",
-                  slug: "annotation",
-                  children: [{ name: "<text>", slug: "annotation#content" }],
-                },
-                { name: "<br>", slug: "br" },
-                {
-                  name: "<direction>",
-                  slug: "direction",
-                  children: [
-                    { name: "<chan>", slug: "chan" },
-                    { name: "<bpm>", slug: "bpm" },
-                  ],
-                },
-                { name: "<section>", slug: "section" },
+                { name: "<chan>", slug: "chan" },
+                { name: "<bpm>", slug: "bpm" },
               ],
             },
+            { name: "<section>", slug: "section" },
           ],
         },
         {
@@ -84,6 +84,22 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
                         { name: "<note>", slug: "note" },
                         { name: "<rest>", slug: "rest" },
                       ],
+                    },
+                  ],
+                },
+                {
+                  name: "<ending>",
+                  slug: "ending",
+                  children: [
+                    {
+                      name: "<annotation>",
+                      color: "var(--sl-color-gray-4)",
+                      note: "Same element as <structure> > <annotation> above",
+                    },
+                    {
+                      name: "<line>",
+                      color: "var(--sl-color-gray-4)",
+                      note: "Same element as <section-ref> > <line> above",
                     },
                   ],
                 },

@@ -14,7 +14,7 @@ This example shows a simple score for one instrument: a Ranat Ek (ระนา�
     <title>Lao Duang Duen</title>
   </header>
   <structure>
-    <section id="s1" number="1" name="ท่อน 1" />
+    <section id="s1" name="ท่อน 1" />
   </structure>
   <ensemble>
     <part id="P1">
@@ -80,11 +80,11 @@ The `<header>` element contains score metadata. It must include a `<title>`, whi
 
 ```xml
 <structure>
-  <section id="s1" number="1" name="ท่อน 1" />
+  <section id="s1" name="ท่อน 1" />
 </structure>
 ```
 
-The `<structure>` element defines the score layout. Each `<section>` has an `id` that `<section-ref>` uses later to attach music data. The `number` attribute gives the section order, and `name` is a label for readers.
+The `<structure>` element defines the score layout. Each `<section>` has an `id` that `<section-ref>` uses later to attach music data, and an optional `name` label for readers. A section's order in the score is its position among the `<section>` elements in `<structure>`.
 
 ```xml
 <ensemble>

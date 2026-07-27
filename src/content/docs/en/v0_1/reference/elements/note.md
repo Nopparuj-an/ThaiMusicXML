@@ -11,10 +11,13 @@ The `<note>` element represents a musical note.
 
 ## Attributes
 
-| Attribute | Required | Type    | Description                                             |
-| --------- | -------- | ------- | ------------------------------------------------------- |
-| `pitch`   | Yes      | pitch   | The note name. See [Pitch format](#pitch-format) below. |
-| `octave`  | No       | integer | The octave number. Default is 0.                        |
+| Attribute | Required                                      | Type    | Description                                                                             |
+| --------- | ---------------------------------------------- | ------- | ----------------------------------------------------------------------------------------- |
+| `pitch`   | If the part's `type` is `"pitched"` (default) | pitch   | The note name. See [Pitch format](#pitch-format) below.                                   |
+| `sound`   | If the part's `type` is `"unpitched"`         | string  | An instrument-specific sound code. See [Unpitched Notation](#unpitched-notation) below.    |
+| `octave`  | No                                             | integer | The octave number. Only applies to `pitch`. Default is 0.                                 |
+
+`pitch` and `sound` are mutually exclusive: a note uses one or the other depending on the [`type`](/en/v0_1/reference/elements/part/) of its containing `<part>`.
 
 ## Example
 
@@ -58,13 +61,13 @@ The `pitch` attribute uses Thai scale names.
 | ํ        | Nikhahit  | Raise one octave | `ดํ` = ด up one octave   |
 | ฺ        | Pinthu    | Lower one octave | `ทฺ` = ท down one octave |
 
-### Instrument-Specific Notation
+### Unpitched Notation
 
-For percussion or non-pitched instruments, the `pitch` attribute can use numeric values. The meaning depends on the instrument and should be documented with an `<annotation target="instrument">`.
+For percussion or other non-pitched instruments, `<part type="unpitched">` notes use `sound` instead of `pitch`. `sound` is a free-form, instrument-specific code; its meaning should be documented with an `<annotation target="instrument">`.
 
 ```xml
 <annotation target="instrument">0 = ฉิ่ง / 1 = ฉับ</annotation>
 <measure number="1">
-  <rest/><note pitch="0"/><rest/><note pitch="1"/>
+  <rest/><note sound="0"/><rest/><note sound="1"/>
 </measure>
 ```

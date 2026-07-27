@@ -9,6 +9,7 @@ The `<annotation>` element contains a free-form comment that is ignored during p
 
 - [`<structure>`](/en/v0_1/reference/elements/structure/)
 - [`<section-ref>`](/en/v0_1/reference/elements/section-ref/)
+- [`<ending>`](/en/v0_1/reference/elements/ending/)
 
 ## Attributes
 

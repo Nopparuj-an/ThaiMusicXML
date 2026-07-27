@@ -13,22 +13,22 @@ The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument 
   <header>
     <title>Example Song</title>
     <composer>Example Composer</composer>
-    <structure>
-      <annotation>Example Comments</annotation>
-      <direction>
-        <chan value="1" />
-        <bpm>65</bpm>
-      </direction>
-      <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
-      <section id="s1" number="1" name="ท่อน 1" repeat="2" />
-      <annotation>End of section 1 message</annotation>
-    </structure>
   </header>
+  <structure>
+    <annotation>Example Comments</annotation>
+    <direction>
+      <chan value="1" />
+      <bpm>65</bpm>
+    </direction>
+    <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
+    <section id="s1" name="ท่อน 1" repeat="2" />
+    <annotation>End of section 1 message</annotation>
+  </structure>
   <ensemble>
     <part id="P1">
       <instrument-name>Ranat Ek</instrument-name>
     </part>
-    <part id="P2">
+    <part id="P2" type="unpitched">
       <instrument-name>Ching</instrument-name>
     </part>
   </ensemble>
@@ -49,13 +49,13 @@ The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument 
     <section-ref id="s1">
       <annotation target="instrument">0 = ฉิ่ง / 1 = ฉับ</annotation>
       <line number="1">
-        <measure number="1"><rest/><note pitch="0"/><rest/><note pitch="1"/></measure>
-        <measure number="2"><rest/><note pitch="0"/><rest/><note pitch="1"/></measure>
-        <measure number="3"><rest/><note pitch="0"/><rest/><note pitch="1"/></measure>
-        <measure number="4"><rest/><note pitch="0"/><rest/><note pitch="1"/></measure>
-        <measure number="5"><rest/><note pitch="0"/><rest/><note pitch="1"/></measure>
-        <measure number="6"><rest/><note pitch="0"/><rest/><note pitch="1"/></measure>
-        <measure number="7"><rest/><note pitch="0"/><rest/><note pitch="1"/></measure>
+        <measure number="1"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
+        <measure number="2"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
+        <measure number="3"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
+        <measure number="4"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
+        <measure number="5"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
+        <measure number="6"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
+        <measure number="7"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
       </line>
     </section-ref>
   </part-data>
@@ -85,7 +85,7 @@ The `<structure>` element can contain several child types that describe the scor
     <bpm>65</bpm>
   </direction>
   <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
-  <section id="s1" number="1" name="ท่อน 1" repeat="2" />
+  <section id="s1" name="ท่อน 1" repeat="2" />
   <annotation>End of section 1 message</annotation>
 </structure>
 ```
@@ -124,7 +124,7 @@ Line and measure numbers are local to their parent elements. Lines start at `1` 
 </section-ref>
 ```
 
-The section's `number` attribute records its order in `<structure>`. It does not continue line or measure numbering across sections, and repeating a section does not change these numbers.
+A section's order comes from its position among the `<section>` elements in `<structure>`, not from an attribute. This order does not continue line or measure numbering across sections, and repeating a section does not change these numbers.
 
 ## Multiple Instruments
 
@@ -135,13 +135,13 @@ The `<ensemble>` can list multiple parts:
   <part id="P1">
     <instrument-name>Ranat Ek</instrument-name>
   </part>
-  <part id="P2">
+  <part id="P2" type="unpitched">
     <instrument-name>Ching</instrument-name>
   </part>
 </ensemble>
 ```
 
-Each instrument gets its own `<part-data>` element with a matching `id`. Here, P1 is a Ranat Ek (ระนาดเอก, a Thai xylophone) and P2 is a Ching (ฉิ่ง, small cymbals).
+Each instrument gets its own `<part-data>` element with a matching `id`. Here, P1 is a Ranat Ek (ระนาดเอก, a Thai xylophone) and P2 is a Ching (ฉิ่ง, small cymbals). P2 has `type="unpitched"`, so its notes use `sound` instead of `pitch`.
 
 ## Part Data
 
@@ -152,7 +152,7 @@ Each `<part-data>` links to a section through `<section-ref>`. The Ching part in
   <section-ref id="s1">
     <annotation target="instrument">0 = ฉิ่ง / 1 = ฉับ</annotation>
     <line number="1">
-      <measure number="1"><rest/><note pitch="0"/><rest/><note pitch="1"/></measure>
+      <measure number="1"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
       ...
     </line>
   </section-ref>

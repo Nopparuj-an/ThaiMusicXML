@@ -13,19 +13,19 @@ The `<chan>` element sets the ชั้น (chan) rhythmic layer level.
 
 ## Attributes
 
-| Attribute | Required | Type    | Description     |
-| --------- | -------- | ------- | --------------- |
-| `value`   | Yes      | integer | The ชั้น level. |
+| Attribute | Required | Type   | Description     |
+| --------- | -------- | ------ | --------------- |
+| `value`   | Yes      | number | The ชั้น level. |
 
 ## Values
 
-| Value          | Name      |
-| -------------- | --------- |
-| `0.5` or `1/2` | ครึ่งชั้น |
-| `1`            | ชั้นเดียว |
-| `2`            | สองชั้น   |
-| `3`            | สามชั้น   |
-| `4`            | สี่ชั้น   |
+| Value | Name      |
+| ----- | --------- |
+| `0.5` | ครึ่งชั้น |
+| `1`   | ชั้นเดียว |
+| `2`   | สองชั้น   |
+| `3`   | สามชั้น   |
+| `4`   | สี่ชั้น   |
 
 ## Example
 

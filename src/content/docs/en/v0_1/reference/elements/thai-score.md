@@ -18,8 +18,9 @@ The root element of every ThaiMusicXML document.
 In order:
 
 1. [`<header>`](/en/v0_1/reference/elements/header/) - score metadata
-2. [`<ensemble>`](/en/v0_1/reference/elements/ensemble/) - instrument list
-3. [`<part-data>`](/en/v0_1/reference/elements/part-data/) - one or more, one per instrument
+2. [`<structure>`](/en/v0_1/reference/elements/structure/) - score layout
+3. [`<ensemble>`](/en/v0_1/reference/elements/ensemble/) - instrument list
+4. [`<part-data>`](/en/v0_1/reference/elements/part-data/) - one or more, one per instrument
 
 ## Example
 
@@ -27,6 +28,7 @@ In order:
 <?xml version="1.0" encoding="UTF-8"?>
 <thai-score version="0.1">
   <header>...</header>
+  <structure>...</structure>
   <ensemble>...</ensemble>
   <part-data id="P1">...</part-data>
 </thai-score>
