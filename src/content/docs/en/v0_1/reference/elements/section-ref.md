@@ -33,7 +33,7 @@ The section's order among the `<section>` elements in `<structure>` does not aff
 
 All `<part-data>` elements whose `<section-ref>` reference the same `<section>` must have the same number of `<line>` elements, and corresponding lines (matched by `number`) must have the same number of `<measure>` elements. This keeps a given measure number aligned to the same span of time across every part. Validators must reject documents that violate this rule.
 
-The number of `<note>`/`<rest>` children within a corresponding measure is not required to match across parts — a measure's duration is shared, but each instrument may subdivide it differently.
+The number of `<note>`/`<rest>` children within a corresponding measure is not required to match across parts, a measure's duration is shared, but each instrument may subdivide it differently.
 
 If the section repeats, this rule applies per resolved pass: for each pass, resolve every part's [`<ending>`](/en/v0_1/reference/elements/ending/) overrides first, then compare line and measure counts across parts for that pass.
 

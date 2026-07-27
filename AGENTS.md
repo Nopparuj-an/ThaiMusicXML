@@ -6,7 +6,7 @@ This includes plan, commit message, issue description, and PR description.
 ## Development
 
 - There are currently no XSD/RelaxNG yet, refer to TreeView in `elements/index.mdx` for the schema hierarchy.
-- Conformance rules are prose, not code, live in ## Conformance sections on the relevant element page — there's no validator yet to enforce them.
+- Conformance rules are prose, not code, live in ## Conformance sections on the relevant element page, there's no validator yet to enforce them.
 - astro check is currently broken in this environment, use `npx astro build` instead.
 - For schema/design changes, propose and get explicit sign-off before editing; once confirmed, apply it across every affected file in one pass rather than incrementally.
 

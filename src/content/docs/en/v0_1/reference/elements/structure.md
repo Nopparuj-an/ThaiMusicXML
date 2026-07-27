@@ -22,7 +22,7 @@ These can appear in any order and be repeated.
 
 ## Section Order
 
-A score's section order is the order in which `<section>` elements appear in `<structure>`, counting only `<section>` elements (interleaved `<annotation>`, `<br>`, and `<direction>` elements don't affect it). There is no separate attribute for section order — reordering the `<section>` elements in the document changes the score's order.
+A score's section order is the order in which `<section>` elements appear in `<structure>`, counting only `<section>` elements (interleaved `<annotation>`, `<br>`, and `<direction>` elements don't affect it). There is no separate attribute for section order, reordering the `<section>` elements in the document changes the score's order.
 
 ## Example
 

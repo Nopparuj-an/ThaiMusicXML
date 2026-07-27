@@ -11,8 +11,8 @@ The `<ending>` element overrides or extends specific `<line>` elements for one o
 
 ## Attributes
 
-| Attribute | Required | Type   | Description                                                          |
-| --------- | -------- | ------ | --------------------------------------------------------------------- |
+| Attribute | Required | Type   | Description                                                                                |
+| --------- | -------- | ------ | ------------------------------------------------------------------------------------------ |
 | `pass`    | Yes      | string | Comma-separated 1-based repeat pass numbers this ending applies to, e.g. `"2"` or `"1,3"`. |
 
 ## Children
@@ -26,12 +26,12 @@ In order:
 
 Each `<line number="N">` inside an `<ending>` either:
 
-- **overrides** line `N`, if a line with that number already exists directly in the `<section-ref>`, replacing it for the pass(es) listed — or
+- **overrides** line `N`, if a line with that number already exists directly in the `<section-ref>`, replacing it for the pass(es) listed, or
 - **extends** the section, if `N` continues sequentially past the highest line number in the `<section-ref>` (e.g. a coda line added only on the final pass).
 
 For a pass not covered by any `<ending>`, the part plays its regular `<line>` elements unchanged. A `<section-ref>` with no `<ending>` elements at all plays identically on every pass, exactly as before this element existed.
 
-Two `<ending>` elements must not cover the same line number for the same pass — that is a conflict.
+Two `<ending>` elements must not cover the same line number for the same pass. That is a conflict.
 
 `<ending>` is only valid inside a `<section-ref>` whose referenced `<section>` has a `repeat` greater than `1`, and every value in `pass` must be within `1..repeat`.
 
