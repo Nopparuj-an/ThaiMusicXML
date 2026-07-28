@@ -24,6 +24,10 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
           children: [
             { name: "<title>", slug: "title" },
             { name: "<composer>", slug: "composer" },
+            { name: "<lyricist>", slug: "lyricist" },
+            { name: "<arranger>", slug: "arranger" },
+            { name: "<tuning>", slug: "tuning" },
+            { name: "<license>", slug: "license" },
           ],
         },
         {
@@ -45,9 +49,25 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
               ],
             },
             {
+              name: "<repeat>",
+              slug: "repeat",
+              children: [
+                {
+                  name: "<repeat>",
+                  color: "var(--sl-color-gray-4)",
+                  note: "Repeats nest to any depth",
+                },
+                {
+                  name: "<section>",
+                  color: "var(--sl-color-gray-4)",
+                  note: "A <repeat> takes the same children as <structure>: <annotation>, <br>, <direction>, <section>, and <repeat>",
+                },
+              ],
+            },
+            {
               name: "<section>",
               slug: "section",
-              children: [{ name: "<repeat>", slug: "repeat" }],
+              children: [{ name: "<line-repeat>", slug: "line-repeat" }],
             },
           ],
         },
@@ -73,7 +93,7 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
               slug: "section-ref",
               children: [
                 {
-                  name: '<annotation target="instrument">',
+                  name: "<annotation>",
                   color: "var(--sl-color-gray-4)",
                   note: "Same element as <structure> > <annotation> above",
                 },
@@ -101,10 +121,20 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
                               color: "var(--sl-color-gray-4)",
                               note: "Same element as <measure> > <rest> above",
                             },
+                            {
+                              name: "<parenthesis>",
+                              color: "var(--sl-color-gray-4)",
+                              note: "Same element as <measure> > <parenthesis> below",
+                            },
+                            {
+                              name: "<bow>",
+                              color: "var(--sl-color-gray-4)",
+                              note: "Same element as <measure> > <bow> below",
+                            },
                           ],
                         },
                         { name: "<parenthesis>", slug: "parenthesis" },
-                        { name: "<tie>", slug: "tie" },
+                        { name: "<bow>", slug: "bow" },
                       ],
                     },
                   ],

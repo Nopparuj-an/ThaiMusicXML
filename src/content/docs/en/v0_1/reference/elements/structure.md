@@ -3,7 +3,7 @@ title: <structure>
 description: Defines the score layout with sections, directions, and annotations
 ---
 
-The `<structure>` element defines the score layout with sections, directions, and annotations.
+The `<structure>` element defines the score layout: which sections are played, in what order, how often, and with what directions along the way.
 
 ## Parent
 
@@ -17,12 +17,19 @@ A sequence of:
 - [`<br>`](/en/v0_1/reference/elements/br/)
 - [`<direction>`](/en/v0_1/reference/elements/direction/)
 - [`<section>`](/en/v0_1/reference/elements/section/)
+- [`<repeat>`](/en/v0_1/reference/elements/repeat/)
 
 These can appear in any order and be repeated.
 
-## Section Order
+## Section order
 
-A score's section order is the order in which `<section>` elements appear in `<structure>`, counting only `<section>` elements (interleaved `<annotation>`, `<br>`, and `<direction>` elements don't affect it). There is no separate attribute for section order, reordering the `<section>` elements in the document changes the score's order.
+A score's section order is the order in which `<section>` elements appear, counting only `<section>` elements and walking depth first into any [`<repeat>`](/en/v0_1/reference/elements/repeat/) wrappers. Interleaved `<annotation>`, `<br>`, and `<direction>` elements do not affect it. No attribute carries the order, so reordering the `<section>` elements in the document reorders the score.
+
+## Directions
+
+A [`<direction>`](/en/v0_1/reference/elements/direction/) takes effect where it appears and stays in effect until another `<direction>` changes the same setting. Processors read `<structure>` from top to bottom, and directions apply to every part.
+
+A direction inside a `<repeat>` is re-read on each pass, so it applies again on every repetition.
 
 ## Example
 
@@ -34,9 +41,9 @@ A score's section order is the order in which `<section>` elements appear in `<s
     <bpm>65</bpm>
   </direction>
   <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
-  <section id="s1" name="ท่อน 1">
-    <repeat times="2"/>
-  </section>
+  <repeat times="2">
+    <section id="s1" name="ท่อน 1" />
+  </repeat>
   <annotation>End of section 1 message</annotation>
 </structure>
 ```

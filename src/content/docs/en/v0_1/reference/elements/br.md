@@ -7,7 +7,8 @@ The `<br>` element indicates a line break.
 
 ## Parents
 
-[`<structure>`](/en/v0_1/reference/elements/structure/)
+- [`<structure>`](/en/v0_1/reference/elements/structure/)
+- [`<repeat>`](/en/v0_1/reference/elements/repeat/)
 
 ## Example
 

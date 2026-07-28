@@ -23,5 +23,5 @@ Text.
 
 ## Notes
 
-- Optional. Omit if the composer is unknown or not applicable.
-- Multiple tags can be used for multiple composers.
+- Optional. Omit it if the composer is unknown or not applicable, rather than filling it with a placeholder.
+- Use one `<composer>` element per composer when a piece has several.

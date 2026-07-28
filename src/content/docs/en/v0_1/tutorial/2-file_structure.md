@@ -3,13 +3,13 @@ title: File Structure
 description: How ThaiMusicXML files are organized
 ---
 
-The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument and one section. This example adds multiple instruments, structure annotations, performance directions, and section repeats.
+The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument and one section. This example adds a second instrument, annotations and performance directions in `<structure>`, and a repeat.
 
 ## Example XML
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<thai-score version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
   <header>
     <title>Example Song</title>
     <composer>Example Composer</composer>
@@ -21,9 +21,9 @@ The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument 
       <bpm>65</bpm>
     </direction>
     <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
-    <section id="s1" name="ท่อน 1">
-      <repeat times="2"/>
-    </section>
+    <repeat times="2">
+      <section id="s1" name="ท่อน 1" />
+    </repeat>
     <annotation>End of section 1 message</annotation>
   </structure>
   <ensemble>
@@ -34,8 +34,8 @@ The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument 
       <instrument-name>Ching</instrument-name>
     </part>
   </ensemble>
-  <part-data id="P1">
-    <section-ref id="s1">
+  <part-data part="P1">
+    <section-ref section="s1">
       <line number="1">
         <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ร"/></measure>
         <measure number="2"><note pitch="ซ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
@@ -47,9 +47,9 @@ The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument 
       </line>
     </section-ref>
   </part-data>
-  <part-data id="P2">
-    <section-ref id="s1">
-      <annotation target="instrument">0 = ฉิ่ง / 1 = ฉับ</annotation>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <annotation>0 = ฉิ่ง / 1 = ฉับ</annotation>
       <line number="1">
         <measure number="1"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
         <measure number="2"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
@@ -87,14 +87,14 @@ The `<structure>` element can contain several child types that describe the scor
     <bpm>65</bpm>
   </direction>
   <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
-  <section id="s1" name="ท่อน 1">
-    <repeat times="2"/>
-  </section>
+  <repeat times="2">
+    <section id="s1" name="ท่อน 1" />
+  </repeat>
   <annotation>End of section 1 message</annotation>
 </structure>
 ```
 
-- **`<annotation>`**: Free-form comments that can appear anywhere. Playback ignores them. The optional `target` attribute specifies what the annotation refers to. An annotation can contain plain text, which is left aligned, or up to one `<text>` child for each alignment:
+- **`<annotation>`**: Free-form comments that can appear anywhere. Playback ignores them. An annotation in `<structure>` applies to the whole score; one inside a `<section-ref>` applies to that part only. It can contain plain text, which is left aligned, or up to one `<text>` child for each alignment:
 
   ```xml
   <annotation>
@@ -106,12 +106,12 @@ The `<structure>` element can contain several child types that describe the scor
 
   The `align` value can be `left`, `center`, or `right`. Do not mix plain text with `<text>` children.
 - **`<direction>`**: Performance directions. This example sets the ชั้น (`<chan>`) and tempo (`<bpm>`). ชั้น (chan) is the Thai rhythmic layer system. `value="1"` means ชั้นเดียว.
-- **`<section>`**: A named section. Its `<repeat>` child indicates how many times it is played.
+- **`<section>`**: A named section. Wrapping it in a **`<repeat>`** plays it more than once. Repeats nest, so layering them multiplies the play count.
 
 Line and measure numbers are local to their parent elements. Lines start at `1` in each `<section-ref>`, and measures start at `1` in each `<line>`:
 
 ```xml
-<section-ref id="s1">
+<section-ref section="s1">
   <line number="1">
     <measure number="1">...</measure>
     <measure number="2">...</measure>
@@ -121,16 +121,16 @@ Line and measure numbers are local to their parent elements. Lines start at `1` 
   </line>
 </section-ref>
 
-<section-ref id="s2">
+<section-ref section="s2">
   <line number="1">
     <measure number="1">...</measure>
   </line>
 </section-ref>
 ```
 
-A section's order comes from its position among the `<section>` elements in `<structure>`, not from an attribute. This order does not continue line or measure numbering across sections, and repeating a section does not change these numbers.
+A section's order comes from its position among the `<section>` elements in `<structure>`, not from an attribute. That order does not continue line or measure numbering across sections, and repeating a section does not change these numbers either.
 
-## Multiple Instruments
+## Multiple instruments
 
 The `<ensemble>` can list multiple parts:
 
@@ -145,16 +145,16 @@ The `<ensemble>` can list multiple parts:
 </ensemble>
 ```
 
-Each instrument gets its own `<part-data>` element with a matching `id`. Here, P1 is a Ranat Ek (ระนาดเอก, a Thai xylophone) and P2 is a Ching (ฉิ่ง, small cymbals). P2 has `type="unpitched"`, so its notes use `sound` instead of `pitch`.
+Each instrument gets its own `<part-data>` element naming it through the `part` attribute. Here, P1 is a Ranat Ek (ระนาดเอก, a Thai xylophone) and P2 is a Ching (ฉิ่ง, small cymbals). P2 has `type="unpitched"`, so its notes use `sound` instead of `pitch`.
 
-## Part Data
+## Part data
 
 Each `<part-data>` links to a section through `<section-ref>`. The Ching part includes an annotation explaining its notation:
 
 ```xml
-<part-data id="P2">
-  <section-ref id="s1">
-    <annotation target="instrument">0 = ฉิ่ง / 1 = ฉับ</annotation>
+<part-data part="P2">
+  <section-ref section="s1">
+    <annotation>0 = ฉิ่ง / 1 = ฉับ</annotation>
     <line number="1">
       <measure number="1"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
       ...
@@ -163,4 +163,4 @@ Each `<part-data>` links to a section through `<section-ref>`. The Ching part in
 </part-data>
 ```
 
-The `target="instrument"` attribute limits this comment to the instrument. It documents the Ching notation convention: `0` means ฉิ่ง (open) and `1` means ฉับ (closed).
+An annotation inside a `<section-ref>` applies to that part alone, so this one documents the Ching notation convention without cluttering the other instruments: `0` means ฉิ่ง (open) and `1` means ฉับ (closed).

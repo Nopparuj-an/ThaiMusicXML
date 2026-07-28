@@ -13,9 +13,9 @@ The `<chan>` element sets the ชั้น (chan) rhythmic layer level.
 
 ## Attributes
 
-| Attribute | Required | Type   | Description     |
-| --------- | -------- | ------ | --------------- |
-| `value`   | Yes      | number | The ชั้น level. |
+| Attribute | Required | Type        | Description                                    |
+| --------- | -------- | ----------- | ---------------------------------------------- |
+| `value`   | Yes      | enumeration | The ชั้น level. One of the five values below. |
 
 ## Values
 
@@ -32,6 +32,10 @@ The `<chan>` element sets the ชั้น (chan) rhythmic layer level.
 ```xml
 <chan value="1" />
 ```
+
+## Notes
+
+- ชั้น does not set the tempo. At a fixed [`<bpm>`](/en/v0_1/reference/elements/bpm/) the notes keep their rate through a change of ชั้น; what changes is how many note slots the melody is spread over, and so how often the ฉิ่ง falls.
 
 ## Conformance
 

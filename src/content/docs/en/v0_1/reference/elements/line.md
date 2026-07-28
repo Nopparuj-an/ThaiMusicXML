@@ -17,11 +17,16 @@ The `<line>` element contains a musical line or phrase within a section.
 
 ## Children
 
-One to eight [`<measure>`](/en/v0_1/reference/elements/measure/) elements. Eight is the conventional maximum line length; many lines have fewer, depending on the song.
+One to eight [`<measure>`](/en/v0_1/reference/elements/measure/) elements. Eight is a hard limit. Many lines have fewer, depending on the song.
 
 ## Numbering
 
 Line numbers are local to the containing `<section-ref>`. They start at `1` for each section reference and increase by one for each line.
+
+## Conformance
+
+- A `<line>` must contain between one and eight `<measure>` elements. Validators must reject a line with nine or more.
+- `number` must match the line's position in its `<section-ref>`, counting from `1`. Lines must appear in ascending order.
 
 ## Example
 

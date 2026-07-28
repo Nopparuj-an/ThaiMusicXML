@@ -114,6 +114,16 @@ export default defineConfig({
                   ],
                 },
                 {
+                  label: "Conformance",
+                  translations: { th: "ความสอดคล้อง" },
+                  slug: "v0_1/reference/conformance",
+                },
+                {
+                  label: "Rendering",
+                  translations: { th: "การแสดงผล" },
+                  slug: "v0_1/reference/rendering",
+                },
+                {
                   label: "Examples",
                   translations: { th: "ตัวอย่าง" },
                   items: [

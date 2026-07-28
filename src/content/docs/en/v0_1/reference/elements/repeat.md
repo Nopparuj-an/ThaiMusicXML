@@ -1,47 +1,63 @@
 ---
 title: <repeat>
-description: How many times a section, or a range of its lines, is played
+description: Plays a run of sections more than once
 ---
 
-The `<repeat>` element declares how many times a section, or a consecutive range of its lines, is played.
+The `<repeat>` element wraps a run of `<structure>` content and plays it more than once. Repeats nest, so a piece can be built from layers of them.
 
-## Parent
+## Parents
 
-[`<section>`](/en/v0_1/reference/elements/section/)
+- [`<structure>`](/en/v0_1/reference/elements/structure/)
+- [`<repeat>`](/en/v0_1/reference/elements/repeat/) - a repeat may wrap another repeat
 
 ## Attributes
 
-| Attribute | Required          | Type    | Description                                                                                          |
-| --------- | ----------------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| `times`   | No                | integer | How many times this scope is played. Default: `1`.                                                   |
-| `first`   | Only with `last`  | integer | 1-based first line number this repeat covers. Omit together with `last` to repeat the whole section. |
-| `last`    | Only with `first` | integer | 1-based last line number this repeat covers, inclusive.                                              |
+| Attribute | Required | Type    | Description                                        |
+| --------- | -------- | ------- | -------------------------------------------------- |
+| `times`   | No       | integer | How many times the wrapped content plays. Default: `1`. |
+
+## Children
+
+The same children `<structure>` takes, in any order and repeated freely:
+
+- [`<annotation>`](/en/v0_1/reference/elements/annotation/)
+- [`<br>`](/en/v0_1/reference/elements/br/)
+- [`<direction>`](/en/v0_1/reference/elements/direction/)
+- [`<section>`](/en/v0_1/reference/elements/section/)
+- [`<repeat>`](/en/v0_1/reference/elements/repeat/)
 
 ## Semantics
 
-A `<repeat>` with no `first`/`last` covers the whole section: the entire `<section-ref>` content, across every part, plays `times` times before the score continues to the next section. This is the direct replacement for the section's own repeat count.
+Everything inside a `<repeat>` plays `times` times through before the score moves past it. Wrapping two sections repeats the pair together, so `A B A B`, which is different from repeating each section on its own.
 
-A `<repeat first="X" last="Y">` covers only lines `X` through `Y` (inclusive): each time playback reaches line `X`, lines `X`-`Y` play through `times` times before continuing past line `Y`. `first` and `last` can be equal to repeat a single line.
-
-A line-range repeat is independent of, and nests inside, any whole-section repeat: it re-triggers in full on every pass of the whole section, not just the first.
-
-A `<section>` can have multiple `<repeat>` children, for example one whole-section repeat plus one or more line-range repeats, or several disjoint line-range repeats.
-
-## Example
+Nested repeats multiply. A section wrapped in a `times="2"` inside another `times="2"` plays four times.
 
 ```xml
-<section id="s1" name="ท่อน 1">
-  <repeat times="2"/>
-  <repeat first="2" last="3" times="2"/>
-</section>
+<structure>
+  <repeat times="2">
+    <repeat times="2">
+      <section id="s1" name="ท่อน 1" />
+    </repeat>
+    <section id="s2" name="ท่อน 2" />
+  </repeat>
+</structure>
 ```
 
-This plays the whole section twice; within each of those two passes, lines 2-3 additionally play twice before continuing to line 4.
+That plays ท่อน 1 four times, then ท่อน 2 once, then the whole thing again: sixteen bars of ท่อน 1 and two of ท่อน 2 in total, in the order 1 1 1 1 2 1 1 1 1 2.
+
+### Total pass count
+
+A section's total pass count is the product of the `times` values of every `<repeat>` enclosing it, or `1` if none do. In the example above ท่อน 1 has a total pass count of 4 and ท่อน 2 has 2.
+
+Passes are counted absolutely, straight through from the first play to the last, ignoring which layer of repeat produced them. [`<ending>`](/en/v0_1/reference/elements/ending/)'s `pass` attribute uses these absolute numbers, so `pass="4"` on ท่อน 1 above names the last of its four plays, and `pass="2,4"` names two of them.
+
+## Section order
+
+`<repeat>` does not change how section order is read. The order is still the document order of the `<section>` elements, walked depth first through any `<repeat>` wrappers. See [`<structure>`](/en/v0_1/reference/elements/structure/#section-order).
 
 ## Conformance
 
-- At most one `<repeat>` without `first`/`last` may appear per `<section>`.
-- `first` and `last` must both be present or both absent on a given `<repeat>`; when present, `first` must be less than or equal to `last`.
-- Ranges from different `<repeat>` elements that both specify `first`/`last` must be properly nested or disjoint, never partially overlapping.
-- `last` must not exceed the number of `<line>` elements in any `<section-ref>` referencing this section.
-- [`<ending>`](/en/v0_1/reference/elements/ending/)'s `pass` values refer to passes of the whole-section `<repeat>` (the one without `first`/`last`), not to passes of a nested line-range repeat.
+- `times` must be an integer of `1` or greater.
+- A `<repeat>` must contain at least one `<section>`, directly or inside a nested `<repeat>`. A repeat wrapping only annotations and directions has nothing to play.
+- Repeats nest to any depth.
+- To repeat a range of lines within one section rather than the section as a whole, use [`<line-repeat>`](/en/v0_1/reference/elements/line-repeat/).

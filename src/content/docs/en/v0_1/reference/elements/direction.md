@@ -5,9 +5,10 @@ description: Performance directions for the score
 
 The `<direction>` element contains performance directions for the score.
 
-## Parent
+## Parents
 
-[`<structure>`](/en/v0_1/reference/elements/structure/)
+- [`<structure>`](/en/v0_1/reference/elements/structure/)
+- [`<repeat>`](/en/v0_1/reference/elements/repeat/)
 
 ## Children
 

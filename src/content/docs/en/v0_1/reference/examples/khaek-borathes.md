@@ -1,0 +1,184 @@
+---
+title: Khaek Borathes
+description: A three-instrument score for แขกบรเทศ ชั้นเดียว
+---
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>แขกบรเทศ ชั้นเดียว</title>
+  </header>
+  <structure>
+    <annotation>หน้าทับปรบไก่</annotation>
+    <direction>
+      <chan value="1" />
+      <bpm>60</bpm>
+    </direction>
+    <repeat times="2">
+      <section id="s1" name="ท่อน 1" />
+    </repeat>
+    <section id="s2" name="ท่อน 2" />
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+    <part id="P2" hand="right" pair="P3">
+      <instrument-name>ฆ้องวงใหญ่ R</instrument-name>
+    </part>
+    <part id="P3" hand="left" pair="P2">
+      <instrument-name>ฆ้องวงใหญ่ L</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ดํ"/><note pitch="ล"/><note pitch="ล"/><note pitch="ล"/></measure>
+        <measure number="2"><note pitch="ดํ"/><note pitch="ล"/><note pitch="ล"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ดํ"/><note pitch="ซ"/><note pitch="ซ"/><note pitch="ซ"/></measure>
+        <measure number="4"><note pitch="ดํ"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/></measure>
+        <measure number="5"><note pitch="ซ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
+        <measure number="6"><note pitch="ซฺ"/><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="7"><note pitch="ซ"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/></measure>
+        <measure number="8"><note pitch="ซ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
+      </line>
+    </section-ref>
+    <section-ref section="s2">
+      <line number="1">
+        <measure number="1"><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="2"><note pitch="ซ"/><note pitch="ดํ"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ล"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="5"><note pitch="ท"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ดํ"/><note pitch="รํ"/><note pitch="มํ"/></measure>
+        <measure number="7"><note pitch="ดํ"/><note pitch="รํ"/><note pitch="ล"/><note pitch="ท"/></measure>
+        <measure number="8"><note pitch="ดํ"/><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/></measure>
+      </line>
+      <line number="2">
+        <measure number="1"><note pitch="รํ"/><note pitch="มํ"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="2"><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/></measure>
+        <measure number="5"><note pitch="ทฺ"/><note pitch="ลฺ"/><note pitch="ซฺ"/><note pitch="ลฺ"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="7"><note pitch="ฟ"/><note pitch="ซ"/><note pitch="ล"/><note pitch="ซ"/></measure>
+        <measure number="8"><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><rest/><rest/><note pitch="ล"/><note pitch="ล"/></measure>
+        <measure number="2"><rest/><rest/><note pitch="ล"/><note pitch="ล"/></measure>
+        <measure number="3"><rest/><rest/><note pitch="ซ"/><note pitch="ซ"/></measure>
+        <measure number="4"><rest/><rest/><note pitch="ม"/><note pitch="ม"/></measure>
+        <measure number="5"><rest/><note pitch="ซ"/><rest/><rest/></measure>
+        <measure number="6"><note pitch="ดํ"/><rest/><note pitch="รํ"/><note pitch="มํ"/></measure>
+        <measure number="7"><rest/><note pitch="มํ"/><rest/><note pitch="มํ"/></measure>
+        <measure number="8"><rest/><note pitch="รํ"/><rest/><note pitch="ดํ"/></measure>
+      </line>
+    </section-ref>
+    <section-ref section="s2">
+      <line number="1">
+        <measure number="1"><rest/><note pitch="มํ"/><rest/><note pitch="รํ"/></measure>
+        <measure number="2"><rest/><note pitch="ดํ"/><rest/><note pitch="ล"/></measure>
+        <measure number="3">
+          <rest/><rest/><rest/>
+          <group link="true">
+            <rest/>
+            <note pitch="ซ"/>
+            <note pitch="ล"/>
+          </group>
+        </measure>
+        <measure number="4"><rest/><note pitch="ดํ"/><rest/><note pitch="รํ"/></measure>
+        <measure number="5"><rest/><note pitch="ซ"/><rest/><rest/></measure>
+        <measure number="6">
+          <note pitch="ดํ"/>
+          <rest/><rest/>
+          <group>
+            <note pitch="รํ"/>
+            <note pitch="มํ"/>
+          </group>
+        </measure>
+        <measure number="7"><rest/><note pitch="มํ"/><rest/><note pitch="มํ"/></measure>
+        <measure number="8"><rest/><note pitch="รํ"/><rest/><note pitch="ดํ"/></measure>
+      </line>
+      <line number="2">
+        <measure number="1"><rest/><note pitch="มํ"/><rest/><note pitch="รํ"/></measure>
+        <measure number="2"><rest/><note pitch="ดํ"/><rest/><note pitch="ล"/></measure>
+        <measure number="3">
+          <rest/><rest/><rest/>
+          <group link="true">
+            <rest/>
+            <note pitch="ซ"/>
+            <note pitch="ล"/>
+          </group>
+        </measure>
+        <measure number="4"><rest/><note pitch="ดํ"/><rest/><note pitch="รํ"/></measure>
+        <measure number="5"><rest/><note pitch="ซ"/><rest/><rest/></measure>
+        <measure number="6">
+          <note pitch="ดํ"/>
+          <rest/><rest/>
+          <group>
+            <note pitch="รํ"/>
+            <note pitch="มํ"/>
+          </group>
+        </measure>
+        <measure number="7"><rest/><note pitch="มํ"/><rest/><note pitch="มํ"/></measure>
+        <measure number="8"><rest/><note pitch="รํ"/><rest/><note pitch="ดํ"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P3">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><rest/><note pitch="ลฺ"/><rest/><rest/></measure>
+        <measure number="2"><rest/><note pitch="ลฺ"/><rest/><rest/></measure>
+        <measure number="3"><rest/><note pitch="ซฺ"/><rest/><rest/></measure>
+        <measure number="4"><rest/><note pitch="ทฺ"/><rest/><rest/></measure>
+        <measure number="5"><rest/><note pitch="ร"/><rest/><rest/></measure>
+        <measure number="6"><note pitch="ด"/><rest/><rest/><note pitch="ม"/></measure>
+        <measure number="7"><rest/><note pitch="ซ"/><rest/><note pitch="ม"/></measure>
+        <measure number="8"><rest/><note pitch="ร"/><rest/><note pitch="ด"/></measure>
+      </line>
+    </section-ref>
+    <section-ref section="s2">
+      <line number="1">
+        <measure number="1"><rest/><note pitch="ม"/><rest/><note pitch="ร"/></measure>
+        <measure number="2"><rest/><note pitch="ด"/><rest/><note pitch="ม"/></measure>
+        <measure number="3">
+          <rest/><rest/><rest/>
+          <group>
+            <note pitch="ฟ"/>
+            <rest/><rest/>
+          </group>
+        </measure>
+        <measure number="4"><rest/><note pitch="ด"/><rest/><note pitch="ร"/></measure>
+        <measure number="5"><rest/><note pitch="ร"/><rest/><rest/></measure>
+        <measure number="6"><note pitch="ด"/><rest/><rest/><note pitch="ม"/></measure>
+        <measure number="7"><rest/><note pitch="ซ"/><rest/><note pitch="ม"/></measure>
+        <measure number="8"><rest/><note pitch="ร"/><rest/><note pitch="ด"/></measure>
+      </line>
+      <line number="2">
+        <measure number="1"><rest/><note pitch="ม"/><rest/><note pitch="ร"/></measure>
+        <measure number="2"><rest/><note pitch="ด"/><rest/><note pitch="ม"/></measure>
+        <measure number="3">
+          <rest/><rest/><rest/>
+          <group link="true">
+            <rest/>
+            <note pitch="ซ"/>
+            <note pitch="ล"/>
+          </group>
+        </measure>
+        <measure number="4"><rest/><note pitch="ด"/><rest/><note pitch="ร"/></measure>
+        <measure number="5"><rest/><note pitch="ร"/><rest/><rest/></measure>
+        <measure number="6"><note pitch="ด"/><rest/><rest/><note pitch="ม"/></measure>
+        <measure number="7"><rest/><note pitch="ซ"/><rest/><note pitch="ม"/></measure>
+        <measure number="8"><rest/><note pitch="ร"/><rest/><note pitch="ด"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>
+```

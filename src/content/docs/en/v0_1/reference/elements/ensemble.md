@@ -25,3 +25,7 @@ One or more [`<part>`](/en/v0_1/reference/elements/part/) elements.
   </part>
 </ensemble>
 ```
+
+## Rendering
+
+A full score stacks one row per part, and how much space separates those rows depends on whether the ensemble contains two-handed instruments. See [Score layout](/en/v0_1/reference/rendering/#score-layout) in the rendering reference.
