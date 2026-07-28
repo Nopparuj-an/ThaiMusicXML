@@ -12,7 +12,7 @@ This includes plan, commit message, issue description, and PR description.
 
 ## Writing and translations
 
-- Utilize `humanizer` skill for natural writing.
+- Utilize `humanizer` (~/.agents/skills/humanizer) for natural writing.
 - Refer to ราชบัณฑิตยสภา spelling for Thai words.
 
 # Astro

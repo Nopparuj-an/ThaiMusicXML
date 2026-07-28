@@ -7,7 +7,7 @@ The `<tie>` element marks a span of sibling [`<note>`](/en/v0_1/reference/elemen
 
 ## Parent
 
-[`<measure>`](/en/v0_1/reference/elements/measure/)
+[`<measure>`](/en/v0_1/reference/elements/measure/) or [`<group>`](/en/v0_1/reference/elements/group/)
 
 ## Attributes
 
@@ -18,7 +18,7 @@ The `<tie>` element marks a span of sibling [`<note>`](/en/v0_1/reference/elemen
 
 ## Semantics
 
-A `<tie type="start"/>` and the next `<tie type="stop"/>` that follows it in document order bracket a span: every `<note>` between them is played in one continuous bow stroke. The span can cross `<measure>` and `<line>` boundaries, a `<tie>` marker in one measure can be closed by one in a later measure or line, since matching is purely by document order, not by any reference or ID. Tie spans cannot cross section boundaries.
+A `<tie type="start"/>` and the next `<tie type="stop"/>` that follows it in document order bracket a span: every `<note>` between them is played in one continuous bow stroke. The span can cross `<measure>`, `<group>`, and `<line>` boundaries, a `<tie>` marker in one measure can be closed by one in a later measure or line, since matching is purely by document order, not by any reference or ID. Tie spans cannot cross section boundaries.
 
 Both directions render above the notes: `in` as a curve with both tips pointing down, `out` as a curve with both tips pointing up.
 

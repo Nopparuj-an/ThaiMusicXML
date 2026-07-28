@@ -7,7 +7,7 @@ The `<note>` element represents a musical note.
 
 ## Parent
 
-[`<measure>`](/en/v0_1/reference/elements/measure/)
+[`<measure>`](/en/v0_1/reference/elements/measure/) or [`<group>`](/en/v0_1/reference/elements/group/)
 
 ## Attributes
 

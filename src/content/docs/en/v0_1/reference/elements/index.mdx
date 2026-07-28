@@ -87,6 +87,22 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
                       children: [
                         { name: "<note>", slug: "note" },
                         { name: "<rest>", slug: "rest" },
+                        {
+                          name: "<group>",
+                          slug: "group",
+                          children: [
+                            {
+                              name: "<note>",
+                              color: "var(--sl-color-gray-4)",
+                              note: "Same element as <measure> > <note> above",
+                            },
+                            {
+                              name: "<rest>",
+                              color: "var(--sl-color-gray-4)",
+                              note: "Same element as <measure> > <rest> above",
+                            },
+                          ],
+                        },
                         { name: "<parenthesis>", slug: "parenthesis" },
                         { name: "<tie>", slug: "tie" },
                       ],

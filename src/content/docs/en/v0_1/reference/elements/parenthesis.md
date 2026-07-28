@@ -7,7 +7,7 @@ The `<parenthesis>` element marks a span of sibling [`<note>`](/en/v0_1/referenc
 
 ## Parent
 
-[`<measure>`](/en/v0_1/reference/elements/measure/)
+[`<measure>`](/en/v0_1/reference/elements/measure/) or [`<group>`](/en/v0_1/reference/elements/group/)
 
 ## Attributes
 
@@ -19,7 +19,7 @@ The `<parenthesis>` element marks a span of sibling [`<note>`](/en/v0_1/referenc
 
 ## Semantics
 
-A `<parenthesis type="start"/>` and the next `<parenthesis type="stop"/>` that follows it in document order bracket a span: every `<note>` and `<rest>` between them belongs to the cued passage. The span can cross `<measure>` and `<line>` boundaries, a `<parenthesis>` marker in one measure can be closed by one in a later measure or line, since matching is purely by document order, not by any reference or ID. Parenthesis markers cannot cross section boundaries.
+A `<parenthesis type="start"/>` and the next `<parenthesis type="stop"/>` that follows it in document order bracket a span: every `<note>` and `<rest>` between them belongs to the cued passage. The span can cross `<measure>`, `<group>`, and `<line>` boundaries, a `<parenthesis>` marker in one measure can be closed by one in a later measure or line, since matching is purely by document order, not by any reference or ID. Parenthesis markers cannot cross section boundaries.
 
 Whether a span renders in a less distinct color and/or is muted during playback is, by default, left to the renderer or player's own settings, the markup only identifies the span. `dim` and `mute` optionally override that default for one specific span. Because they describe the span as a whole, they only appear on the `start` marker; the `stop` marker does not repeat them.
 

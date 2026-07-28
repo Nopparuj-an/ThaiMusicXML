@@ -17,7 +17,7 @@ The `<measure>` element contains the notes and rests in a single measure (ห้
 
 ## Children
 
-A sequence of [`<note>`](/en/v0_1/reference/elements/note/) and [`<rest>`](/en/v0_1/reference/elements/rest/) elements.
+A sequence of [`<note>`](/en/v0_1/reference/elements/note/), [`<rest>`](/en/v0_1/reference/elements/rest/), and [`<group>`](/en/v0_1/reference/elements/group/) elements.
 
 ## Numbering
 
@@ -34,3 +34,4 @@ Measure numbers are local to the containing `<line>`. They start at `1` for each
 ## Notes
 
 - The number of beats per measure depends on the piece. Common patterns use 4 beats per measure.
+- Each `<note>`, `<rest>`, or `<group>` occupies one beat; a [`<group>`](/en/v0_1/reference/elements/group/) subdivides its one beat evenly among its own children rather than adding beats to the measure.

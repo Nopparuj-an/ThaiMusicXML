@@ -7,7 +7,7 @@ The `<rest>` element represents a silence whose duration is determined by contex
 
 ## Parent
 
-[`<measure>`](/en/v0_1/reference/elements/measure/)
+[`<measure>`](/en/v0_1/reference/elements/measure/) or [`<group>`](/en/v0_1/reference/elements/group/)
 
 ## Example
 
