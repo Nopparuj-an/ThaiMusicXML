@@ -1,5 +1,5 @@
 ---
-title: ★ Examples
+title: ∙ Examples
 description: Examples for ThaiMusicXML
 ---
 

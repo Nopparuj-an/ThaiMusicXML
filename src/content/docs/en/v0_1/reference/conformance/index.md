@@ -60,6 +60,7 @@ A processor may ignore anything it has no use for. A validator with no audio out
 - `<line-repeat>` requires both `first` and `last`, with `first` no greater than `last`, and `last` no greater than the section's line count.
 - Two `<line-repeat>` ranges in one section must be properly nested or wholly disjoint.
 - `<ending>` is valid only when the section's total pass count exceeds `1`. Every `pass` value must fall within that count, every `<line number="N">` must replace an existing line, and the replacement must match the original's measure and beat counts.
+- Every `<ending>` must carry at least one `<annotation>` captioning the variation.
 
 ### Notes and pitch
 
@@ -80,3 +81,4 @@ A processor may ignore anything it has no use for. A validator with no audio out
 ### Annotations
 
 - An `<annotation>` must not mix plain text with `<text>` children, and may hold at most one `<text>` per `align` value.
+- `<composer>`, `<lyricist>`, and `<arranger>` follow the same rule: no mixing plain text with `<text>` children, at most one `<text>` per `align` value. Their plain-text default is centered rather than left.

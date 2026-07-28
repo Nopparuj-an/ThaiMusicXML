@@ -21,3 +21,4 @@ Thai instruments have no notated sustain. A `<rest>` means only that no note is 
 
 - Self-closing element with no attributes.
 - Each `<rest/>` occupies one beat, the same as a `<note>` in the same position. Inside a [`<group>`](/en/v0_1/reference/elements/group/) it takes an equal share of the group's single beat.
+- A rest prints as a hyphen, though some notation styles leave it blank in a part that is not carrying the melody. See [Inside a measure](/en/v0_1/reference/rendering/#inside-a-measure).

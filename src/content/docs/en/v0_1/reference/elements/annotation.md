@@ -57,3 +57,7 @@ Plain text is shorthand for a left-aligned text child. Do not mix plain text wit
 
 - An `<annotation>` must not mix plain text with `<text>` children.
 - At most one `<text>` child per `align` value.
+
+## Rendering
+
+An annotation renders where its position puts it: in the title band, between two section blocks, or above one part's first row. See [Annotations](/en/v0_1/reference/rendering/#annotations).

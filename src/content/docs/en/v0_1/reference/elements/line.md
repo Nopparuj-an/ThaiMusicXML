@@ -28,6 +28,10 @@ Line numbers are local to the containing `<section-ref>`. They start at `1` for 
 - A `<line>` must contain between one and eight `<measure>` elements. Validators must reject a line with nine or more.
 - `number` must match the line's position in its `<section-ref>`, counting from `1`. Lines must appear in ascending order.
 
+## Rendering
+
+Measure cells are a fixed width across the whole score, so a line with fewer than eight measures renders left-aligned and stops short rather than stretching to fill the row. See [The measure grid](/en/v0_1/reference/rendering/#the-measure-grid).
+
 ## Example
 
 ```xml

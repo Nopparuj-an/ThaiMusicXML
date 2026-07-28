@@ -15,7 +15,7 @@ The `<section>` element defines a named section of the score.
 | Attribute | Required | Type    | Description                                                     |
 | --------- | -------- | ------- | --------------------------------------------------------------- |
 | `id`      | Yes      | ID      | Unique identifier. Referenced by `<section-ref section="...">`. |
-| `name`    | No       | string  | Human-readable label (e.g. `"ท่อน 1"`).                         |
+| `name`    | No       | string  | Human-readable label (e.g. `"ท่อน 1"`). Not printed on the score, see [Rendering](#rendering) below. |
 
 ## Children
 
@@ -39,3 +39,7 @@ Zero or more [`<line-repeat>`](/en/v0_1/reference/elements/line-repeat/) element
 - A section's order in the score is its position among the other `<section>` elements in `<structure>`. There is no separate ordering attribute. See [`<structure>`](/en/v0_1/reference/elements/structure/#section-order).
 - To play a section more than once, wrap it in a [`<repeat>`](/en/v0_1/reference/elements/repeat/) in `<structure>`. Repetition is a property of where the section sits in the score, not of the section itself, which is why it is not an attribute here.
 - When a section's total pass count is greater than `1`, a part can vary individual passes with [`<ending>`](/en/v0_1/reference/elements/ending/).
+
+## Rendering
+
+`name` labels the section for the file and for an editor's interface. It is not printed above the grid. A printed heading such as `สามชั้น ท่อน ๑` comes from an [`<annotation>`](/en/v0_1/reference/elements/annotation/) the arranger placed in `<structure>` before the section, which leaves the wording to them. See [Section headings](/en/v0_1/reference/rendering/#section-headings).

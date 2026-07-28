@@ -35,6 +35,10 @@ A section may carry several `<line-repeat>` children covering different ranges. 
 
 Lines 2 and 3 play twice before the section continues to line 4. If a `<repeat>` in `<structure>` plays this section twice, that happens on both passes.
 
+## Rendering
+
+A line repeat prints as a bracket in the margin right of the grid, spanning the repeated rows and labelled ซ้ำ. See [Repeat brackets](/en/v0_1/reference/rendering/#repeat-brackets).
+
 ## Conformance
 
 - `first` and `last` are both required, and `first` must be less than or equal to `last`.

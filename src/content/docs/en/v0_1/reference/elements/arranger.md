@@ -13,14 +13,26 @@ Much of the repertoire is traditional, so a score often has no composer to name 
 
 ## Content
 
-Text.
+Either plain text or up to three `<text>` children, one per alignment, the same content model [`<annotation>`](/en/v0_1/reference/elements/annotation/#content) uses. The `align` attribute accepts `left`, `center`, or `right`, and each alignment may appear at most once.
+
+Plain text renders centered. That differs from `<annotation>`, where plain text is left-aligned, because a credit sits under the title rather than in the body of the score.
+
+The text prints exactly as written. Nothing is prefixed or appended, so a score reading `ผู้เรียบเรียง : Example Arranger` is one where the arranger typed that whole string. A tool reading this as metadata takes the same text, concatenating the `<text>` children left to right when there are several.
 
 ## Example
 
 ```xml
 <header>
-  <title>แขกบรเทศ ชั้นเดียว</title>
   <arranger>Example Arranger</arranger>
+</header>
+```
+
+```xml
+<!-- Right-aligned, with the label the arranger wants -->
+<header>
+  <arranger>
+    <text align="right">ผู้เรียบเรียง : Example Arranger</text>
+  </arranger>
 </header>
 ```
 
@@ -28,3 +40,9 @@ Text.
 
 - Optional. Omit it when the arranger is unknown or the question does not apply.
 - Use one `<arranger>` element per person when several worked on the setting.
+- Renders in the title band. See [The title band](/en/v0_1/reference/rendering/#the-title-band).
+
+## Conformance
+
+- A `<arranger>` must not mix plain text with `<text>` children.
+- At most one `<text>` child per `align` value.

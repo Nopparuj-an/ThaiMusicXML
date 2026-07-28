@@ -107,13 +107,6 @@ export default defineConfig({
               translations: { th: "ข้อมูลอ้างอิง" },
               items: [
                 {
-                  label: "Elements",
-                  translations: { th: "องค์ประกอบ" },
-                  items: [
-                    { autogenerate: { directory: "v0_1/reference/elements" } },
-                  ],
-                },
-                {
                   label: "Conformance",
                   translations: { th: "ความสอดคล้อง" },
                   slug: "v0_1/reference/conformance",
@@ -122,6 +115,13 @@ export default defineConfig({
                   label: "Rendering",
                   translations: { th: "การแสดงผล" },
                   slug: "v0_1/reference/rendering",
+                },
+                {
+                  label: "Elements",
+                  translations: { th: "องค์ประกอบ" },
+                  items: [
+                    { autogenerate: { directory: "v0_1/reference/elements" } },
+                  ],
                 },
                 {
                   label: "Examples",

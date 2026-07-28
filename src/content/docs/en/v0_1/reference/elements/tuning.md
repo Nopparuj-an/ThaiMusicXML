@@ -39,3 +39,7 @@ A `pitch` value names a degree of the Thai scale, not a frequency. ด is the fi
 
 - Thai tuning divides the octave into seven near-equal steps, so no Western key matches it exactly. The `c-major` and `bb-major` values name the closest practical mapping, not an identity.
 - `<tuning>` is optional. A score meant only for reading, or one whose tuning is not known, can leave it out.
+
+## Rendering
+
+Tuning is not conventionally printed on a Thai score. See [The title band](/en/v0_1/reference/rendering/#the-title-band).

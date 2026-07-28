@@ -23,3 +23,4 @@ The `<br>` element indicates a line break.
 ## Notes
 
 - Self-closing element with no attributes.
+- A `<br>` adds vertical space at the point it appears, pushing what follows further down the page, the way a blank line does in a text document. Consecutive `<br>` elements stack. See [Annotations](/en/v0_1/reference/rendering/#annotations).

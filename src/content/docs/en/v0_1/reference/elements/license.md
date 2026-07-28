@@ -29,3 +29,7 @@ Text. A URL or a standard identifier is easier for tools to act on than a prose 
 
 - Optional, and at most one per score.
 - Leaving it out says nothing about the terms. It does not imply the score is in the public domain.
+
+## Rendering
+
+Licensing is not conventionally printed on a Thai score. See [The title band](/en/v0_1/reference/rendering/#the-title-band).

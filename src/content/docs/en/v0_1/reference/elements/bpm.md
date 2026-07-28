@@ -36,3 +36,7 @@ Ninety pulses a minute, so 180 note slots a minute: at four slots to the measure
 ## Conformance
 
 - Content must be a positive integer.
+
+## Rendering
+
+Tempo is not conventionally printed on a Thai score. The value is carried for players and editors to read. See [The title band](/en/v0_1/reference/rendering/#the-title-band).

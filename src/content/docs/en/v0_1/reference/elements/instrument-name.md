@@ -22,3 +22,7 @@ Text. Use the English name or the Thai name.
 ```xml
 <instrument-name>ฉิ่ง</instrument-name>
 ```
+
+## Rendering
+
+On a solo score the instrument name does not print by default. On an ensemble score it is not printed by default and instead labels the part inside an editor. See [Instrument names](/en/v0_1/reference/rendering/#instrument-names).

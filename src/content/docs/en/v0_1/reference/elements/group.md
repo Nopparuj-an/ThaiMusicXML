@@ -59,3 +59,7 @@ A `<group>` occupies exactly one beat, the same duration as a single `<note>` or
 - `link` is only valid on a `<group>` whose containing `<part>` has a `hand` attribute. A `<group>` in a single-line instrument's part has no paired hand to link to.
 - `link` describes one connection, so declare it on one side only. Marking the group in the right hand is the convention; there is no need to mark the paired beat as well.
 - `link` points at whichever beat the paired hand plays at this group's position. Because all parts agree on beat count within a measure (see [`<section-ref>`](/en/v0_1/reference/elements/section-ref/#conformance)), that position is always well-defined. The paired hand may hold a plain `<note>`, a `<rest>`, or a `<group>` of its own there.
+
+## Rendering
+
+A group occupies one beat of time but is given more than one beat's width on the page, so that beats stay aligned across parts. See [Inside a measure](/en/v0_1/reference/rendering/#inside-a-measure).

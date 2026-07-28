@@ -19,8 +19,10 @@ The `<ending>` element replaces specific `<line>` elements on specific passes of
 
 In order:
 
-1. [`<annotation>`](/en/v0_1/reference/elements/annotation/) - zero or more, describing the variation
+1. [`<annotation>`](/en/v0_1/reference/elements/annotation/) - one or more, describing the variation
 2. [`<line>`](/en/v0_1/reference/elements/line/) - one or more
+
+An ending renders below its section rather than in place, detached from the line it replaces. A reader needs to be told what they are looking at, which is why the annotation is required rather than optional. Name the instrument and the occasion in whatever words suit the score: `ขิม รอบสุดท้ายเปลี่ยนเป็น` does both. See [Variant endings](/en/v0_1/reference/rendering/#variant-endings).
 
 ## Semantics
 
@@ -57,6 +59,7 @@ A span reaching into an overridden line therefore needs its `stop` in both versi
   </line>
 
   <ending pass="2">
+    <annotation>เที่ยวที่ 2 จบคันชักเร็วขึ้นหนึ่งตัว</annotation>
     <line number="2">
       <measure number="1">
         <note pitch="ซ"/>
@@ -79,6 +82,7 @@ Leaving the `stop` out of the ending's line is an error, not a shorthand: that p
 - Each `<line number="N">` in an `<ending>` must match the `number` of a line already present in the enclosing `<section-ref>`.
 - An `<ending>` line must have the same number of `<measure>` elements as the line it replaces, and corresponding measures must have the same beat count. This preserves the [cross-part synchronization rule](/en/v0_1/reference/elements/section-ref/#conformance): on any given pass, once every part's endings are resolved, all parts referencing the section still agree on line count, measure count, and beat count. Only the notes inside a measure may vary.
 - Two `<ending>` elements in the same `<section-ref>` must not cover the same line number for the same pass.
+- An `<ending>` must carry at least one `<annotation>`. An ending prints away from the line it replaces, so it needs a caption saying which part it belongs to and when it applies.
 
 ## Example
 
