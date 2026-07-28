@@ -15,7 +15,7 @@ The `<note>` element represents a musical note.
 | --------- | ---------------------------------------------- | ------- | ----------------------------------------------------------------------------------------- |
 | `pitch`   | If the part's `type` is `"pitched"` (default) | pitch   | The note name. See [Pitch format](#pitch-format) below.                                   |
 | `sound`   | If the part's `type` is `"unpitched"`         | string  | An instrument-specific sound code. See [Unpitched Notation](#unpitched-notation) below.    |
-| `octave`  | No                                             | integer | The octave number. Only applies to `pitch`. Default is 0.                                 |
+| `octave`  | No                                             | integer | The octave number, any integer. Only applies to `pitch`. Default is 0. Ignored when `pitch` carries a Thai octave modifier, see [Conformance](#conformance) below.  |
 
 `pitch` and `sound` are mutually exclusive: a note uses one or the other depending on the [`type`](/en/v0_1/reference/elements/part/) of its containing `<part>`.
 
@@ -71,3 +71,11 @@ For percussion or other non-pitched instruments, `<part type="unpitched">` notes
   <rest/><note sound="0"/><rest/><note sound="1"/>
 </measure>
 ```
+
+## Conformance
+
+- When `pitch` carries a Thai octave modifier (nikhahit `ํ` or pinthu `ฺ`), that modifier determines the octave. An `octave` attribute on the same `<note>` is ignored.
+- Validators should emit a warning, not reject the document, when `octave` is present alongside a Thai octave modifier. This combination is redundant rather than invalid, kept for compatibility with existing documents that carry both.
+- When `pitch` has no Thai octave modifier (numeric, romanized, or unmodified Thai), `octave` applies as normal, defaulting to `0` when absent.
+- `octave` is not limited to `-1`, `0`, or `1`. Values outside that range have no distinct Thai-script spelling, since there is only one nikhahit and one pinthu. Renderers display such notes capped to the nearest of `-1`, `0`, or `1`, while the underlying `octave` value is preserved unchanged for playback.
+- `octave` may appear on a `<note>` that uses `sound`. It has no effect there: `sound` codes are instrument-specific and not organized into octaves.

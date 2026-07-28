@@ -38,3 +38,4 @@ The `<part>` element defines a single instrument in the ensemble.
 
 - `type` is a property of the instrument itself, not of any particular performance data. It is declared once here rather than repeated in `<part-data>`.
 - See [`<note>`](/en/v0_1/reference/elements/note/) for how `type` determines which attribute a note uses.
+- Every `<part>` must have exactly one matching [`<part-data>`](/en/v0_1/reference/elements/part-data/#conformance).

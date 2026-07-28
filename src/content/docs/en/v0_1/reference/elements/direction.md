@@ -22,3 +22,7 @@ The `<direction>` element contains performance directions for the score.
   <bpm>65</bpm>
 </direction>
 ```
+
+## Conformance
+
+- `<chan>` and `<bpm>` are each optional and may appear at most once, in any order. A `<direction>` can set either, both, or neither.

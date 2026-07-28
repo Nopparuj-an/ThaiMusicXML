@@ -32,3 +32,7 @@ The `<chan>` element sets the ชั้น (chan) rhythmic layer level.
 ```xml
 <chan value="1" />
 ```
+
+## Conformance
+
+- `value` must be one of the five values listed above. Validators must reject any other value.

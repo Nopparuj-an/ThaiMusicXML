@@ -30,3 +30,7 @@ One or more [`<section-ref>`](/en/v0_1/reference/elements/section-ref/) elements
   </section-ref>
 </part-data>
 ```
+
+## Conformance
+
+- Every `<part>` in `<ensemble>` must have exactly one `<part-data>` referencing it. A part with no matching `<part-data>`, or more than one, is invalid.
