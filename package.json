@@ -11,7 +11,7 @@
     "astro": "astro",
     "check:links": "node scripts/check-docs-links.mjs",
     "check:corpus": "node scripts/check-corpus.mjs",
-    "check:layout": "node --test renderer/test/layout.test.mjs",
+    "check:layout": "node --test renderer/test/layout.test.mjs renderer/test/text.test.mjs",
     "check": "npm run check:links && npm run check:corpus && npm run check:layout",
     "render": "node renderer/render.mjs"
   },

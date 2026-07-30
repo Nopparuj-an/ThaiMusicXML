@@ -9,6 +9,7 @@
 // that can be compared against a stored copy.
 
 import { defaults } from "./settings.mjs";
+import { wrapText } from "./text.mjs";
 
 const NIKHAHIT = "ํ"; // octave="1", set above the letter
 const PINTHU = "ฺ"; // octave="-1", set below it
@@ -152,7 +153,25 @@ export function layout(score, options = {}) {
   const playing = (sectionId) => score.parts.filter((p) => score.music[p.id]?.[sectionId]);
 
   const solo = score.parts.length === 1;
-  const multiRow = score.parts.some((p) => p.stack);
+
+  // Which levels the score actually has. A level with one member is skipped, so
+  // the breaks step outward from whichever level survives innermost.
+  const instrumentOf = (p) => p.stack ?? `solo:${p.id}`;
+  const instrumentCount = new Set(score.parts.map(instrumentOf)).size;
+  const anyMultiRow = score.parts.some(
+    (p) => p.stack && score.parts.filter((q) => q.stack === p.stack).length > 1,
+  );
+
+  const levels = [];
+  if (anyMultiRow) levels.push("row");
+  if (instrumentCount > 1) levels.push("instrument");
+  levels.push("line", "section");
+
+  const gap = {};
+  levels.forEach((name, i) => {
+    gap[name] = s.gapScale[i] ?? s.gapScale.at(-1);
+  });
+  for (const name of ["row", "instrument"]) gap[name] ??= 0;
 
   let y = s.page.margin + s.titleSize;
 
@@ -213,49 +232,187 @@ export function layout(score, options = {}) {
     });
   }
 
-  y += s.titleGap;
+  // A break is held until something is actually drawn under it, then spent
+  // once. Without that, text landing between two grids takes the gap on both
+  // sides and a heading like ท่อน ๒ ends up stranded midway between the section
+  // it names and the one above. Holding it means the large break falls above
+  // the heading and the heading stays with its own grid.
+  // What a capped spend does not use stays owed, so a trailing line taking its
+  // small break does not swallow the section break behind it.
+  let pending = 0;
+  const spend = (cap = Infinity) => {
+    const taken = Math.min(pending, cap);
+    y += taken;
+    pending -= taken;
+  };
+
+  // An annotation prints its three alignments as one line, at the same left,
+  // centre and right the grid uses. Plain text arrives as the left one.
+  const annotationRow = (note, heading = false) => {
+    // Only a heading takes the whole break. Anything else is trailing the grid
+    // above and stays with it.
+    spend(heading ? Infinity : s.annotationGap);
+
+    // Text wider than the grid wraps rather than running off the page. Each
+    // alignment wraps against the full width, so a long one keeps its own edge
+    // while the others stay where they are.
+    const columns = [
+      ["left", note.left, left, "start"],
+      ["center", note.center, centre, "middle"],
+      ["right", note.right, right, "end"],
+    ]
+      .filter(([, value]) => value)
+      .map(([align, value, x, anchor]) => ({
+        align,
+        x,
+        anchor,
+        lines: wrapText(value, s.annotationSize, right - left),
+      }));
+
+    const step = s.annotationSize * s.annotationLeading;
+    const deepest = Math.max(0, ...columns.map((c) => c.lines.length));
+
+    y += s.annotationSize;
+    for (const column of columns)
+      column.lines.forEach((line, i) => {
+        elements.push({
+          kind: "text",
+          x: column.x,
+          y: y + i * step,
+          text: line,
+          size: s.annotationSize,
+          anchor: column.anchor,
+          role: `annotation-${column.align}`,
+        });
+      });
+    y += Math.max(0, deepest - 1) * step;
+    // Whatever comes next belongs with this line, so hold a small break, or
+    // whatever is still owed if that is larger.
+    pending = Math.max(pending, s.annotationGap);
+  };
+
+  // A <br> is worth one blank line, the way it is in a text document.
+  const blankLine = () => {
+    spend();
+    y += s.annotationSize + s.annotationGap;
+  };
+
+  // Annotations before the first section belong to the title band. Everything
+  // from the first section on is the body, where an annotation renders in the
+  // gap it sits in.
+  const firstSection = score.structure.findIndex((item) => item.kind === "section");
+  const band = firstSection === -1 ? score.structure : score.structure.slice(0, firstSection);
+  const body = firstSection === -1 ? [] : score.structure.slice(firstSection);
+
+  pending = s.annotationGap;
+  let bandDrew = false;
+  for (const item of band) {
+    if (item.kind === "br") blankLine();
+    else if (item.kind === "annotation") annotationRow(item);
+    else continue;
+    bandDrew = true;
+  }
+
+  // The large break under the header separates it from the music, so it only
+  // makes sense where the header is the last thing above the grid. An
+  // annotation ending the band is a heading for the section right below it, and
+  // keeps the small break it set for itself.
+  if (!bandDrew) pending = s.titleGap;
 
   // --- The grid -----------------------------------------------------------
-  const gapBetweenLines = multiRow ? s.gaps.line || s.gaps.instrument : s.gaps.line;
+  //
+  // A run of text between two grids splits in two. Lines trailing the grid
+  // above belong to it and stay close to it, กลับต้น under the section it
+  // returns from being the case this exists for. The last line before the next
+  // grid is that grid's heading, and belongs to it. The break between sections
+  // falls at the split, so it separates the two blocks rather than pushing
+  // either line away from the grid it names.
+  const headsNextGrid = (from) => {
+    for (let j = from + 1; j < body.length; j++) {
+      if (body[j].kind === "section") return true;
+      if (body[j].kind === "annotation") return false;
+    }
+    return false;
+  };
 
-  score.sections.forEach((section, sectionIndex) => {
+  for (let index = 0; index < body.length; index++) {
+    const item = body[index];
+    if (item.kind === "br") {
+      blankLine();
+      continue;
+    }
+    if (item.kind === "annotation") {
+      annotationRow(item, headsNextGrid(index));
+      continue;
+    }
+
+    const section = item;
     const parts = playing(section.id);
-    if (parts.length === 0) return;
-    if (sectionIndex > 0) y += s.gaps.section;
+    if (parts.length === 0) continue;
+
+    // A part's own annotations sit above the section's grid, score-wide ones
+    // having already printed, then these in part order.
+    for (const p of parts)
+      for (const note of score.music[p.id][section.id].annotations) annotationRow(note);
 
     const lineCount = Math.max(
-      ...parts.map((p) => score.music[p.id][section.id].length),
+      ...parts.map((p) => score.music[p.id][section.id].lines.length),
     );
 
     for (let lineIndex = 0; lineIndex < lineCount; lineIndex++) {
-      if (lineIndex > 0) y += gapBetweenLines;
+      if (lineIndex > 0) pending = gap.line;
+      spend();
 
       const rows = parts
-        .map((p) => ({ part: p, line: score.music[p.id][section.id][lineIndex] }))
+        .map((p) => ({ part: p, line: score.music[p.id][section.id].lines[lineIndex] }))
         .filter((r) => r.line);
 
       const measureCount = Math.max(...rows.map((r) => r.line.measures.length));
       const gridRight = left + measureCount * cellWidth;
       const gridTop = y;
-      const gridBottom = y + rows.length * s.rowHeight;
+
+      // Rows belonging to one instrument are ruled together as a single box.
+      // Parts sharing a stack are that instrument's rows; a part without one is
+      // an instrument on its own. The break between boxes is what tells a
+      // reader where one instrument ends and the next begins.
+      const boxes = [];
+      for (const r of rows) {
+        const key = instrumentOf(r.part);
+        const open = boxes.at(-1);
+        if (open && open.key === key) open.rows.push(r);
+        else boxes.push({ key, rows: [r] });
+      }
+
+      let boxTop = gridTop;
+      for (const box of boxes) {
+        box.top = boxTop;
+        box.rows.forEach((r, i) => {
+          r.top = boxTop + i * s.rowHeight;
+        });
+        box.bottom = boxTop + box.rows.length * s.rowHeight;
+        boxTop = box.bottom + gap.instrument;
+      }
+      const gridBottom = boxes.at(-1).bottom;
 
       // A line shorter than eight measures is left-aligned and its ruling
       // stops after the last measure rather than stretching to fill the row.
-      elements.push({ kind: "line", x1: left, y1: gridTop, x2: gridRight, y2: gridTop });
-      elements.push({
-        kind: "line",
-        x1: left,
-        y1: gridBottom,
-        x2: gridRight,
-        y2: gridBottom,
-      });
-      for (let m = 0; m <= measureCount; m++) {
-        const x = left + m * cellWidth;
-        elements.push({ kind: "line", x1: x, y1: gridTop, x2: x, y2: gridBottom });
-      }
-      for (let r = 1; r < rows.length; r++) {
-        const ry = gridTop + r * s.rowHeight;
-        elements.push({ kind: "line", x1: left, y1: ry, x2: gridRight, y2: ry });
+      for (const box of boxes) {
+        elements.push({ kind: "line", x1: left, y1: box.top, x2: gridRight, y2: box.top });
+        elements.push({
+          kind: "line",
+          x1: left,
+          y1: box.bottom,
+          x2: gridRight,
+          y2: box.bottom,
+        });
+        for (let m = 0; m <= measureCount; m++) {
+          const x = left + m * cellWidth;
+          elements.push({ kind: "line", x1: x, y1: box.top, x2: x, y2: box.bottom });
+        }
+        for (let r = 1; r < box.rows.length; r++) {
+          const ry = box.top + r * s.rowHeight;
+          elements.push({ kind: "line", x1: left, y1: ry, x2: gridRight, y2: ry });
+        }
       }
 
       // Symbols. The share count is worked out for the measure as a whole so
@@ -281,7 +438,7 @@ export function layout(score, options = {}) {
 
         // Place every row before drawing anything, because a link curve on one
         // row has to know where another row's symbols ended up.
-        const placed = rows.map((r, rowIndex) => {
+        const placed = rows.map((r) => {
           const measure = r.line.measures[m];
           if (!measure) return null;
           return {
@@ -292,8 +449,7 @@ export function layout(score, options = {}) {
               measure.beats.map((b) => b.slots.length),
               tightness,
             ),
-            baseline:
-              gridTop + rowIndex * s.rowHeight + s.rowHeight / 2 + s.pitchSize / 3,
+            baseline: r.top + s.rowHeight / 2 + s.pitchSize / 3,
           };
         });
 
@@ -386,7 +542,9 @@ export function layout(score, options = {}) {
 
       y = gridBottom;
     }
-  });
+
+    pending = gap.section;
+  }
 
   return { width: s.page.width, height: s.page.height, cellWidth, elements };
 }

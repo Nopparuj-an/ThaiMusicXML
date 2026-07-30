@@ -35,15 +35,37 @@ function slot(node) {
   };
 }
 
+const sounds = (node) =>
+  node.nodeType === 1 && (node.localName === "note" || node.localName === "rest");
+
+/**
+ * An <annotation>'s three aligned positions. Plain text is shorthand for a
+ * left-aligned one. Where it has <text> children they carry the whole content,
+ * so the indentation around them is not read as text.
+ */
+function annotation(node) {
+  const texts = els(node, "text");
+  if (texts.length === 0) {
+    const plain = text(node);
+    return plain ? { left: plain, center: null, right: null } : null;
+  }
+  const at = (align) => {
+    const match = texts.find((t) => t.getAttribute("align") === align);
+    return match ? text(match) : null;
+  };
+  const found = { left: at("left"), center: at("center"), right: at("right") };
+  return found.left || found.center || found.right ? found : null;
+}
+
 /** A measure's children become beats of one or more slots each. */
 function beats(measure) {
   const out = [];
   for (const child of Array.from(measure.childNodes)) {
     if (child.nodeType !== 1) continue;
     if (child.localName === "group") {
-      const slots = Array.from(child.childNodes)
-        .filter((n) => n.nodeType === 1)
-        .map(slot);
+      // <bow> and <parenthesis> have zero duration, so they take no slot and do
+      // not count toward the group's division of its beat.
+      const slots = Array.from(child.childNodes).filter(sounds).map(slot);
       out.push({ slots, group: true, link: child.getAttribute("link") === "true" });
     } else if (child.localName === "note" || child.localName === "rest") {
       out.push({ slots: [slot(child)], group: false, link: false });
@@ -65,32 +87,50 @@ export function parse(source) {
     name: text(el(p, "instrument-name")),
   }));
 
-  // Sections in the order <structure> lays them out. A <repeat> contributes the
-  // sections it wraps; the repeat itself prints nothing (see "Repeat brackets").
-  const sections = [];
+  // <structure> in the order it lays the score out. A <repeat> contributes what
+  // it wraps; the repeat itself prints nothing (see "Repeat brackets").
+  //
+  // Annotations and <br> keep their place in the sequence rather than being
+  // gathered separately, because where an annotation sits is the only thing
+  // that decides where it renders.
+  const structure = [];
   const collect = (node) => {
     for (const child of Array.from(node.childNodes)) {
       if (child.nodeType !== 1) continue;
       if (child.localName === "section")
-        sections.push({ id: child.getAttribute("id"), name: child.getAttribute("name") });
+        structure.push({
+          kind: "section",
+          id: child.getAttribute("id"),
+          name: child.getAttribute("name"),
+        });
+      else if (child.localName === "annotation") {
+        const note = annotation(child);
+        if (note) structure.push({ kind: "annotation", ...note });
+      } else if (child.localName === "br") structure.push({ kind: "br" });
       else if (child.localName === "repeat") collect(child);
     }
   };
   collect(el(score, "structure"));
+  const sections = structure.filter((item) => item.kind === "section");
 
-  // part id -> section id -> lines
+  // part id -> section id -> { annotations, lines }
   const music = {};
   for (const pd of els(score, "part-data")) {
     const partId = pd.getAttribute("part");
     music[partId] = {};
     for (const ref of els(pd, "section-ref")) {
-      music[partId][ref.getAttribute("section")] = els(ref, "line").map((line) => ({
-        number: Number(line.getAttribute("number")),
-        measures: els(line, "measure").map((m) => ({
-          number: Number(m.getAttribute("number")),
-          beats: beats(m),
+      music[partId][ref.getAttribute("section")] = {
+        // Annotations here belong to this part alone, and render above its
+        // first row in the section.
+        annotations: els(ref, "annotation").map(annotation).filter(Boolean),
+        lines: els(ref, "line").map((line) => ({
+          number: Number(line.getAttribute("number")),
+          measures: els(line, "measure").map((m) => ({
+            number: Number(m.getAttribute("number")),
+            beats: beats(m),
+          })),
         })),
-      }));
+      };
     }
   }
 
@@ -103,6 +143,7 @@ export function parse(source) {
     arranger: text(el(header, "arranger")),
     parts,
     sections,
+    structure,
     music,
   };
 }

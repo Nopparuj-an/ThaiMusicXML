@@ -89,9 +89,26 @@ export const defaults = {
   // and on a portrait page it is already close to the width of a letter.
   minSymbolAdvance: 0.52,
 
-  // From the "Score layout" table. A solo single-row instrument takes no break
-  // between lines and a small one between sections. OPEN as measurements.
-  gaps: { row: 0, instrument: 8, line: 0, section: 18 },
+  // The break at each nesting level, innermost first.
+  //
+  // Which level draws which value is not fixed, because "Score layout" says to
+  // skip any level with only one member and then give the innermost of what is
+  // left no break at all, each level outward getting a larger one. So a solo
+  // single-row score uses the first two of these and a mixed ensemble uses all
+  // four, and the same list produces every arrangement in that table.
+  //
+  // OPEN as measurements.
+  gapScale: [0, 8, 18, 30],
+
+  // Annotations. These are the arranger's own words, so they print at reading
+  // size rather than as headings: the renderer is not deciding that a section
+  // heading matters more than a note about sound codes. OPEN.
+  annotationSize: 11,
+  annotationGap: 6,
+
+  // Line spacing where an annotation is long enough to wrap, as a multiple of
+  // its type size. OPEN.
+  annotationLeading: 1.35,
 
   titleGap: 26,
   bandGap: 18,

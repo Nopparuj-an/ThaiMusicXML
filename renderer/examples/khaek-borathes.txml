@@ -14,6 +14,13 @@
     <repeat times="2">
       <section id="s1" name="ท่อน 1" />
     </repeat>
+    <annotation><text align="right">กลับต้น</text></annotation>
+    <annotation><text align="right">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse consectetur cursus iaculis. Sed quis ornare dui. Morbi dignissim nec lorem nec fringilla. Aliquam ac erat ac risus lacinia porttitor. Etiam in erat sed dolor rhoncus fermentum ut eget felis. Nam bibendum convallis felis non gravida.</text></annotation>
+    <br/>
+    <annotation><text align="left">เป็นมนุษย์สุดประเสริฐเลิศคุณค่า		กว่าบรรดาฝูงสัตว์เดรัจฉาน
+จงฝ่าฟันพัฒนาวิชาการ		อย่าล้างผลาญฤๅเข่นฆ่าบีฑาใคร
+ไม่ถือโทษโกรธแช่งซัดฮึดฮัดด่า		หัดอภัยเหมือนกีฬาอัชฌาสัย
+ปฏิบัติประพฤติกฎกำหนดใจ		พูดจาให้จ๊ะ ๆ จ๋า น่าฟังเอยฯ</text></annotation>
     <annotation>ท่อน 2</annotation>
     <section id="s2" name="ท่อน 2" />
   </structure>
