@@ -38,7 +38,7 @@ The text prints exactly as written. Nothing is prefixed or appended, so a score 
 
 - Optional. Omit it for instrumental pieces, or when the lyricist is unknown, rather than filling it with a placeholder.
 - Use one `<lyricist>` element per person when a piece has several.
-- This names the writer only. ThaiMusicXML v0.1 has no element for the lyrics themselves.
+- This names the writer only. The words themselves go in a [lyric part](/en/v0_1/reference/elements/part/#part-types), as [`<syllable>`](/en/v0_1/reference/elements/syllable/) elements on the grid.
 - Renders in the title band. See [The title band](/en/v0_1/reference/rendering/#the-title-band).
 
 ## Conformance

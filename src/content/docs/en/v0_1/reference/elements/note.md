@@ -17,7 +17,7 @@ The `<note>` element represents a musical note.
 | `sound`   | If the part's `type` is `"unpitched"`         | string  | An instrument-specific sound code. See [Unpitched Notation](#unpitched-notation) below.    |
 | `octave`  | No                                             | integer | The octave number, any integer. Only applies to `pitch`. Default is 0. Ignored when `pitch` carries a Thai octave modifier, see [Conformance](#conformance) below.  |
 
-`pitch` and `sound` are mutually exclusive: a note uses one or the other depending on the [`type`](/en/v0_1/reference/elements/part/) of its containing `<part>`.
+`pitch` and `sound` are mutually exclusive: a note uses one or the other depending on the [`type`](/en/v0_1/reference/elements/part/#part-types) of its containing `<part>`. A `type="lyric"` part has no `<note>` elements at all, using [`<syllable>`](/en/v0_1/reference/elements/syllable/) instead.
 
 ## Example
 

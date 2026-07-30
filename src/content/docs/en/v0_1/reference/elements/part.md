@@ -14,7 +14,7 @@ The `<part>` element defines a single instrument in the ensemble.
 | Attribute | Required | Type   | Description                                                                             |
 | --------- | -------- | ------ | ---------------------------------------------------------------------------------------- |
 | `id`      | Yes      | ID     | Unique identifier. Referenced by `<part-data part="...">`.                               |
-| `type`    | No       | string | `"pitched"` or `"unpitched"`. Determines whether notes in this part use `pitch` or `sound`. Default: `"pitched"`. |
+| `type`    | No       | string | `"pitched"`, `"unpitched"`, or `"lyric"`. Determines what this part's measures hold. Default: `"pitched"`. |
 | `stack`   | No       | string | Joins this part to the other rows of the same instrument. Parts sharing a `stack` value read as one instrument. Omit for single-row instruments. See [Conformance](#conformance) below. |
 | `row`     | If `stack` is present | integer | This part's position within the stack, counting from `1` at the top. See [Conformance](#conformance) below. |
 
@@ -45,6 +45,28 @@ The `<part>` element defines a single instrument in the ensemble.
 </part>
 ```
 
+```xml
+<part id="P5" type="lyric">
+  <instrument-name>เนื้อร้อง</instrument-name>
+</part>
+```
+
+## Part types
+
+`type` says what a part's measures hold, and each value takes a different element:
+
+| `type` | Measures hold | Notes carry |
+| --- | --- | --- |
+| `pitched` | [`<note>`](/en/v0_1/reference/elements/note/), [`<rest>`](/en/v0_1/reference/elements/rest/), [`<group>`](/en/v0_1/reference/elements/group/) | `pitch` |
+| `unpitched` | the same | `sound` |
+| `lyric` | [`<syllable>`](/en/v0_1/reference/elements/syllable/), `<rest>` | n/a |
+
+A lyric part is an ordinary single-row part. It takes its own row in the grid, it sits wherever it is listed in [`<ensemble>`](/en/v0_1/reference/elements/ensemble/), and where that is depends on how the score is laid out rather than on any rule here: above the instruments, below them, or between two of them. Its `<instrument-name>` is conventionally `เนื้อร้อง` or `ร้อง`, and like every other part name it labels the row for an editor rather than printing.
+
+One thing does set it apart. Every other part agrees with the rest of the score on beat count within a measure, and a lyric part does not have to. A vocal line often does not divide the way the melody does, so a lyric measure holds whatever the words need and the item count decides whether the syllables align to beats or sit centered in the cell. See [`<syllable>`](/en/v0_1/reference/elements/syllable/#counting).
+
+Nothing automatically joins a lyric part to the music it belongs with. Placement is the mechanism: if the words go under ระนาดเอก, list them under ระนาดเอก. A lyric part may also take `stack` like any other part, which binds it to that instrument as one of its rows and tightens the spacing accordingly.
+
 ## Stacked instruments
 
 Some instruments need more than one row of notation per line. A two-handed instrument is the familiar case, with one row per hand, but rows do not have to be hands: an instrument may be notated as a row per group of strings, or per region of the instrument. Give every such part the same `stack` value and number them with `row`.
@@ -57,7 +79,7 @@ Three rows is the most seen in practice. Nothing caps it.
 
 ## Notes
 
-- `type` describes the instrument, not any particular performance. It is declared once here and never repeated in `<part-data>`.
+- `type` describes the part, not any particular performance. It is declared once here and never repeated in `<part-data>`. A lyric part is the one value that is not an instrument at all, which is a stretch of the word `<ensemble>` worth knowing about: reusing `<part>` is what gives a lyric line the whole line and measure grid for free.
 - See [`<note>`](/en/v0_1/reference/elements/note/) for how `type` determines which attribute a note uses.
 - `stack` describes the instrument too. See [`<ensemble>`](/en/v0_1/reference/elements/ensemble/#rendering) for how it affects rendering, and [`<group>`](/en/v0_1/reference/elements/group/) for the `link` attribute it enables.
 - A stack's parts sit together in `<ensemble>`, in row order. Their `<part-data>` is unaffected and still references each part on its own by `id`.
@@ -65,6 +87,8 @@ Three rows is the most seen in practice. Nothing caps it.
 ## Conformance
 
 - Every `<part>` must have exactly one matching [`<part-data>`](/en/v0_1/reference/elements/part-data/#conformance).
+- `type` must be `"pitched"`, `"unpitched"`, or `"lyric"`. Validators must reject any other value.
+- A `type="lyric"` part's measures must hold only [`<syllable>`](/en/v0_1/reference/elements/syllable/#conformance) and `<rest>` children, and are exempt from the beat-count agreement in [`<section-ref>`](/en/v0_1/reference/elements/section-ref/#conformance).
 - `stack` and `row` must appear together: a `<part>` with `stack` must also have `row`, and a `<part>` with `row` must also have `stack`.
 - A `stack` value must be shared by at least two `<part>` elements. One part alone is a single-row instrument and carries neither attribute.
 - The `row` values within one stack must run from `1` upward with no gaps and no repeats.

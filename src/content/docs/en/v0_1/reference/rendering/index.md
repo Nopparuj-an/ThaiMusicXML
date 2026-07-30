@@ -16,7 +16,8 @@ None of these lives in the document. There is nowhere in a ThaiMusicXML file to 
 | Decision | Default | Where |
 | --- | --- | --- |
 | Which pitch spelling appears | Whichever of the three the file is written in | [Inside a measure](#inside-a-measure) |
-| How thoroughly rests print | A hyphen for every rest in every part | [Inside a measure](#inside-a-measure) |
+| How thoroughly rests print | A hyphen for every rest in every notated part, blank in a lyric row | [Inside a measure](#inside-a-measure) |
+| Lyric row type size | Smaller than the notated rows | [Lyric rows](#lyric-rows) |
 | Instrument-name labels | Beside the title on a solo score, off on an ensemble score, on wherever a part is tacet | [Instrument names](#instrument-names) |
 | Headings generated from `name` and ชั้น | Off | [Section headings](#section-headings) |
 | `<tuning>`, `<license>`, and `<bpm>` on the page | Off | [The title band](#the-title-band) |
@@ -70,6 +71,20 @@ A `<note>` in an unpitched part renders its `sound` string verbatim, whatever th
 A `<rest>` renders as a hyphen.
 
 How thoroughly rests are printed is a house style choice, and printed scores differ. Some print a hyphen for every rest in every part. Others print them only in the part carrying the melody in that measure, leaving the following part's rests as blank space. Both are conventional and a renderer may offer either. The markup does not change either way: a `<rest>` records that no attack happens on that beat, not how the page shows it.
+
+## Lyric rows
+
+A [lyric part](/en/v0_1/reference/elements/part/#part-types) renders as a row of text in the grid, ruled and sized like any other row, sitting wherever the part appears in [`<ensemble>`](/en/v0_1/reference/elements/ensemble/).
+
+Where the syllables sit inside a cell comes from a count. A lyric measure holding exactly as many items as the measure has beats renders one item per beat, each under the beat it belongs to. A lyric measure holding any other number renders as a single group centered in the cell, its items evenly spaced among themselves and lined up with nothing.
+
+The centered form is not a fallback for a badly written measure. A vocal line often does not divide the way the melody does, and three syllables across a four-beat measure say the words belong to that measure without claiming which beat each one starts on. Both forms can appear in the same score, measure by measure.
+
+Lyric rows take no part in the [subdivision count](#inside-a-measure). That count divides a cell by what the notated parts need, so a lyric measure of three items in a four-beat measure divides nothing, and a lyric measure of ten does not squeeze the notes above it. The cell is sized by the music, and the words fit into what the music leaves.
+
+That has a consequence worth planning for: a syllable is several times wider than a pitch letter, and nothing widens the cell to help. The items pack closer together, the way symbols do everywhere else in the grid. A renderer may also set the lyric row in a smaller size than the notated rows to buy the room back.
+
+A `<rest>` in a lyric row prints as blank space rather than as the hyphen it takes in a notated part. A hyphen between two syllables reads as a broken word, which is not what the rest means. It means no new syllable starts there and the vowel already sounding carries on, which is เอื้อน.
 
 ## The title band
 

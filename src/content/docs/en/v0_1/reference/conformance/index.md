@@ -49,6 +49,7 @@ A processor may ignore anything it has no use for. A validator with no audio out
 ### Timing
 
 - All `<section-ref>` elements referencing the same `<section>` must agree on line count, on measure count per line, and on beat count per measure. Validators must reject documents that violate this.
+- A `type="lyric"` part is bound by line count and measure count per line, and exempt from beat count per measure. Its measures hold any number of items, and it is excluded from the comparison other parts are held to.
 - A `<line>` must hold one to eight `<measure>` elements.
 - `number` on `<line>` and `<measure>` must match position, counting from `1`, in ascending order.
 - A `<group>` must hold at least two `<note>` or `<rest>` children, and must not contain another `<group>`.
@@ -64,6 +65,8 @@ A processor may ignore anything it has no use for. A validator with no audio out
 
 ### Notes and pitch
 
+- `type` on a `<part>` must be `"pitched"`, `"unpitched"`, or `"lyric"`. Validators must reject any other value.
+- A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part. `<note>`, `<group>`, `<bow>`, and `<parenthesis>` are not valid in a lyric part, and `<syllable>` is not valid outside one.
 - A note in a `pitched` part uses `pitch`; one in an `unpitched` part uses `sound`. The two are mutually exclusive.
 - `pitch` must be one of the seven base-note characters in any of the three spellings, optionally followed by one Thai octave modifier. Validators must reject any other value.
 - When `pitch` carries a Thai octave modifier, that modifier wins and `octave` is ignored. Validators should warn rather than reject.
