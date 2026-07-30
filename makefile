@@ -1,8 +1,19 @@
+.PHONY: dev build start install check ci
+
 dev:
-	pnpm run dev
+	corepack pnpm run dev
 
 build:
-	pnpm run build
+	corepack pnpm run build
 
 start:
-	pnpm start
+	corepack pnpm start
+
+install:
+	corepack pnpm install --frozen-lockfile
+
+check:
+	corepack pnpm run check:links
+	corepack pnpm run check:corpus
+
+ci: install check build
