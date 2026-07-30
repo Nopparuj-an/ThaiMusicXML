@@ -117,6 +117,11 @@ export default defineConfig({
                   slug: "v0_1/reference/rendering",
                 },
                 {
+                  label: "Schema and test suite",
+                  translations: { th: "สคีมาและชุดทดสอบ" },
+                  slug: "v0_1/reference/schema",
+                },
+                {
                   label: "Elements",
                   translations: { th: "องค์ประกอบ" },
                   items: [

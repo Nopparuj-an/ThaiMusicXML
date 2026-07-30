@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A part that sits out a section. P2 is silent for the whole of ท่อน 2, so
+     its part-data simply has no section-ref for it. The cross-part agreement
+     rule then applies only to the parts that do reference the section. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>Omitted section</title>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+    <annotation>ท่อน 2 ฆ้องวงใหญ่ไม่บรรเลง</annotation>
+    <section id="s2" name="ท่อน 2"/>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+    <part id="P2">
+      <instrument-name>ฆ้องวงใหญ่</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure>
+      </line>
+    </section-ref>
+    <section-ref section="s2">
+      <line number="1">
+        <measure number="1"><note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/><note pitch="ร"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><rest/><note pitch="ม"/><rest/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

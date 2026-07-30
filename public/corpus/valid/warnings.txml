@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A valid document that a conforming processor should nevertheless warn
+     about, four times over. Nothing here makes the file invalid: the rule in
+     each case is warn, never reject.
+
+       - nathap and tuning carry values outside the recommended lists, which
+         is legal because neither set is closed, but catches a typo in a
+         known name
+       - the composer has <text> children, so the text beside them is
+         discarded rather than printed
+       - octave sits alongside a Thai octave modifier, where the modifier wins
+       - octave sits on a note that uses sound, where it has no meaning -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>Warnings</title>
+    <composer>
+      ผู้ประพันธ์
+      <text align="right">พระประดิษฐไพเราะ</text>
+    </composer>
+    <tuning reference="c-majro"/>
+  </header>
+  <structure>
+    <direction>
+      <nathap value="ปรบไก"/>
+    </direction>
+    <section id="s1"/>
+  </structure>
+  <ensemble>
+    <part id="P1"><instrument-name>ระนาดเอก</instrument-name></part>
+    <part id="P2" type="unpitched"><instrument-name>ฉิ่ง</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ดํ" octave="1"/><note pitch="ร"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note sound="0" octave="1"/><rest/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A lyric part beside an instrumental one. Measure 1 has four items and so
+     aligns to the beats; measure 2 has three and is centered in the cell
+     instead. The rests are เอื้อน: no new syllable begins, the vowel already
+     being sung carries on. A lyric part shares the line and measure grid but
+     is exempt from agreeing on beat count. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>ลาวดวงเดือน</title>
+    <lyricist>Example Lyricist</lyricist>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1" type="lyric">
+      <instrument-name>เนื้อร้อง</instrument-name>
+    </part>
+    <part id="P2">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <rest/><rest/><syllable>ละ</syllable><syllable>หนอ</syllable>
+        </measure>
+        <measure number="2">
+          <syllable>ดวง</syllable><rest/><syllable>เดือน</syllable>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>
+        </measure>
+        <measure number="2">
+          <note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/><note pitch="ร"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

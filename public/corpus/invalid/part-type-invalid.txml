@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: type must be pitched, unpitched, or lyric. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header><title>Invalid example</title></header>
+  <structure><section id="s1"/></structure>
+  <ensemble>
+    <part id="P1" type="percussion"><instrument-name>ฉิ่ง</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note sound="0"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>

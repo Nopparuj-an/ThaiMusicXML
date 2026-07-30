@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The three interchangeable spellings of a base note, the two Thai octave
+     modifiers, and the octave attribute. Measure 1 is numeric, measure 2
+     romanized (mixed case, which carries no meaning), measure 3 Thai script,
+     measure 4 the modifiers and octave. A real file picks one spelling and
+     keeps to it; this one exercises all of them on purpose. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>Pitch spellings</title>
+    <tuning reference="c-major"/>
+    <license>CC BY-SA 4.0</license>
+  </header>
+  <structure>
+    <section id="s1"/>
+  </structure>
+  <ensemble>
+    <part id="P1" type="pitched">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="1"/><note pitch="2"/><note pitch="3"/><note pitch="4"/>
+        </measure>
+        <measure number="2">
+          <note pitch="S"/><note pitch="L"/><note pitch="t"/><note pitch="d"/>
+        </measure>
+        <measure number="3">
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ฟ"/>
+        </measure>
+        <measure number="4">
+          <note pitch="ดํ"/><note pitch="ทฺ"/><note pitch="ด" octave="2"/><note pitch="D" octave="-2"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

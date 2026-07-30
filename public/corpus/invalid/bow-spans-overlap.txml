@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: A bow start must be closed before another start appears. Bow spans cannot nest or overlap. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>Invalid example</title>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <bow type="start" direction="in"/>
+          <note pitch="ด"/>
+          <bow type="start" direction="out"/>
+          <note pitch="ร"/>
+          <bow type="stop"/>
+          <note pitch="ม"/><note pitch="ซ"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

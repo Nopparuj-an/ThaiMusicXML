@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Aligned text runs. An annotation carries all three positions on one line;
+     the credits each carry one. The text prints exactly as written, which is
+     why the label is part of the string rather than generated. Note that the
+     three positions are placed independently, so document order does not
+     decide where they land. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>Lao Duang Duen</title>
+    <composer>
+      <text align="right">ผู้ประพันธ์ : พระประดิษฐไพเราะ</text>
+    </composer>
+    <arranger>Example Arranger</arranger>
+  </header>
+  <structure>
+    <annotation>
+      <text align="right">หน้า 1</text>
+      <text align="left">ท่อน 1</text>
+      <text align="center">Lao Duang Duen</text>
+    </annotation>
+    <br/>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

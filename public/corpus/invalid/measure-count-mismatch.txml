@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: Corresponding lines must agree on measure count across parts. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header><title>Invalid example</title></header>
+  <structure><section id="s1"/></structure>
+  <ensemble>
+    <part id="P1"><instrument-name>ระนาดเอก</instrument-name></part>
+    <part id="P2"><instrument-name>ฆ้องวงใหญ่</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><note pitch="ร"/></measure>
+        <measure number="2"><note pitch="ม"/><note pitch="ซ"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><note pitch="ร"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Right-anchored subdivision. Both parts agree on four beats per measure
+     while filling them differently: P1 plays four plain notes, P2 splits
+     beats 1 and 3 into groups. A group's final child lands on the beat and
+     the earlier ones space backwards from it. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>กลุ่มโน้ตย่อย</title>
+  </header>
+  <structure>
+    <direction>
+      <nathap value="ปรบไก่"/>
+      <chan value="2"/>
+      <bpm>65</bpm>
+    </direction>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+    <part id="P2">
+      <instrument-name>ฆ้องวงใหญ่</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <group>
+            <note pitch="ด"/><note pitch="ร"/>
+          </group>
+          <note pitch="ม"/>
+          <group>
+            <note pitch="ซ"/><note pitch="ล"/><note pitch="ท"/>
+          </group>
+          <note pitch="ดํ"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

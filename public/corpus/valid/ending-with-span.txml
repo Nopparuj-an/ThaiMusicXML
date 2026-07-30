@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A bow span reaching into a line an ending overrides. The stop appears in
+     both versions of line 2: once in the regular line for the pass that plays
+     it, once in the ending's line for the pass that plays that instead.
+     Neither pass sees two stops, because neither pass plays both versions. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>Spans across an overridden line</title>
+  </header>
+  <structure>
+    <repeat times="2">
+      <section id="s1" name="ท่อน 1"/>
+    </repeat>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ซออู้</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <bow type="start" direction="out"/>
+          <note pitch="ซ"/><note pitch="ล"/><note pitch="ดํ"/><note pitch="ล"/>
+        </measure>
+      </line>
+      <line number="2">
+        <measure number="1">
+          <note pitch="ซ"/><note pitch="ม"/>
+          <bow type="stop"/>
+          <note pitch="ร"/><note pitch="ด"/>
+        </measure>
+      </line>
+      <ending pass="2">
+        <annotation>เที่ยวที่ 2 จบคันชักเร็วขึ้นหนึ่งตัว</annotation>
+        <line number="2">
+          <measure number="1">
+            <note pitch="ซ"/>
+            <bow type="stop"/>
+            <note pitch="ม"/><note pitch="ร"/><note pitch="ด"/>
+          </measure>
+        </line>
+      </ending>
+    </section-ref>
+  </part-data>
+</thai-score>

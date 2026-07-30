@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Nested repeats and a variant ending. The section sits inside a times="2"
+     within another times="2", so its total pass count is 4 and pass numbers
+     run 1 to 4 absolutely, regardless of which layer produced each play.
+     The ending replaces the section's last line on passes 2 and 4. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>Endings</title>
+  </header>
+  <structure>
+    <repeat times="2">
+      <repeat times="2">
+        <section id="s1" name="ท่อน 1"/>
+      </repeat>
+    </repeat>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ขิม</instrument-name>
+    </part>
+    <part id="P2">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>
+        </measure>
+      </line>
+      <line number="2">
+        <measure number="1">
+          <note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/><note pitch="ร"/>
+        </measure>
+      </line>
+      <ending pass="2,4">
+        <annotation>ขิม รอบสุดท้ายเปลี่ยนเป็น</annotation>
+        <line number="2">
+          <measure number="1">
+            <note pitch="ล"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/>
+          </measure>
+        </line>
+      </ending>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>
+        </measure>
+      </line>
+      <line number="2">
+        <measure number="1">
+          <note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/><note pitch="ร"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

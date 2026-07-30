@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: number must match the line position, counting from 1, and lines must appear in ascending order. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header><title>Invalid example</title></header>
+  <structure><section id="s1"/></structure>
+  <ensemble><part id="P1"><instrument-name>ระนาดเอก</instrument-name></part></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="2"><measure number="1"><note pitch="ด"/></measure></line>
+      <line number="1"><measure number="1"><note pitch="ร"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>

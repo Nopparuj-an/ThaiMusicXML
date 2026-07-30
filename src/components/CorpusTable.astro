@@ -1,0 +1,58 @@
+---
+// Lists one directory of the conformance corpus, reading the files themselves
+// at build time so the table cannot drift from what ships. Each corpus file
+// opens with an XML comment saying what it demonstrates; that comment is the
+// description shown here.
+//
+// The glob is eager and static so the contents are inlined at build time,
+// which keeps this working after the component is bundled.
+const sources = import.meta.glob("../../public/corpus/*/*.txml", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+});
+
+interface Props {
+  /** Which corpus directory to list. */
+  dir: "valid" | "invalid";
+}
+
+const { dir } = Astro.props;
+
+const entries = Object.entries(sources)
+  .filter(([path]) => path.includes(`/corpus/${dir}/`))
+  .map(([path, source]) => {
+    const comment = String(source).match(/<!--([\s\S]*?)-->/)?.[1] ?? "";
+    return {
+      name: path.split("/").pop(),
+      description: comment
+        .replace(/^\s*INVALID:\s*/, "")
+        .replace(/\s+/g, " ")
+        .trim(),
+    };
+  })
+  .sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>{dir === "valid" ? "What it exercises" : "What it violates"}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {
+      entries.map(({ name, description }) => (
+        <tr>
+          <td>
+            <a href={`/corpus/${dir}/${name}`}>
+              <code>{name}</code>
+            </a>
+          </td>
+          <td>{description}</td>
+        </tr>
+      ))
+    }
+  </tbody>
+</table>

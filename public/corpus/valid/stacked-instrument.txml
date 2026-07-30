@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A two-row instrument. Both parts share a stack value and number their
+     rows from 1, and they sit adjacent in <ensemble> in row order. The group
+     in row 1 carries link, drawing a connector to what row 2 plays on the
+     same beat. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>ฆ้องวงใหญ่ สองมือ</title>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1" stack="khong" row="1">
+      <instrument-name>ฆ้องวงใหญ่ มือขวา</instrument-name>
+    </part>
+    <part id="P2" stack="khong" row="2">
+      <instrument-name>ฆ้องวงใหญ่ มือซ้าย</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด"/>
+          <note pitch="ร"/>
+          <group link="true">
+            <note pitch="ม"/><note pitch="ซ"/>
+          </group>
+          <note pitch="ล"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ดฺ"/>
+          <rest/>
+          <note pitch="มฺ"/>
+          <rest/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

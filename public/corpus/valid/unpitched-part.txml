@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- An unpitched part. Notes carry sound rather than pitch, and the codes are
+     instrument-specific, so an annotation inside the section reference says
+     what they mean. The rests are beats with no attack. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>ฉิ่ง</title>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1" type="unpitched">
+      <instrument-name>ฉิ่ง</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <annotation>0 = ฉิ่ง / 1 = ฉับ</annotation>
+      <line number="1">
+        <measure number="1">
+          <rest/><note sound="0"/><rest/><note sound="1"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

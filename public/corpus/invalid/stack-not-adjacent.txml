@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: A stack's parts must be adjacent in ensemble, in ascending row order. Another instrument sits between these two rows. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header><title>Invalid example</title></header>
+  <structure><section id="s1"/></structure>
+  <ensemble>
+    <part id="P1" stack="khong" row="1"><instrument-name>ฆ้องวงใหญ่ มือขวา</instrument-name></part>
+    <part id="P2"><instrument-name>ระนาดเอก</instrument-name></part>
+    <part id="P3" stack="khong" row="2"><instrument-name>ฆ้องวงใหญ่ มือซ้าย</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ม"/></measure></line>
+    </section-ref>
+  </part-data>
+  <part-data part="P3">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ดฺ"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>

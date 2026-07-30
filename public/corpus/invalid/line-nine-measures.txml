@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: A line holds between one and eight measures. Eight is a hard limit; this line has nine. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header><title>Invalid example</title></header>
+  <structure><section id="s1"/></structure>
+  <ensemble><part id="P1"><instrument-name>ระนาดเอก</instrument-name></part></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/></measure>
+        <measure number="2"><note pitch="ร"/></measure>
+        <measure number="3"><note pitch="ม"/></measure>
+        <measure number="4"><note pitch="ฟ"/></measure>
+        <measure number="5"><note pitch="ซ"/></measure>
+        <measure number="6"><note pitch="ล"/></measure>
+        <measure number="7"><note pitch="ท"/></measure>
+        <measure number="8"><note pitch="ดํ"/></measure>
+        <measure number="9"><note pitch="รํ"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>
