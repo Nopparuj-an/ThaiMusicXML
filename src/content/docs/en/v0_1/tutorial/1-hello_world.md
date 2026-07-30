@@ -5,6 +5,8 @@ description: Your first ThaiMusicXML file
 
 This example shows a simple score for one instrument: a Ranat Ek (ระนาดเอก) playing the first line of a song.
 
+![Example Song](../../../../../assets/docs/v0_1/tutorial/1-hello_world/image.png)
+
 ## Example XML
 
 ```xml

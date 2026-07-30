@@ -3,6 +3,12 @@ title: Khaek Borathes
 description: A three-instrument score for แขกบรเทศ ชั้นเดียว
 ---
 
+## Rendered
+
+![Rendered Song](../../../../../../assets/docs/v0_1/reference/examples/khaek-borathes/image.png)
+
+## XML
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
@@ -11,14 +17,18 @@ description: A three-instrument score for แขกบรเทศ ชั้น�
   </header>
   <structure>
     <annotation>หน้าทับปรบไก่</annotation>
+    <composer>ไม่ปรากฏนามผู้แต่งสำหรับชั้นเดียว</composer>
     <direction>
       <nathap value="ปรบไก่" />
       <chan value="1" />
       <bpm>60</bpm>
     </direction>
+    <annotation>ท่อน 1</annotation>
     <repeat times="2">
       <section id="s1" name="ท่อน 1" />
     </repeat>
+    <annotation><text align="right">กลับต้น</text></annotation>
+    <annotation>ท่อน 2</annotation>
     <section id="s2" name="ท่อน 2" />
   </structure>
   <ensemble>

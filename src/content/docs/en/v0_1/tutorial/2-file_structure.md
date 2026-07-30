@@ -5,6 +5,8 @@ description: How ThaiMusicXML files are organized
 
 The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument and one section. This example adds a second instrument, annotations and performance directions in `<structure>`, and a repeat.
 
+![Example Song](../../../../../assets/docs/v0_1/tutorial/2-file_structure/image.png)
+
 ## Example XML
 
 ```xml
@@ -105,6 +107,7 @@ The `<structure>` element can contain several child types that describe the scor
   ```
 
   The `align` value can be `left`, `center`, or `right`. Do not mix plain text with `<text>` children.
+
 - **`<direction>`**: Performance directions. This example sets the ชั้น (`<chan>`) and tempo (`<bpm>`). ชั้น (chan) is the Thai rhythmic layer system. `value="1"` means ชั้นเดียว.
 - **`<section>`**: A named section. Wrapping it in a **`<repeat>`** plays it more than once. Repeats nest, so layering them multiplies the play count.
 
