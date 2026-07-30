@@ -69,11 +69,20 @@ annotations in all three placements, `<br>`, and text wrapping.
   stack**, rests skipped. `ฟ - -` under `- ซ ล` sounds ฟ ซ ล, and neither row
   holds both ends. Reading one row at a time gets this wrong, which is what
   `linkSpan`'s tests pin down.
+
+  The attribute sits on a `<group>`, but resolving it reaches all the way out:
+  every part sharing the stack, the same `<section-ref>`, the same line, the
+  same measure, the same beat. Anything touching link placement has to keep
+  that whole chain lined up, and the sibling rows have to be positioned before
+  the curve can be drawn. That is why `layout.mjs` places every row of a
+  measure first and only then emits curves.
 - **Curves go above the notes, never below.** Thai scores do not put them below.
 - **Breaks are owed, not spent immediately.** A run of text between two grids
   splits: lines trailing the grid above stay with it, the last line before the
   next grid is that grid's heading, and the break falls at the split. A capped
-  spend carries its remainder forward, or the section break vanishes.
+  spend carries its remainder forward, or the section break vanishes. This is
+  now written up in `rendering/index.md` §Text inside a break, which exists
+  because getting it wrong produced two separate bugs in two rounds.
 
 ## What is left, in the order I would take it
 
@@ -102,10 +111,12 @@ annotation instead. That already works.
 Both are zero-duration markers inside a measure or group. `parse.mjs` filters
 them out of slots already, so they do not disturb the division, but it also
 discards them, so they need reading before they can be drawn. Bow spans sit
-above the notes and can cross line breaks. Note that a linked group carrying a
-bow puts two curves in the same place and **v0.1 does not say how to separate
-them** — this is flagged in the rendering page as an open question, not an
-oversight to quietly resolve.
+above the notes and can cross line breaks.
+
+A linked group carrying a bow puts both curves in the same place. The author
+settled this: they overlap, and each is drawn as it would be alone. Do not add
+logic to separate them. The combination is rare and the strokes are close
+enough in meaning that sharing a space costs a reader nothing.
 
 ### 4. Lyric rows
 
@@ -122,15 +133,6 @@ margin, not from the eight cells.
 
 ## Loose ends
 
-- **Break behaviour is not in the spec.** How a break interacts with text
-  sitting inside it produced two separate bugs in two rounds, and another
-  implementer would reproduce both. It belongs in `rendering/index.md`
-  §Score layout, since it is about breaks rather than about annotations. I
-  offered to draft it and the author has not said yes yet.
-- **Per-part annotations** currently stack above the section. The author
-  intended them on top of each part's own box, which became well-defined once
-  instruments got separate boxes. Small change, not yet made, no example
-  exercises it.
 - **`renderer/examples/*.txml` duplicate the docs markdown** and can drift.
   `CorpusTable.astro` solves the same problem by generating from files;
   pointing the tutorial and example pages at these would close it.

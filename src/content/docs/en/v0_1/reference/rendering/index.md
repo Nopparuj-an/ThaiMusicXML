@@ -175,6 +175,16 @@ That produces the four common arrangements:
 
 A stack of three behaves no differently from a stack of two. The row level absorbs the extra row, and the breaks outside it are unchanged.
 
+### Text inside a break
+
+A break separates one grid from the next. Where an [annotation](#annotations) falls into one, the break is not simply drawn and then the text placed after it, because that pushes the text away from the grid it belongs to.
+
+Text between two grids divides into two parts. Lines trailing the grid above belong to it and stay close to it, `กลับต้น` under the section it returns from being the case this exists for. The last line before the next grid is that grid's heading and belongs to it, so it stays close to the grid below. The break falls at the division between them.
+
+Where only one line sits between two grids the division is above it, so a lone heading like `ท่อน ๒` keeps the full break above and sits tight on its own grid. Where a heading ends the [title band](#the-title-band), the same rule applies: it heads the first grid, and the break separating the header from the music falls above it rather than between it and the grid it names.
+
+None of this changes the size of the break. A break interrupted by text is spent once, at the division, and not again on either side. Spending it more than once pushes the sections apart; spending less than all of it loses the separation between them entirely.
+
 ## Repeat brackets
 
 A [`<line-repeat>`](/en/v0_1/reference/elements/line-repeat/) renders as a bracket in the margin right of the grid, spanning the rows for lines `first` through `last` and labelled ซ้ำ. Repeating one line gives a short bracket beside that row; repeating a range gives a taller one covering all of them.
@@ -213,7 +223,7 @@ The two notes settle which way it turns. A run ending higher up the page than it
 
 Curves go above the notes, never below. That holds for the single-row arc as much as for the connector, and it is not a matter of taste: printed Thai scores put every curve over the notation. The arc bows up from the same height the connector attaches at, so a row carrying one of each has both leaving at the same level.
 
-Where a linked group also carries a [bow](#bow-spans-across-a-line-break), the two curves want the same space. v0.1 does not say how to separate them.
+Where a linked group also carries a [bow](#bow-spans-across-a-line-break), the two curves land in the same place and simply overlap. Draw each as you would draw it alone. A group that is both linked and bowed is rare enough that keeping the two apart would cost more than it returns, and the strokes sit close enough in meaning that a reader loses nothing by seeing them share a space.
 
 ## Cued passages
 

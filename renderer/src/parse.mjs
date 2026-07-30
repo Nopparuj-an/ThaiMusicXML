@@ -39,15 +39,21 @@ const sounds = (node) =>
   node.nodeType === 1 && (node.localName === "note" || node.localName === "rest");
 
 /**
- * An <annotation>'s three aligned positions. Plain text is shorthand for a
- * left-aligned one. Where it has <text> children they carry the whole content,
- * so the indentation around them is not read as text.
+ * The three aligned positions shared by <annotation> and the credits. Where the
+ * element has <text> children they carry the whole content, so the indentation
+ * around them is not read as text.
+ *
+ * Plain text falls to one position, and which one differs: an annotation sits
+ * in the body of the score and goes left, a credit sits under the title and
+ * centers.
  */
-function annotation(node) {
+function aligned(node, fallback) {
+  if (!node) return null;
   const texts = els(node, "text");
   if (texts.length === 0) {
     const plain = text(node);
-    return plain ? { left: plain, center: null, right: null } : null;
+    if (!plain) return null;
+    return { left: null, center: null, right: null, [fallback]: plain };
   }
   const at = (align) => {
     const match = texts.find((t) => t.getAttribute("align") === align);
@@ -56,6 +62,9 @@ function annotation(node) {
   const found = { left: at("left"), center: at("center"), right: at("right") };
   return found.left || found.center || found.right ? found : null;
 }
+
+const annotation = (node) => aligned(node, "left");
+const credit = (node) => aligned(node, "center");
 
 /** A measure's children become beats of one or more slots each. */
 function beats(measure) {
@@ -138,9 +147,9 @@ export function parse(source) {
     version: score.getAttribute("version"),
     namespace: score.namespaceURI,
     title: text(el(header, "title")),
-    composer: text(el(header, "composer")),
-    lyricist: text(el(header, "lyricist")),
-    arranger: text(el(header, "arranger")),
+    composer: credit(el(header, "composer")),
+    lyricist: credit(el(header, "lyricist")),
+    arranger: credit(el(header, "arranger")),
     parts,
     sections,
     structure,

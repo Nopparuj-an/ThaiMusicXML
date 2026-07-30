@@ -213,25 +213,6 @@ export function layout(score, options = {}) {
     });
   }
 
-  // Credits print exactly as written. The renderer prefixes nothing.
-  for (const [role, value] of [
-    ["composer", score.composer],
-    ["lyricist", score.lyricist],
-    ["arranger", score.arranger],
-  ]) {
-    if (!value) continue;
-    y += s.creditSize + 6;
-    elements.push({
-      kind: "text",
-      x: centre,
-      y,
-      text: value,
-      size: s.creditSize,
-      anchor: "middle",
-      role,
-    });
-  }
-
   // A break is held until something is actually drawn under it, then spent
   // once. Without that, text landing between two grids takes the gap on both
   // sides and a heading like ท่อน ๒ ends up stranded midway between the section
@@ -248,7 +229,7 @@ export function layout(score, options = {}) {
 
   // An annotation prints its three alignments as one line, at the same left,
   // centre and right the grid uses. Plain text arrives as the left one.
-  const annotationRow = (note, heading = false) => {
+  const annotationRow = (note, { heading = false, size = s.annotationSize, role = "annotation" } = {}) => {
     // Only a heading takes the whole break. Anything else is trailing the grid
     // above and stays with it.
     spend(heading ? Infinity : s.annotationGap);
@@ -266,13 +247,13 @@ export function layout(score, options = {}) {
         align,
         x,
         anchor,
-        lines: wrapText(value, s.annotationSize, right - left),
+        lines: wrapText(value, size, right - left),
       }));
 
-    const step = s.annotationSize * s.annotationLeading;
+    const step = size * s.annotationLeading;
     const deepest = Math.max(0, ...columns.map((c) => c.lines.length));
 
-    y += s.annotationSize;
+    y += size;
     for (const column of columns)
       column.lines.forEach((line, i) => {
         elements.push({
@@ -280,9 +261,9 @@ export function layout(score, options = {}) {
           x: column.x,
           y: y + i * step,
           text: line,
-          size: s.annotationSize,
+          size,
           anchor: column.anchor,
-          role: `annotation-${column.align}`,
+          role: `${role}-${column.align}`,
         });
       });
     y += Math.max(0, deepest - 1) * step;
@@ -304,7 +285,16 @@ export function layout(score, options = {}) {
   const band = firstSection === -1 ? score.structure : score.structure.slice(0, firstSection);
   const body = firstSection === -1 ? [] : score.structure.slice(firstSection);
 
+  // Credits print exactly as written and the renderer prefixes nothing, so a
+  // label like ผู้ประพันธ์ : is there only because the arranger typed it. The
+  // align values do the positioning, which is what puts the composer on the
+  // right in the conventional layout. Bare text centers.
   pending = s.annotationGap;
+  for (const value of [score.composer, score.lyricist, score.arranger]) {
+    if (!value) continue;
+    annotationRow(value, { size: s.creditSize, role: "credit" });
+  }
+
   let bandDrew = false;
   for (const item of band) {
     if (item.kind === "br") blankLine();
@@ -342,18 +332,13 @@ export function layout(score, options = {}) {
       continue;
     }
     if (item.kind === "annotation") {
-      annotationRow(item, headsNextGrid(index));
+      annotationRow(item, { heading: headsNextGrid(index) });
       continue;
     }
 
     const section = item;
     const parts = playing(section.id);
     if (parts.length === 0) continue;
-
-    // A part's own annotations sit above the section's grid, score-wide ones
-    // having already printed, then these in part order.
-    for (const p of parts)
-      for (const note of score.music[p.id][section.id].annotations) annotationRow(note);
 
     const lineCount = Math.max(
       ...parts.map((p) => score.music[p.id][section.id].lines.length),
@@ -385,6 +370,24 @@ export function layout(score, options = {}) {
 
       let boxTop = gridTop;
       for (const box of boxes) {
+        // A part's own annotations sit directly on top of that instrument's
+        // box, which is where they can only be once instruments are ruled
+        // separately. They belong to the section rather than to the line, so
+        // they print once, above the first line of it.
+        const notes =
+          lineIndex === 0
+            ? box.rows.flatMap((r) => score.music[r.part.id][section.id].annotations)
+            : [];
+        if (notes.length > 0) {
+          y = boxTop;
+          // Clear of the instrument above, where there is one. The first box in
+          // a line already has the break that opened it.
+          pending = boxTop > gridTop ? s.annotationGap : 0;
+          for (const note of notes) annotationRow(note);
+          spend(s.annotationGap);
+          boxTop = y;
+        }
+
         box.top = boxTop;
         box.rows.forEach((r, i) => {
           r.top = boxTop + i * s.rowHeight;
