@@ -11,7 +11,9 @@
     "astro": "astro",
     "check:links": "node scripts/check-docs-links.mjs",
     "check:corpus": "node scripts/check-corpus.mjs",
-    "check": "npm run check:links && npm run check:corpus"
+    "check:layout": "node --test renderer/test/layout.test.mjs",
+    "check": "npm run check:links && npm run check:corpus && npm run check:layout",
+    "render": "node renderer/render.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
