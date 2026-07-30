@@ -21,7 +21,7 @@ A conforming ThaiMusicXML v0.1 document:
 2. Has a single [`<thai-score>`](/en/v0_1/reference/elements/thai-score/) root carrying `version="0.1"` and the ThaiMusicXML namespace.
 3. Satisfies every **must** rule on every element page.
 
-There is no XSD or RelaxNG schema for v0.1. The rules are prose, and no validator enforces them yet.
+A [RELAX NG schema](/en/v0_1/reference/schema/) states the rules a grammar can reach. The rest stay prose, and checking them takes a second pass over the document.
 
 ## Conforming processor
 
@@ -94,7 +94,7 @@ Where an element takes either plain text or [`<text>`](/en/v0_1/reference/elemen
 ### Document shape
 
 - `<thai-score>` must be the single root element, carrying `version` and the namespace.
-- A processor must reject a document whose root is in a namespace it does not implement. The namespace URI is what identifies the version; `version` is informational within a namespace already understood, and a mismatch between the two draws a warning rather than a rejection.
+- A processor must reject a document whose root is in a namespace it does not implement. The namespace URI names the compatibility boundary: through 0.x each release carries its own, and from 1.0 the URI carries the major version alone. `version` tells releases apart within a boundary and is informational to a processor that already understands the namespace, so a mismatch between the two draws a warning rather than a rejection.
 - Its children appear in order: `<header>`, `<structure>`, `<ensemble>`, then one or more `<part-data>`.
 - `<header>` must contain exactly one `<title>`. Everything else in the header is optional, and `<tuning>` and `<license>` appear at most once each.
 - `<nathap>`, `<chan>`, and `<bpm>` are each optional within a `<direction>` and appear at most once each, in any order.

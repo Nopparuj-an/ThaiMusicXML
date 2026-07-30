@@ -68,7 +68,7 @@ This XML declaration identifies the document as XML and specifies UTF-8 encoding
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
 ```
 
-The `<thai-score>` element is the root of a ThaiMusicXML document. The `xmlns` attribute declares the ThaiMusicXML namespace, which is how tools tell these elements apart from any other XML vocabulary, and `version` identifies which ThaiMusicXML version the file follows.
+The `<thai-score>` element is the root of a ThaiMusicXML document. The `xmlns` attribute declares the ThaiMusicXML namespace, which is how tools tell these elements apart from any other XML vocabulary and how they decide whether they can read the file at all. `version` records the exact release it follows.
 
 ```xml
 <header>

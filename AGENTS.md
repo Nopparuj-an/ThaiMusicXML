@@ -5,8 +5,8 @@ This includes plan, commit message, issue description, and PR description.
 
 ## Development
 
-- There are currently no XSD/RelaxNG yet, refer to TreeView in `elements/index.mdx` for the schema hierarchy.
-- Conformance rules are prose, not code, live in ## Conformance sections on the relevant element page, there's no validator yet to enforce them.
+- Schema is `public/schema/thaimusicxml-0.1.rng` (RELAX NG); TreeView in `elements/index.mdx` mirrors the same hierarchy.
+- Conformance rules are prose, in ## Conformance sections on the relevant element page. The grammar covers what it can; the rest live in `scripts/check-corpus.mjs`, run over `public/corpus/` by `npm run check:corpus`.
 - astro check is currently broken in this environment, use `npx astro build` instead.
 - After editing docs, run `npm run check:links`. It resolves every internal link and `#anchor`, including the TreeView slugs, and exits non-zero on a break.
 - For schema/design changes, propose and get explicit sign-off before editing; once confirmed, apply it across every affected file in one pass rather than incrementally.
