@@ -1,8 +1,18 @@
+/* Sarabun (SIL OFL), self-hosted. The reference recommends it for scores because
+   it sets นิคหิต and พินทุ cleanly; the site uses it for the same reason. Each
+   file carries unicode-range per subset, so Latin-only pages fetch no Thai. */
+@import "@fontsource/sarabun/400.css";
+@import "@fontsource/sarabun/400-italic.css";
+@import "@fontsource/sarabun/600.css";
+@import "@fontsource/sarabun/700.css";
+
 [data-theme="dark"] .hero img {
   filter: invert(1);
 }
 
 :root {
+  --sl-font: "Sarabun", system-ui, -apple-system, "Segoe UI", sans-serif;
+
   --sl-sidebar-width: 16rem;       /* left navigation */
   --sl-toc-width: 12rem;           /* right sidebar */
   --sl-content-width: 50rem;        /* actual article width */
