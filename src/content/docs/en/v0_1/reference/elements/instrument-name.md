@@ -13,6 +13,8 @@ The `<instrument-name>` element gives the name of an instrument.
 
 Text. Use the English name or the Thai name.
 
+On one row of a [stacked instrument](/en/v0_1/reference/elements/part/#stacked-instruments) this also says which row it is, since `row` records only a position. `ฆ้องวงใหญ่ มือขวา` names the instrument and the hand together.
+
 ## Example
 
 ```xml

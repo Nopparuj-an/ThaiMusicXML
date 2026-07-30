@@ -19,7 +19,7 @@ These are known gaps, deferred to a later version rather than overlooked. A v0.1
 - **หน้าทับ and percussion patterns.** No structured representation of the rhythmic cycle. Instruments such as ตะโพน and กลองแขก can be written out as unpitched parts, but the cycle itself is not modelled.
 - **Vocals.** No element for เนื้อร้อง, lyric alignment, or เอื้อน.
 - **Ornamentation.** Techniques such as กรอ and สะบัด have no dedicated markup. `<group>` covers subdivision only.
-- **Simultaneous pitches within one part.** A `<note>` carries one pitch, so คู่แปด and similar intervals cannot be written on a single line. Two-handed instruments split across a `hand` pair instead.
+- **Simultaneous pitches within one part.** A `<note>` carries one pitch, so คู่แปด and similar intervals cannot be written on a single line. Instruments that need more than one line split across a `stack` of parts instead.
 - **ทาง.** [`<tuning>`](/en/v0_1/reference/elements/tuning/) fixes what pitch ด sounds at, but there is no element for the ทาง a piece is played in.
 
 ### Next steps

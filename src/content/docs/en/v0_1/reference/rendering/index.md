@@ -117,25 +117,27 @@ Numerals follow from the same split. Almost everything printed is text the arran
 
 ## Score layout
 
-A full score stacks one row per part. A two-handed instrument is a pair of parts joined by `pair` (see [`<part>`](/en/v0_1/reference/elements/part/)); the two hands read as one instrument.
+A full score stacks one row per part. Parts sharing a `stack` value are the rows of one instrument (see [`<part>`](/en/v0_1/reference/elements/part/)), ordered top to bottom by `row`, and read as one instrument however many rows they run to. Three is the most seen in practice.
 
 Rows nest in four levels, from innermost to outermost:
 
-1. The two hands of a pair.
+1. The rows of one instrument.
 2. The instruments playing one line, meaning every part's row for the same `<line number="N">`.
 3. The lines of one section.
 4. The sections of the score.
 
-Skip any level that has only one member: a single-line instrument has no hand level, a solo score has no instrument level. Of the levels that remain, the innermost gets no break at all, and each level outward gets a larger one.
+Skip any level that has only one member: a single-row instrument has no row level, a solo score has no instrument level. Of the levels that remain, the innermost gets no break at all, and each level outward gets a larger one.
 
 That produces the four common arrangements:
 
-| Ensemble                         | Between hands | Between instruments | Between lines | Between sections |
-| -------------------------------- | ------------- | ------------------- | ------------- | ---------------- |
-| One single-line instrument       | n/a           | n/a                 | none          | small            |
-| One two-handed instrument        | none          | n/a                 | small         | larger           |
-| Several single-line instruments  | n/a           | none                | small         | larger           |
-| Single-line and two-handed mixed | none          | small               | larger        | largest          |
+| Ensemble                        | Between rows | Between instruments | Between lines | Between sections |
+| ------------------------------- | ------------ | ------------------- | ------------- | ---------------- |
+| One single-row instrument       | n/a          | n/a                 | none          | small            |
+| One multi-row instrument        | none         | n/a                 | small         | larger           |
+| Several single-row instruments  | n/a          | none                | small         | larger           |
+| Single-row and multi-row mixed  | none         | small               | larger        | largest          |
+
+A stack of three behaves no differently from a stack of two. The row level absorbs the extra row, and the breaks outside it are unchanged.
 
 ## Repeat brackets
 
@@ -165,7 +167,7 @@ When a [`<bow>`](/en/v0_1/reference/elements/bow/) span crosses a `<line>` bound
 
 ## Linked groups
 
-A [`<group>`](/en/v0_1/reference/elements/group/) with `link` draws a curve to whatever the paired hand plays on the same beat, showing that the two hands belong to one gesture. The connector carries no timing information: the group's subdivision already describes the rhythm.
+A [`<group>`](/en/v0_1/reference/elements/group/) with `link` draws a curve to whatever the instrument's other rows play on the same beat, showing that the rows belong to one gesture. On a stack of three the curve reaches both other rows. The connector carries no timing information: the group's subdivision already describes the rhythm.
 
 ## Cued passages
 

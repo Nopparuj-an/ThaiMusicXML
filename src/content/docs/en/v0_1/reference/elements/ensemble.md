@@ -11,7 +11,7 @@ The `<ensemble>` element lists the instruments in the score.
 
 ## Children
 
-One or more [`<part>`](/en/v0_1/reference/elements/part/) elements.
+One or more [`<part>`](/en/v0_1/reference/elements/part/) elements. Parts render in the order they appear here, and the parts of one [stacked instrument](/en/v0_1/reference/elements/part/#stacked-instruments) sit together in row order.
 
 ## Example
 
@@ -28,4 +28,4 @@ One or more [`<part>`](/en/v0_1/reference/elements/part/) elements.
 
 ## Rendering
 
-A full score stacks one row per part, and how much space separates those rows depends on whether the ensemble contains two-handed instruments. See [Score layout](/en/v0_1/reference/rendering/#score-layout) in the rendering reference.
+A full score stacks one row per part, and how much space separates those rows depends on whether the ensemble contains instruments notated on more than one row. See [Score layout](/en/v0_1/reference/rendering/#score-layout) in the rendering reference.

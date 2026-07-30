@@ -44,7 +44,7 @@ A processor may ignore anything it has no use for. A validator with no audio out
 - Every `<part>` must have exactly one `<part-data>` referencing it through `part`.
 - Every `<section-ref>` must reference a `<section>` that exists in `<structure>` through `section`.
 - `<part-data>` elements may appear in any order. A `<part-data>` must not reference the same section twice, and need not reference every section.
-- A `<part>` with `hand` must also have `pair`, and vice versa. `pair` must name a part with the opposite `hand`, and the reference must be mutual.
+- A `<part>` with `stack` must also have `row`, and vice versa. A `stack` value must be shared by at least two parts, their `row` values must run from `1` upward with no gaps or repeats, and they must be adjacent in `<ensemble>` in ascending `row` order.
 
 ### Timing
 

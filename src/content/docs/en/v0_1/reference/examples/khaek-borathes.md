@@ -24,10 +24,10 @@ description: A three-instrument score for แขกบรเทศ ชั้น�
     <part id="P1">
       <instrument-name>ระนาดเอก</instrument-name>
     </part>
-    <part id="P2" hand="right" pair="P3">
+    <part id="P2" stack="khong" row="1">
       <instrument-name>ฆ้องวงใหญ่ R</instrument-name>
     </part>
-    <part id="P3" hand="left" pair="P2">
+    <part id="P3" stack="khong" row="2">
       <instrument-name>ฆ้องวงใหญ่ L</instrument-name>
     </part>
   </ensemble>
