@@ -11,15 +11,19 @@ This includes plan, commit message, issue description, and PR description.
 - After editing docs, run `npm run check:links`. It resolves every internal link and `#anchor`, including the TreeView slugs, and exits non-zero on a break.
 - For schema/design changes, propose and get explicit sign-off before editing; once confirmed, apply it across every affected file in one pass rather than incrementally.
 
-## Normative vs non-normative
+## Design invariants
 
-The reference is split three ways, and a statement belongs in exactly one of them:
+- The renderer generates almost nothing. Structured fields (`section/@name`, `<composer>`, `<chan>`, `<repeat>`) are metadata for files and editors; what prints is text the arranger typed into an `<annotation>` or a credit. Default answer to any "should this print, and how" is "the arranger writes it". Generated labels are opt-in settings at most.
+- A measure is the fixed time unit. Every part agrees on beat count per measure.
+- Beats align vertically across parts. Cell width divides by the summed maximum subdivision per beat across all parts, not evenly by beat.
+- One `<bpm>` beat is two note slots, and tempo is independent of ชั้น.
+- Thai instruments have no notated sustain. A rest is no attack, not silence.
 
-- **Rules a document must satisfy** go in a `## Conformance` section on the element page, and are collected in `reference/conformance/index.md`.
-- **How something is displayed** goes in `reference/rendering/index.md`, which is non-normative in full. The element page gets a short `## Rendering` section pointing at the relevant anchor, not the policy itself.
-- **What an element means** stays in the element page's main prose.
+## Where a statement goes
 
-Display policy does not belong in an element page's main prose. If the question is "should this print, and how", the answer lives in the rendering reference.
+- Rules a document must satisfy: `## Conformance` on the element page, collected in `reference/conformance/index.md`.
+- How something displays: `reference/rendering/index.md`, non-normative in full. The element page gets only a short `## Rendering` pointer, never the policy.
+- What an element means: the element page's main prose.
 
 ## Writing and translations
 

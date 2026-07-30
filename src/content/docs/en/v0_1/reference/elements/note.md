@@ -56,7 +56,7 @@ Each degree of the scale has three interchangeable single-character spellings. `
 | 6      | ล    | L         |
 | 7      | ท    | T         |
 
-A document may use any of the three, but a generator should pick one spelling and keep to it throughout a file.
+A document may use any of the three, but a generator should pick one spelling and keep to it throughout a file. The choice is not merely cosmetic: the spelling a file is written in is the spelling a renderer displays, so a file that mixes them prints mixed. See [Rendering](#rendering) below.
 
 ### Thai octave modifiers
 
@@ -81,6 +81,10 @@ For percussion and other non-pitched instruments, `<part type="unpitched">` note
   </line>
 </section-ref>
 ```
+
+## Rendering
+
+A note displays in the spelling the file is written in, and an unpitched note's `sound` displays verbatim. See [Inside a measure](/en/v0_1/reference/rendering/#inside-a-measure) and [Octaves beyond the Thai spellings](/en/v0_1/reference/rendering/#octaves-beyond-the-thai-spellings).
 
 ## Conformance
 

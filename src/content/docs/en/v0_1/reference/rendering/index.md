@@ -5,7 +5,33 @@ description: Non-normative guidance for laying out and displaying a ThaiMusicXML
 
 Everything on this page is **non-normative**. It describes how a score is conventionally laid out and displayed, so that renderers agree with each other and with printed Thai scores. None of it affects whether a document is valid, and a processor that only reads or converts data can ignore all of it.
 
-Where the spec leaves a display decision open, that is deliberate. The markup records what the music is; how it looks belongs to the renderer and its settings.
+Where the spec leaves a display decision open, that is deliberate. The markup records what the music is; how it looks belongs to the renderer and its settings. [Renderer settings](#renderer-settings) collects every one of those open decisions with the default to start from.
+
+## Renderer settings
+
+The table below lists each display decision this page leaves open, with the default a renderer starts from. A renderer may expose any of them to the user, and may expose none: the defaults on their own produce a conventional score.
+
+None of these lives in the document. There is nowhere in a ThaiMusicXML file to write one and nothing to read one out of, and changing any of them leaves the markup untouched. Where a score genuinely needs one pinned down, the mechanism is a local attribute on the element concerned, the way `dim` and `mute` work on [`<parenthesis>`](/en/v0_1/reference/elements/parenthesis/). A document-wide display directive would end up fighting the reader's own preferences on every file they opened, which is why the format has none.
+
+| Decision | Default | Where |
+| --- | --- | --- |
+| Which pitch spelling appears | Whichever of the three the file is written in | [Inside a measure](#inside-a-measure) |
+| How thoroughly rests print | A hyphen for every rest in every part | [Inside a measure](#inside-a-measure) |
+| Instrument-name labels | Beside the title on a solo score, off on an ensemble score, on wherever a part is tacet | [Instrument names](#instrument-names) |
+| Headings generated from `name` and ชั้น | Off | [Section headings](#section-headings) |
+| `<tuning>`, `<license>`, and `<bpm>` on the page | Off | [The title band](#the-title-band) |
+| Numerals in labels the renderer writes itself | Arabic | [Section headings](#section-headings) |
+| Dimming and muting a cued passage | The renderer's own preference, overridden per span by `dim` and `mute` | [Cued passages](#cued-passages) |
+| Octaves outside `-1` to `1` | No default. The renderer decides, and must not pass off a capped spelling as exact | [Octaves beyond the Thai spellings](#octaves-beyond-the-thai-spellings) |
+| Typeface | Sarabun | [Typeface](#typeface) |
+
+### Typeface
+
+Set a Thai score in **Sarabun**, published under the SIL Open Font License.
+
+What decides this is the octave marks. นิคหิต and พินทุ are combining characters, and in a Thai score they are the whole of the octave notation, so a face that sets them loosely or collides them with the base letter is not merely ugly: it makes the note ambiguous. Sarabun positions both cleanly at the sizes a pitch letter is set at, and its range of weights covers the size and emphasis steps the [title band](#the-title-band) and [score layout](#score-layout) ask for. The OFL also keeps embedding the face in an exported PDF straightforward.
+
+Noto Sans Thai, also under the OFL, is an equally sound choice and is worth having as the fallback in a font stack. TH Sarabun New is the familiar face from Thai official documents and reads correctly, but it ships few styles and carries the GPL with a font exception rather than the OFL, which is more to reason about when a tool embeds it in files it hands to users.
 
 ## The measure grid
 
@@ -35,9 +61,11 @@ A four-beat measure where one beat carries a group of two is divided into five. 
 
 Within a group's share, the symbols sit closer together than adjacent beats do, so the group reads as one fast gesture rather than as separate beats. The extra whitespace falls at the group's edges.
 
-A `<note>` with a `pitch` renders as its Thai pitch letter carrying its octave mark: นิคหิต above the letter for `octave="1"`, พินทุ below it for `octave="-1"`, and no mark for `octave="0"`.
+A `<note>` with a `pitch` renders as its pitch letter carrying its octave mark: นิคหิต above the letter for `octave="1"`, พินทุ below it for `octave="-1"`, and no mark for `octave="0"`.
 
-A `<note>` in an unpitched part renders its `sound` string verbatim, whatever that string is. Sound codes are instrument-specific and the spec assigns them no glyphs, so what the author wrote is what appears in the cell. The same holds for a part whose sound values carry lyric syllables. A part using codes that need explaining should carry an [annotation](#annotations) saying what they mean.
+Which of the three spellings appears is the file's decision rather than the renderer's. A score written in Thai script displays in Thai script, one written in numerals displays in numerals. The spellings are interchangeable and a renderer knows how to convert between them, but an author who wrote a teaching edition in numerals chose that, and re-spelling it on the way to the page would overrule them. This is why [`<note>`](/en/v0_1/reference/elements/note/) asks a generator to settle on one spelling per file. A renderer may offer to display a score in a spelling other than the one it is written in; the file keeps its own either way.
+
+A `<note>` in an unpitched part renders its `sound` string verbatim, whatever that string is. Sound codes are instrument-specific and the spec assigns them no glyphs, so what the author wrote is what appears in the cell. A part using codes that need explaining should carry an [annotation](#annotations) saying what they mean.
 
 A `<rest>` renders as a hyphen.
 
