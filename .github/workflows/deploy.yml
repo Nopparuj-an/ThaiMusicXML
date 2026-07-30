@@ -30,6 +30,21 @@ jobs:
         # env:
           # PUBLIC_POKEAPI: 'https://pokeapi.co/api/v2' # Use single quotation marks for the variable value. (optional)
 
+      # Pagefind sometimes writes 0-byte files while still reporting success.
+      # An empty pagefind-entry.json takes search down site-wide, so fail here:
+      # the artifact is already uploaded, but `deploy` needs this job to pass.
+      - name: Verify search index
+        run: |
+          if [ ! -s dist/pagefind/pagefind-entry.json ]; then
+            echo "::error title=Broken search index::dist/pagefind/pagefind-entry.json is missing or empty"
+            exit 1
+          fi
+          empty=$(find dist/pagefind -type f -empty)
+          if [ -n "$empty" ]; then
+            echo "::error title=Broken search index::empty Pagefind files: $(echo "$empty" | tr '\n' ' ')"
+            exit 1
+          fi
+
   deploy:
     needs: build
     runs-on: ubuntu-latest

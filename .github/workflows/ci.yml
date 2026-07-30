@@ -32,5 +32,5 @@ jobs:
       - name: Check conformance corpus
         run: pnpm run check:corpus
 
-      - name: Build
-        run: pnpm run build
+      # - name: Build
+      #   run: pnpm run build
