@@ -203,7 +203,17 @@ When a [`<bow>`](/en/v0_1/reference/elements/bow/) span crosses a `<line>` bound
 
 ## Linked groups
 
-A [`<group>`](/en/v0_1/reference/elements/group/) with `link` draws a curve to whatever the instrument's other rows play on the same beat, showing that the rows belong to one gesture. On a stack of three the curve reaches both other rows. The connector carries no timing information: the group's subdivision already describes the rhythm.
+A [`<group>`](/en/v0_1/reference/elements/group/) with `link` draws a curve marking it as one gesture. On an instrument notated across several rows the curve runs to whatever the other rows play on the same beat, showing that the rows belong together, and on a stack of three it reaches both. On a single-row instrument there is no other row to reach and the curve arcs over the group's own notes.
+
+The curve carries no timing information either way: the group's subdivision already describes the rhythm. What it adds is certainty. A group is otherwise shown only by [its notes sitting closer together](#two-parts-subdividing-one-beat-differently), and a measure that divides into six columns leaves that spacing very little room, so `link` is what an arranger reaches for when a group has to be unmistakable.
+
+Find the two notes the curve spans by reading the whole stack at once, not one row at a time. Collect every note the instrument sounds on that beat across all of its rows, ignoring rests, and take the first and the last. Where an upper row plays `- ซ ล` against a lower row's `ฟ - -`, the beat sounds ฟ ซ ล, so the curve runs from ฟ to ล even though neither row holds both ends of it. Anchoring instead to the edges of each beat would catch the rests sitting there and draw the curve backwards between two silences.
+
+The two notes settle which way it turns. A run ending higher up the page than it began leaves the first note at that letter's upper left, rises, and comes in flat above the last one. A run ending lower leaves at the upper right, runs flat, and turns down onto the last note. Either way the curve arches over the notes it spans rather than cutting between them, and it steps off the first note by about half a letter so it starts at the corner rather than on top of it.
+
+Curves go above the notes, never below. That holds for the single-row arc as much as for the connector, and it is not a matter of taste: printed Thai scores put every curve over the notation. The arc bows up from the same height the connector attaches at, so a row carrying one of each has both leaving at the same level.
+
+Where a linked group also carries a [bow](#bow-spans-across-a-line-break), the two curves want the same space. v0.1 does not say how to separate them.
 
 ## Cued passages
 

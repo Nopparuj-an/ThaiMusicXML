@@ -301,10 +301,9 @@ function checkRules(doc) {
       // Groups
       for (const group of descendants(sr, "group")) {
         if (!group.hasAttribute("link")) continue;
-        if (!part?.hasAttribute("stack")) {
-          err("link on a <group> whose part has no stack; there is no other row to link to");
-          continue;
-        }
+        // With no stack the curve marks the group's own notes, so there is no
+        // other row it has to be able to reach.
+        if (!part?.hasAttribute("stack")) continue;
         const stack = part.getAttribute("stack");
         const others = (stacks.get(stack) ?? []).filter((m) => m.part !== part);
         const notated = others.some(

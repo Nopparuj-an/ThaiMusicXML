@@ -77,6 +77,29 @@ export function arrivals(shareList, slotCounts, tightness = 1) {
  * left of the first symbol matches the one right of the last and the last note
  * clears the barline. Printed scores set it this way.
  */
+// The two notes a link curve spans.
+//
+// A linked beat belongs to the instrument, not to one of its rows, so this
+// reads every row of the stack together. Rests are skipped, and what is left is
+// ordered by column, which is time order. "ฟ - -" under "- ซ ล" sounds ฟ ซ ล,
+// so the run is bounded by ฟ and ล even though neither row holds both ends.
+//
+// Each row comes in as its slots, the column each slot fell on, and a vertical
+// position where smaller is higher up the page. Returns null when fewer than
+// two notes sound, since one note is not a run and there is nothing to span.
+export function linkSpan(rows) {
+  const sounding = [];
+  for (const row of rows)
+    row.slots.forEach((slot, i) => {
+      if (slot.kind === "rest") return;
+      sounding.push({ column: row.columns[i], y: row.y });
+    });
+
+  if (sounding.length < 2) return null;
+  sounding.sort((a, b) => a.column - b.column);
+  return { first: sounding[0], last: sounding.at(-1) };
+}
+
 export function columnX(column, total, cellLeft, cellWidth, spread) {
   const step = (cellWidth * spread) / total;
   return cellLeft + cellWidth / 2 + (column - (total + 1) / 2) * step;
@@ -246,33 +269,44 @@ export function layout(score, options = {}) {
         const shareList = shares(perPart);
         const total = shareList.reduce((a, b) => a + b, 0);
 
-        // Group spacing is set in type, so express it in columns for this
-        // measure and never let it exceed one, which would spread a group out
-        // rather than tighten it.
+        // Pack a beat's symbols as tightly as the type allows. The wanted
+        // fraction of a column is the target; the legibility floor wins where a
+        // crowded measure has made columns narrower than the letters standing
+        // in them, which is what a group of three does on a portrait page.
         const columnWidth = (cellWidth * s.spread) / total;
-        const tightness = Math.min(1, (s.groupSpacing * s.pitchSize) / columnWidth);
+        const floor = (s.minSymbolAdvance * s.pitchSize) / columnWidth;
+        const tightness = Math.min(1, Math.max(s.groupTightness, floor));
 
-        rows.forEach((r, rowIndex) => {
+        const x = (column) => columnX(column, total, cellLeft, cellWidth, s.spread);
+
+        // Place every row before drawing anything, because a link curve on one
+        // row has to know where another row's symbols ended up.
+        const placed = rows.map((r, rowIndex) => {
           const measure = r.line.measures[m];
-          if (!measure) return;
-          const slotCounts = measure.beats.map((b) => b.slots.length);
-          const columns = arrivals(shareList, slotCounts, tightness);
-          const baseline = gridTop + rowIndex * s.rowHeight + s.rowHeight / 2 + s.pitchSize / 3;
+          if (!measure) return null;
+          return {
+            part: r.part,
+            measure,
+            columns: arrivals(
+              shareList,
+              measure.beats.map((b) => b.slots.length),
+              tightness,
+            ),
+            baseline:
+              gridTop + rowIndex * s.rowHeight + s.rowHeight / 2 + s.pitchSize / 3,
+          };
+        });
 
-          measure.beats.forEach((beat, beatIndex) => {
+        for (const row of placed) {
+          if (!row) continue;
+          row.measure.beats.forEach((beat, beatIndex) => {
             beat.slots.forEach((slotValue, slotIndex) => {
               const text = glyph(slotValue, s);
               if (!text) return;
               elements.push({
                 kind: "text",
-                x: columnX(
-                  columns[beatIndex][slotIndex],
-                  total,
-                  cellLeft,
-                  cellWidth,
-                  s.spread,
-                ),
-                y: baseline,
+                x: x(row.columns[beatIndex][slotIndex]),
+                y: row.baseline,
                 text,
                 size: s.pitchSize,
                 anchor: "middle",
@@ -280,7 +314,74 @@ export function layout(score, options = {}) {
               });
             });
           });
-        });
+        }
+
+        // Link curves, once the symbols they join are positioned.
+        for (const row of placed) {
+          if (!row) continue;
+          row.measure.beats.forEach((beat, beatIndex) => {
+            if (!beat.link) return;
+
+            // The gesture is whatever the instrument sounds on this beat, so
+            // read every row of the stack at once rather than a row at a time.
+            const stackRows = row.part.stack
+              ? placed.filter((o) => o && o.part.stack === row.part.stack)
+              : [row];
+
+            const span = linkSpan(
+              stackRows.map((o) => ({
+                slots: o.measure.beats[beatIndex]?.slots ?? [],
+                columns: o.columns[beatIndex] ?? [],
+                y: o.baseline,
+              })),
+            );
+            if (!span) return;
+
+            const top = (note) => note.y - s.linkTop * s.pitchSize;
+            const x1 = x(span.first.column);
+            const x2 = x(span.last.column);
+
+            if (span.first.y === span.last.y) {
+              // A level run, so the curve only has to mark it. It bows above
+              // the notes, taking whatever room the row leaves.
+              const y = top(span.first);
+              const rowTop = row.baseline - s.rowHeight / 2 - s.pitchSize / 3;
+              elements.push({
+                kind: "arc",
+                x1,
+                x2,
+                y,
+                rise: Math.min(s.linkRise * s.pitchSize, y - rowTop - 1),
+                role: "link",
+              });
+              return;
+            }
+
+            // Across rows the stroke arches over the run. Which way it turns
+            // follows from where the two notes fell: a run ending higher up the
+            // page leaves the first note upward and comes in flat above the
+            // last, and one ending lower leaves flat and turns down. Either way
+            // it stays above the notes rather than cutting between them.
+            const rising = span.last.y < span.first.y;
+
+            // Step off the first note's centre so the stroke starts at that
+            // letter's corner, on the side it departs towards.
+            const from = x1 + (rising ? -1 : 1) * s.linkSideStep * s.pitchSize;
+            const y1 = top(span.first);
+            const y2 = top(span.last);
+
+            elements.push({
+              kind: "curve",
+              x1: from,
+              y1,
+              x2,
+              y2,
+              cx: rising ? from : x2,
+              cy: rising ? y2 : y1,
+              role: "link",
+            });
+          });
+        }
       }
 
       y = gridBottom;

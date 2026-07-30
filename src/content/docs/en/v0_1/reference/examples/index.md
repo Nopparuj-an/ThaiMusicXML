@@ -7,7 +7,7 @@ Full scores demonstrating ThaiMusicXML concepts in context.
 
 ## [Khaek Borathes](/en/v0_1/reference/examples/khaek-borathes/)
 
-A three-instrument piece (ระนาดเอก, ฆ้องวงใหญ่ R, ฆ้องวงใหญ่ L) covering:
+A three-instrument piece (ระนาดเอก, ฆ้องวงใหญ่) covering:
 
 - [`<header>`](/en/v0_1/reference/elements/header/) with a `<title>`
 - [`<direction>`](/en/v0_1/reference/elements/direction/) setting [`<chan>`](/en/v0_1/reference/elements/chan/) and [`<bpm>`](/en/v0_1/reference/elements/bpm/)

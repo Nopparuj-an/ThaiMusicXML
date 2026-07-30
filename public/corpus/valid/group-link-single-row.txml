@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- INVALID: link is only valid on a group whose part has a stack. A single-row instrument has no other row to link to. -->
+<!-- link on a group whose part has no stack. There is no other row to reach,
+     so the curve marks the group's own notes. -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
   <header><title>Invalid example</title></header>
   <structure><section id="s1"/></structure>

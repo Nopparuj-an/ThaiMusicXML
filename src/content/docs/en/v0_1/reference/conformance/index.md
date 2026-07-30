@@ -138,7 +138,7 @@ Where an element takes either plain text or [`<text>`](/en/v0_1/reference/elemen
 - `<chan>`'s `value` must be one of the five listed levels, matched exactly. Validators must reject any other value.
 - `<nathap>`'s `value` and `<tuning>`'s `reference` accept any non-empty string. Validators should warn on a value outside the recommended list on the element's page, and must not reject it.
 - `<bpm>` content must be a positive integer.
-- `link` on a `<group>` requires the containing `<part>` to have a `stack`, and requires at least one other row in that stack to be a notated part. A stack whose other rows are all lyric has no beat position for the connector to reach.
+- `link` is valid on any `<group>`. Where the containing `<part>` has a `stack`, at least one other row in that stack must be a notated part, since a stack whose other rows are all lyric has no beat position for the connector to reach. Where the part has no `stack`, the curve marks the group's own notes and there is nothing further to satisfy.
 
 ### Span markers
 

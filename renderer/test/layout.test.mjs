@@ -8,7 +8,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { shares, arrivals, columnX } from "../src/layout.mjs";
+import { shares, arrivals, columnX, linkSpan } from "../src/layout.mjs";
 
 const near = (actual, expected, note) =>
   assert.ok(
@@ -119,4 +119,73 @@ test("the run of symbols centers in the cell", () => {
 test("a beat no part subdivides still counts as one", () => {
   assert.deepEqual(shares([[], []]), []);
   assert.deepEqual(shares([[1, 1]]), [1, 1]);
+});
+
+// Link curves.
+//
+// These use column numbers and a row index standing in for vertical position,
+// smaller being higher up the page, so they stay statements about which notes
+// the curve joins rather than about where it lands on paper.
+
+const note = (pitch) => ({ kind: "note", pitch });
+const rest = { kind: "rest" };
+
+test("a linked beat spans the notes, not the slots at the beat's edges", () => {
+  // Khaek Borathes measure 3: the upper row opens on a rest and the lower row
+  // ends on two. Anchoring to the beat's own edges would catch those rests and
+  // draw the curve backwards, between two silences.
+  const span = linkSpan([
+    { slots: [rest, note("ซ"), note("ล")], columns: [4, 5, 6], y: 0 },
+    { slots: [note("ฟ"), rest, rest], columns: [4, 5, 6], y: 1 },
+  ]);
+
+  assert.equal(span.first.column, 4, "the run opens on ฟ in the lower row");
+  assert.equal(span.first.y, 1);
+  assert.equal(span.last.column, 6, "and closes on ล in the upper row");
+  assert.equal(span.last.y, 0);
+});
+
+test("the run is read across rows, not row by row", () => {
+  // ฟ ซ ล is one gesture the instrument plays, and neither row holds both ends
+  // of it. A renderer reading one row at a time cannot find this span.
+  const rows = [
+    { slots: [rest, note("ซ"), note("ล")], columns: [4, 5, 6], y: 0 },
+    { slots: [note("ฟ"), rest, rest], columns: [4, 5, 6], y: 1 },
+  ];
+  const span = linkSpan(rows);
+
+  for (const row of rows) {
+    const alone = linkSpan([row]);
+    assert.ok(
+      alone === null || alone.first.column !== span.first.column || alone.last.column !== span.last.column,
+      "no single row yields the whole run",
+    );
+  }
+});
+
+test("a run ending higher up the page rises, one ending lower falls", () => {
+  const rising = linkSpan([
+    { slots: [rest, note("ซ"), note("ล")], columns: [4, 5, 6], y: 0 },
+    { slots: [note("ฟ"), rest, rest], columns: [4, 5, 6], y: 1 },
+  ]);
+  const falling = linkSpan([
+    { slots: [note("ซ"), rest, rest], columns: [4, 5, 6], y: 0 },
+    { slots: [rest, note("ร"), note("ฟ")], columns: [4, 5, 6], y: 1 },
+  ]);
+
+  assert.ok(rising.last.y < rising.first.y, "ends above where it began");
+  assert.ok(falling.last.y > falling.first.y, "ends below where it began");
+});
+
+test("a single row's linked group spans its own notes and stays level", () => {
+  const span = linkSpan([{ slots: [note("ด"), note("ร")], columns: [5, 6], y: 0 }]);
+
+  assert.equal(span.first.column, 5);
+  assert.equal(span.last.column, 6);
+  assert.equal(span.first.y, span.last.y, "a level run gets an arc, not a connector");
+});
+
+test("a beat sounding fewer than two notes has no run to span", () => {
+  assert.equal(linkSpan([{ slots: [note("ด"), rest], columns: [5, 6], y: 0 }]), null);
+  assert.equal(linkSpan([{ slots: [rest, rest], columns: [5, 6], y: 0 }]), null);
 });

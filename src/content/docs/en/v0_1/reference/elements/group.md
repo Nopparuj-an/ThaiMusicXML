@@ -13,7 +13,7 @@ The `<group>` element subdivides a single beat into two or more equal parts, for
 
 | Attribute | Required | Type    | Description                                                                                          |
 | --------- | -------- | ------- | ----------------------------------------------------------------------------------------------------- |
-| `link`    | No       | boolean | Draws a visual connector from this group to the corresponding beat in the instrument's other rows. See [Conformance](#conformance) below. |
+| `link`    | No       | boolean | Draws a curve marking the group as one gesture, reaching the instrument's other rows where it has any. See [Conformance](#conformance) below. |
 
 ## Children
 
@@ -49,9 +49,13 @@ See [Beats anchor to the right](/en/v0_1/reference/rendering/#beats-anchor-to-th
 
 `<bow>` and `<parenthesis>` markers may appear inside a `<group>` alongside its notes and rests. They have zero duration and do not count toward the division. A group with two `<note>` children and a `<bow>` marker still splits its beat in half rather than in three. Spans opened or closed by these markers may cross a `<group>`'s boundary freely, the same way they already cross `<measure>` and `<line>` boundaries.
 
-`link` is for instruments notated on more than one row (see [`<part>`](/en/v0_1/reference/elements/part/)'s `stack` attribute). It marks this group's rapid subdivision as connected to what the instrument's other rows play on the same beat, and the renderer draws a curve between them. `link` is a rendering hint with no effect on playback or timing, since the group's subdivision already describes the rhythm on its own.
+`link` marks the group as one connected gesture and asks for a curve saying so. It is a rendering hint with no effect on playback or timing, since the group's subdivision already describes the rhythm on its own.
 
-On the two-row instrument this was designed for there is one other row and one connector. On a stack of three the connector reaches every other row, which is as far as a boolean can go. A group that needs to reach one specific row and not another cannot say so in v0.1.
+Where the curve goes depends on the instrument. On one notated across several rows (see [`<part>`](/en/v0_1/reference/elements/part/)'s `stack` attribute), it runs to what the other rows play on the same beat, marking the rows as belonging to one gesture. On a single-row instrument there is no other row to reach and the curve sits over the group's own notes instead.
+
+That second case is what makes the attribute useful on the solo scores most Thai music is written as. A group is otherwise shown only by its notes sitting closer together, and in a crowded measure that spacing has little room to work in. `link` is how an arranger says a particular group needs to be unmistakable.
+
+On the two-row instrument the connector was designed for there is one other row and one curve. On a stack of three it reaches every other row, which is as far as a boolean can go. A group that needs to reach one specific row and not another cannot say so in v0.1.
 
 ## Example
 
@@ -82,9 +86,9 @@ On the two-row instrument this was designed for there is one other row and one c
 - A `<group>` must contain at least two `<note>` or `<rest>` children.
 - A `<group>` must not contain a nested `<group>`. Subdivisions in ThaiMusicXML v0.1 go one level deep.
 - `<bow>` and `<parenthesis>` markers inside a `<group>` do not count toward the equal division of its beat.
-- `link` is only valid on a `<group>` whose containing `<part>` has a `stack` attribute. A `<group>` in a single-row instrument's part has no other row to link to.
-- At least one other row in that stack must be a notated part, meaning `type="pitched"` or `type="unpitched"`. A [lyric part](/en/v0_1/reference/elements/part/#part-types) may carry `stack`, but a lyric measure holds words rather than beats, so there is no position for the connector to reach. A `link` whose stack contains no other notated row is invalid.
-- `link` describes a connection between rows, so declare it on one side only. Marking the group in the upper row is the convention; there is no need to mark the beat it reaches as well.
+- `link` is valid on any `<group>`. Where the containing `<part>` has no `stack`, the curve marks the group's own notes rather than reaching another row.
+- Where the `<part>` does have a `stack`, at least one other row in it must be a notated part, meaning `type="pitched"` or `type="unpitched"`. A [lyric part](/en/v0_1/reference/elements/part/#part-types) may carry `stack`, but a lyric measure holds words rather than beats, so there is no position for the connector to reach. A `link` whose stack contains no other notated row is invalid.
+- Across rows, `link` describes a connection, so declare it on one side only. Marking the group in the upper row is the convention; there is no need to mark the beat it reaches as well.
 - `link` points at whatever the stack's other rows play at this group's position. Because all parts agree on beat count within a measure (see [`<section-ref>`](/en/v0_1/reference/elements/section-ref/#conformance)), that position is always well-defined. Another row may hold a plain `<note>`, a `<rest>`, or a `<group>` of its own there.
 
 ## Rendering

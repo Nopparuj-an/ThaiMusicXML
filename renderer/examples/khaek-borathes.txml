@@ -10,9 +10,11 @@
       <chan value="1" />
       <bpm>60</bpm>
     </direction>
+    <annotation>ท่อน 1</annotation>
     <repeat times="2">
       <section id="s1" name="ท่อน 1" />
     </repeat>
+    <annotation>ท่อน 2</annotation>
     <section id="s2" name="ท่อน 2" />
   </structure>
   <ensemble>

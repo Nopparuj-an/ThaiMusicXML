@@ -33,25 +33,61 @@ export const defaults = {
   // Portrait cells are 64pt wide, and a beat carrying a group of three splits
   // one into six columns rather than four. That is what caps the type: much
   // above this and a dense measure has nowhere to put the extra width.
-  pitchSize: 13,
-  rowHeight: 25,
+  pitchSize: 12,
+
+  // Tall enough for the single-row link arc to sit under the notes without
+  // meeting the rule below, allowing for พินทุ hanging under a letter.
+  rowHeight: 22,
 
   // How much of the cell the run of symbols spans, the rest falling as equal
   // margins either side. OPEN. At 1 the columns divide the whole cell and the
   // margins come to half a column each.
-  spread: 0.9,
+  //
+  // This sets the distance between beats, and so also the distance between a
+  // beat and the group beside it. It does not reach inside a group, whose
+  // symbols are held apart by minSymbolAdvance instead.
+  spread: 0.7,
+
+  // The link curve. A group marked link="true" gets one: reaching the other
+  // rows of a stacked instrument, or arcing over its own notes where the
+  // instrument has only one row. Always above the notes, never below, which is
+  // where Thai scores put their curves.
+  //
+  // All of it OPEN, and all of it a multiple of the type size, so retuning
+  // pitchSize carries the curve with it instead of leaving it behind.
+  //
+  // How far above the baseline a curve attaches. Both kinds share it, so an
+  // arc and a connector leaving the same row start at the same height. It has
+  // to clear the tallest thing over a letter, which is นิคหิต.
+  linkTop: 0.85,
+
+  // How far the connector steps off the first note's centre, so it starts at
+  // that letter's corner rather than on top of it. Roughly half a letter.
+  linkSideStep: 0.4,
+
+  // How far the single-row arc bows above its own ends. A ceiling rather than a
+  // fixed height: a short rowHeight leaves less than this and wins.
+  linkRise: 0.45,
+
+  linkStroke: 0.8,
 
   // How close a beat's own symbols sit, as a multiple of the type size rather
   // than a fraction of the cell. A group has to read as one fast gesture
   // instead of as separate beats, and the slack that leaves falls to its left
   // because the last symbol is pinned to the arrival.
   //
-  // Measuring it in type rather than in columns is what keeps it safe: a cell
-  // holding a group of three divides into six columns whatever the page is, so
-  // a fixed fraction of a column collides with itself as soon as the type is
-  // large or the cell is narrow. Layout clamps this to a full column, so a
-  // crowded measure falls back to even spacing instead of overlapping. OPEN.
-  groupSpacing: 0.82,
+  // How close a beat's own symbols sit, as a fraction of a column. OPEN.
+  groupTightness: 0.7,
+
+  // The tightest two symbols may sit, as a multiple of the type size. This is
+  // a floor, not a ceiling: a group packs to whichever of the two is looser, so
+  // it is as tight as it can be without the letters touching.
+  //
+  // The floor has to be here because the room available depends on the
+  // measure. A cell holding a group of three divides into six columns rather
+  // than four, so the same fraction of a column is a much smaller distance,
+  // and on a portrait page it is already close to the width of a letter.
+  minSymbolAdvance: 0.52,
 
   // From the "Score layout" table. A solo single-row instrument takes no break
   // between lines and a small one between sections. OPEN as measurements.
