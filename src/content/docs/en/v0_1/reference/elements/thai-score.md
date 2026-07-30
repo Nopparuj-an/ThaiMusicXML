@@ -51,7 +51,19 @@ The URI identifies the vocabulary. Nothing is required to fetch it.
 
 UTF-8 matters more here than in most formats, since `pitch` values and instrument names are routinely written in Thai script.
 
+## Which one a processor dispatches on
+
+The namespace URI, not `version`. A future version carries a new namespace URI alongside its new `version` value, so the URI alone tells a processor whether it can read the document at all.
+
+`version` is informational within a namespace it already understands. A processor that meets `https://thaimusicxml.anan.ovh/ns/0.1` with `version="0.2"` on it should carry on reading as 0.1 and warn, because the namespace is the part that was promised to change.
+
 ## Notes
 
 - Must be the single root element of the document.
-- The `version` attribute identifies which ThaiMusicXML schema the document conforms to. A future version will carry a new namespace URI alongside a new `version` value.
+- The `version` attribute identifies which ThaiMusicXML schema the document conforms to.
+
+## Conformance
+
+- `<thai-score>` must be the single root element, carrying both `version` and the ThaiMusicXML namespace.
+- A processor must reject a document whose root is in a namespace it does not implement.
+- Validators should warn when `version` does not match the namespace it appears in, and must not reject on that alone.

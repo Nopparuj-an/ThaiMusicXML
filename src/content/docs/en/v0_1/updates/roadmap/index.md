@@ -17,7 +17,7 @@ ThaiMusicXML v0.1 is the first version. The standard is being defined and implem
 
 These are known gaps, deferred to a later version rather than overlooked. A v0.1 document can only record them as free-form `<annotation>` text.
 
-- **หน้าทับ and percussion patterns.** No structured representation of the rhythmic cycle. Instruments such as ตะโพน and กลองแขก can be written out as unpitched parts, but the cycle itself is not modelled.
+- **หน้าทับ and percussion patterns.** [`<nathap>`](/en/v0_1/reference/elements/nathap/) records which cycle a piece is set against, but the cycle itself is not modelled: nothing describes its length or its strokes, and nothing can be derived from the name. Instruments such as ตะโพน and กลองแขก are written out as unpitched parts as before.
 - **Multiple verses.** A [lyric part](/en/v0_1/reference/elements/part/#part-types) carries one set of words. A second verse over the same melody has to be written as a second lyric part, and nothing marks the two as alternatives to each other.
 - **เอื้อน as such.** A [`<rest>`](/en/v0_1/reference/elements/rest/) in a lyric row locates เอื้อน and says how long it runs, which is as far as v0.1 goes. There is no marker naming it, and no way to notate the shape of the vocalization.
 - **Ornamentation.** Techniques such as กรอ and สะบัด have no dedicated markup. `<group>` covers subdivision only.

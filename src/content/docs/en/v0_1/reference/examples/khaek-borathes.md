@@ -12,6 +12,7 @@ description: A three-instrument score for แขกบรเทศ ชั้น�
   <structure>
     <annotation>หน้าทับปรบไก่</annotation>
     <direction>
+      <nathap value="ปรบไก่" />
       <chan value="1" />
       <bpm>60</bpm>
     </direction>
@@ -166,10 +167,9 @@ description: A three-instrument score for แขกบรเทศ ชั้น�
         <measure number="2"><rest/><note pitch="ด"/><rest/><note pitch="ม"/></measure>
         <measure number="3">
           <rest/><rest/><rest/>
-          <group link="true">
-            <rest/>
-            <note pitch="ซ"/>
-            <note pitch="ล"/>
+          <group>
+            <note pitch="ฟ"/>
+            <rest/><rest/>
           </group>
         </measure>
         <measure number="4"><rest/><note pitch="ด"/><rest/><note pitch="ร"/></measure>

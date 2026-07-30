@@ -39,7 +39,7 @@ Text, written the way it should be read. A syllable is the unit because Thai is 
 
 A lyric measure holds as many or as few items as the words need, and the count is what decides whether they align to beats. Match the measure's beat count and each item takes a beat; write any other number and the run is placed in the cell without reference to the beats.
 
-Both are ordinary ways to write a lyric line. A vocal line frequently does not divide the way the melody underneath it does, and three syllables written across a four-beat measure say the words belong to that measure without claiming which beat each one starts on. See [Lyric rows](/en/v0_1/reference/rendering/#lyric-rows).
+Both are ordinary ways to write a lyric line. A vocal line frequently does not divide the way the melody underneath it does, and three syllables written across a four-beat measure say the words belong to that measure without claiming which beat each one lands on. See [Lyric rows](/en/v0_1/reference/rendering/#lyric-rows).
 
 This is why a lyric part is the one part exempt from agreeing on beat count. It still shares the line and measure grid with every other part. See [`<section-ref>`](/en/v0_1/reference/elements/section-ref/#conformance).
 

@@ -15,6 +15,14 @@ One bpm beat is **two** measure beats, meaning two consecutive `<note>`, `<rest>
 
 The factor of two is there because a note slot is a subdivision, not the pulse. Tapping along with every slot of a four-slot measure gives twice the number a musician would call the tempo, the same way counting eighth notes gives twice a Western tempo marking. Counting in pairs puts ThaiMusicXML tempo on the scale people actually name.
 
+## Walking the slots
+
+A slot lasts `30 / bpm` seconds, since one bpm beat covers two of them. At `<bpm>90</bpm>` that is a third of a second.
+
+Attacks fall a uniform slot apart unless a [`<group>`](/en/v0_1/reference/elements/group/) intervenes, so a player walks the slots at that interval and subdivides each group backwards inside its own slot. Beat `n` of a measure arrives `n` slots from the measure's leading edge, which puts the measure's last note on its closing boundary. See [Where the children fall](/en/v0_1/reference/elements/group/#where-the-children-fall).
+
+One consequence of arrivals falling at the end of their slots: a piece's first note sounds one slot after nominal zero rather than at it. Nothing in a ThaiMusicXML file sits on an absolute timeline, so the offset costs nothing and a player may simply start at the first note. It matters only when synchronizing against an external clock, where the leading edge of the first measure is the reference and the first note is one slot later.
+
 ## Relationship to ชั้น
 
 Tempo and [`<chan>`](/en/v0_1/reference/elements/chan/) are independent. Changing ชั้น at a fixed `<bpm>` does not speed the music up or slow it down.

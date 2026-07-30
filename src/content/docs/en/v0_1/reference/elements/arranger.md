@@ -13,7 +13,7 @@ Much of the repertoire is traditional, so a score often has no composer to name 
 
 ## Content
 
-Either plain text or up to three `<text>` children, one per alignment, the same content model [`<annotation>`](/en/v0_1/reference/elements/annotation/#content) uses. The `align` attribute accepts `left`, `center`, or `right`, and each alignment may appear at most once.
+Either plain text or up to three [`<text>`](/en/v0_1/reference/elements/text/) children, one per alignment, the same content model [`<annotation>`](/en/v0_1/reference/elements/annotation/#content) uses. `align` is required on each and accepts `left`, `center`, or `right`, and each alignment may appear at most once.
 
 Plain text renders centered. That differs from `<annotation>`, where plain text is left-aligned, because a credit sits under the title rather than in the body of the score.
 
@@ -44,5 +44,5 @@ The text prints exactly as written. Nothing is prefixed or appended, so a score 
 
 ## Conformance
 
-- A `<arranger>` must not mix plain text with `<text>` children.
+- Where an `<arranger>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
 - At most one `<text>` child per `align` value.

@@ -23,9 +23,33 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
           slug: "header",
           children: [
             { name: "<title>", slug: "title" },
-            { name: "<composer>", slug: "composer" },
-            { name: "<lyricist>", slug: "lyricist" },
-            { name: "<arranger>", slug: "arranger" },
+            {
+              name: "<composer>",
+              slug: "composer",
+              children: [{ name: "<text>", slug: "text" }],
+            },
+            {
+              name: "<lyricist>",
+              slug: "lyricist",
+              children: [
+                {
+                  name: "<text>",
+                  color: "var(--sl-color-gray-4)",
+                  note: "Same element as <composer> > <text> above",
+                },
+              ],
+            },
+            {
+              name: "<arranger>",
+              slug: "arranger",
+              children: [
+                {
+                  name: "<text>",
+                  color: "var(--sl-color-gray-4)",
+                  note: "Same element as <composer> > <text> above",
+                },
+              ],
+            },
             { name: "<tuning>", slug: "tuning" },
             { name: "<license>", slug: "license" },
           ],
@@ -37,13 +61,20 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
             {
               name: "<annotation>",
               slug: "annotation",
-              children: [{ name: "<text>", slug: "annotation#content" }],
+              children: [
+                {
+                  name: "<text>",
+                  color: "var(--sl-color-gray-4)",
+                  note: "Same element as <composer> > <text> above",
+                },
+              ],
             },
             { name: "<br>", slug: "br" },
             {
               name: "<direction>",
               slug: "direction",
               children: [
+                { name: "<nathap>", slug: "nathap" },
                 { name: "<chan>", slug: "chan" },
                 { name: "<bpm>", slug: "bpm" },
               ],

@@ -16,7 +16,7 @@ Its scope comes from where it sits. An annotation in `<structure>` applies to th
 
 ## Content
 
-Either plain text or one `<text>` child per alignment. The `<text>` children are optional, but each alignment can appear at most once.
+Either plain text or one [`<text>`](/en/v0_1/reference/elements/text/) child per alignment. The `<text>` children are optional, but each alignment can appear at most once.
 
 | Child | Required | Description |
 | ----- | -------- | ----------- |
@@ -26,7 +26,9 @@ Either plain text or one `<text>` child per alignment. The `<text>` children are
 
 The `align` attribute accepts `left`, `center`, or `right`. The renderer treats these children as three separate positions on one line rather than as adjacent inline text.
 
-Plain text is shorthand for a left-aligned text child. Do not mix plain text with `<text>` children.
+Plain text is shorthand for a left-aligned text child.
+
+Where an element has `<text>` children, they carry the whole content and any text sitting beside them is ignored. This is what lets an `<annotation>` be indented across several lines without the surrounding whitespace being read as content. Text that is not merely whitespace is still discarded, so a validator warns.
 
 ## Example
 
@@ -55,8 +57,8 @@ Plain text is shorthand for a left-aligned text child. Do not mix plain text wit
 
 ## Conformance
 
-- An `<annotation>` must not mix plain text with `<text>` children.
 - At most one `<text>` child per `align` value.
+- Where an `<annotation>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
 
 ## Rendering
 

@@ -33,10 +33,19 @@ The `<chan>` element sets the ชั้น (chan) rhythmic layer level.
 <chan value="1" />
 ```
 
+## What it does
+
+Nothing that a processor computes from, in v0.1. `<chan>` records the level and carries it to whatever reads the file.
+
+It changes no timing: [`<bpm>`](/en/v0_1/reference/elements/bpm/) fixes the slot rate, the bpm beat is two slots whatever the ชั้น, and so the notes keep their rate through a change of level. What moves is the ฉิ่ง, and the ฉิ่ง is written out by the arranger as an ordinary unpitched part rather than generated from this element. A player that ignored `<chan>` entirely would sound the score correctly.
+
+So it is metadata: for an editor to show, for a library to index on, for a playback engine to use however it sees fit. What it is not is an instruction the format asks anyone to act on.
+
 ## Notes
 
 - ชั้น does not set the tempo. At a fixed [`<bpm>`](/en/v0_1/reference/elements/bpm/) the notes keep their rate through a change of ชั้น; what changes is how many note slots the melody is spread over, and so how often the ฉิ่ง falls.
+- [`<nathap>`](/en/v0_1/reference/elements/nathap/) sits beside it in `<direction>` and is metadata on the same terms.
 
 ## Conformance
 
-- `value` must be one of the five values listed above. Validators must reject any other value.
+- `value` must be one of the five values listed above, matched exactly as written. Validators must reject any other value, `0.50` and `.5` among them.

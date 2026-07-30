@@ -30,13 +30,17 @@ Each `<line number="N">` inside an `<ending>` replaces line `N` for the passes l
 
 On a pass not covered by any `<ending>`, the part plays its regular `<line>` elements unchanged. A `<section-ref>` with no `<ending>` elements plays identically on every pass.
 
+An ending replaces the end of a section. Its lines must run consecutively through to the section's last line, so a five-line section admits an ending over line 5, over lines 4 and 5, and so on up to all five, but never over line 3 alone. This is what the word means: a section that carried on normally after the variation would not be ending on it.
+
+The `number` values stay absolute, counting from the start of the section the way [`<line>`](/en/v0_1/reference/elements/line/) numbers always do. They are then redundant with the rule above, which is deliberate. An author who miscounts writes a number that no line matches and gets an error, where a count of lines from the end would have silently replaced the wrong ones.
+
 ### Pass numbers
 
 `pass` counts absolute passes of the section, straight through from its first play to its last, regardless of which layer of [`<repeat>`](/en/v0_1/reference/elements/repeat/) produced each one. A section nested in two `times="2"` repeats has a total pass count of 4, so `pass="4"` names its last play and `pass="2,4"` puts a different variation at two points across the four.
 
 ### Spans across an overridden line
 
-[`<bow>`](/en/v0_1/reference/elements/bow/) and [`<parenthesis>`](/en/v0_1/reference/elements/parenthesis/) markers pair up by playback order, not by their position in the file. An `<ending>` sits after all the regular lines in the document but replaces one of them during playback, so the two orders come apart wherever a span reaches into a line an ending overrides.
+[`<bow>`](/en/v0_1/reference/elements/bow/) and [`<parenthesis>`](/en/v0_1/reference/elements/parenthesis/) markers pair up in the order the lines are read once a pass is resolved, which is not the same as their order in the file. An `<ending>` sits after all the regular lines in the document but stands in for one of them, so the two orders come apart wherever a span reaches into a line an ending overrides.
 
 Resolve the pass first, then match. Take the lines the part actually plays on that pass, regular lines with the ending's substitutions in place, and pair each `start` with the next `stop` in that sequence. Each pass is matched on its own.
 
@@ -78,8 +82,9 @@ Leaving the `stop` out of the ending's line is an error, not a shorthand: that p
 ## Conformance
 
 - `<ending>` is only valid inside a `<section-ref>` whose section has a total pass count greater than `1`. See [`<repeat>`](/en/v0_1/reference/elements/repeat/#total-pass-count).
-- Every value in `pass` must be an integer from `1` to the section's total pass count.
+- Every value in `pass` must be an integer from `1` to the section's total pass count, listed in ascending order with no repeats.
 - Each `<line number="N">` in an `<ending>` must match the `number` of a line already present in the enclosing `<section-ref>`.
+- An `<ending>`'s lines must form a consecutive run ending on the section's last line, in ascending order. An ending over the middle of a section is invalid.
 - An `<ending>` line must have the same number of `<measure>` elements as the line it replaces, and corresponding measures must have the same beat count. This preserves the [cross-part synchronization rule](/en/v0_1/reference/elements/section-ref/#conformance): on any given pass, once every part's endings are resolved, all parts referencing the section still agree on line count, measure count, and beat count. Only the notes inside a measure may vary.
 - Two `<ending>` elements in the same `<section-ref>` must not cover the same line number for the same pass.
 - An `<ending>` must carry at least one `<annotation>`. An ending prints away from the line it replaces, so it needs a caption saying which part it belongs to and when it applies.

@@ -31,12 +31,19 @@ A [`<direction>`](/en/v0_1/reference/elements/direction/) takes effect where it 
 
 A direction inside a `<repeat>` is re-read on each pass, so it applies again on every repetition.
 
+## Annotations and breaks
+
+An [`<annotation>`](/en/v0_1/reference/elements/annotation/) or [`<br>`](/en/v0_1/reference/elements/br/) inside a `<repeat>` is printed once, where it sits in the document, and is not repeated per pass.
+
+The two behave differently from `<direction>` because they are different kinds of thing. A direction governs how the music sounds, so it has to apply again every time the music comes round. An annotation is page furniture, and the page is printed once and read straight down however many times the score is played through.
+
 ## Example
 
 ```xml
 <structure>
   <annotation>Example Comments</annotation>
   <direction>
+    <nathap value="ปรบไก่" />
     <chan value="1" />
     <bpm>65</bpm>
   </direction>

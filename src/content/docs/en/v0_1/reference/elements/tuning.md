@@ -13,11 +13,13 @@ A `pitch` value names a degree of the Thai scale, not a frequency. ด is the fi
 
 ## Attributes
 
-| Attribute   | Required | Type        | Description                              |
-| ----------- | -------- | ----------- | ---------------------------------------- |
-| `reference` | Yes      | enumeration | The tuning ด is written against. See below. |
+| Attribute   | Required | Type   | Description                              |
+| ----------- | -------- | ------ | ---------------------------------------- |
+| `reference` | Yes      | string | The tuning ด is written against. See below. |
 
 ## Values
+
+`reference` is a free-form string. The values below are the ones worth spelling consistently, but the list is a starting point rather than a closed set.
 
 | Value | Description |
 | ----- | ----------- |
@@ -25,6 +27,8 @@ A `pitch` value names a degree of the Thai scale, not a frequency. ด is the fi
 | `khrueang-sai` | เครื่องสาย and มโหรี at the กรมศิลปากร reference pitch |
 | `c-major` | ด sounds as C, the usual choice for teaching material and for scores shared with Western instruments |
 | `bb-major` | ด sounds as B♭, the closest common Western fit for Thai string ensembles |
+
+Tuning practice is wider than four values, and pinning the set now would reject scores that are perfectly well described by a name this list has not reached yet. A validator therefore accepts any string and warns on one it does not recognize, which still catches `c-majro` without turning an unusual tuning into an invalid document. [`<nathap>`](/en/v0_1/reference/elements/nathap/) is open for the same reason; [`<chan>`](/en/v0_1/reference/elements/chan/) is not, because its five levels are the whole set.
 
 ## Example
 
@@ -39,6 +43,12 @@ A `pitch` value names a degree of the Thai scale, not a frequency. ด is the fi
 
 - Thai tuning divides the octave into seven near-equal steps, so no Western key matches it exactly. The `c-major` and `bb-major` values name the closest practical mapping, not an identity.
 - `<tuning>` is optional. A score meant only for reading, or one whose tuning is not known, can leave it out.
+
+## Conformance
+
+- `reference` is required and may be any non-empty string.
+- Validators should warn on a `reference` outside the recommended list above, and must not reject it.
+- At most one `<tuning>` per [`<header>`](/en/v0_1/reference/elements/header/).
 
 ## Rendering
 

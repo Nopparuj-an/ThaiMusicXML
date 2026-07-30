@@ -12,6 +12,7 @@ The `<direction>` element contains performance directions for the score.
 
 ## Children
 
+- [`<nathap>`](/en/v0_1/reference/elements/nathap/) - หน้าทับ (rhythmic cycle)
 - [`<chan>`](/en/v0_1/reference/elements/chan/) - ชั้น (rhythmic layer)
 - [`<bpm>`](/en/v0_1/reference/elements/bpm/) - tempo
 
@@ -19,6 +20,7 @@ The `<direction>` element contains performance directions for the score.
 
 ```xml
 <direction>
+  <nathap value="ปรบไก่" />
   <chan value="1" />
   <bpm>65</bpm>
 </direction>
@@ -26,4 +28,4 @@ The `<direction>` element contains performance directions for the score.
 
 ## Conformance
 
-- `<chan>` and `<bpm>` are each optional and may appear at most once, in any order. A `<direction>` can set either, both, or neither.
+- `<nathap>`, `<chan>`, and `<bpm>` are each optional and may appear at most once, in any order. A `<direction>` can set any of them, all of them, or none.

@@ -16,6 +16,7 @@ None of these lives in the document. There is nowhere in a ThaiMusicXML file to 
 | Decision | Default | Where |
 | --- | --- | --- |
 | Which pitch spelling appears | Whichever of the three the file is written in | [Inside a measure](#inside-a-measure) |
+| Case of romanized pitch letters | Uppercase | [Inside a measure](#inside-a-measure) |
 | How thoroughly rests print | A hyphen for every rest in every notated part, blank in a lyric row | [Inside a measure](#inside-a-measure) |
 | Lyric row type size | Smaller than the notated rows | [Lyric rows](#lyric-rows) |
 | Instrument-name labels | Beside the title on a solo score, off on an ensemble score, on wherever a part is tacet | [Instrument names](#instrument-names) |
@@ -58,13 +59,29 @@ Beat positions line up vertically across every part playing the same measure, so
 
 Count what each beat needs, taking the largest count across all parts. A beat every part plays as one [`<note>`](/en/v0_1/reference/elements/note/) or [`<rest>`](/en/v0_1/reference/elements/rest/) counts as one. A beat that any part subdivides with a [`<group>`](/en/v0_1/reference/elements/group/) counts as that group's number of children. Divide the cell into as many equal shares as the counts add up to, then give each beat the shares it counted for.
 
-A four-beat measure where one beat carries a group of two is divided into five. That beat takes two fifths and the other three take one fifth each. A part that plays a single note on the grouped beat still gets the full two fifths for it, which is what keeps beat one of every part starting at the same position.
+A four-beat measure where one beat carries a group of two is divided into five. That beat takes two fifths and the other three take one fifth each. A part that plays a single note on the grouped beat still gets the full two fifths for it.
 
-Within a group's share, the symbols sit closer together than adjacent beats do, so the group reads as one fast gesture rather than as separate beats. The extra whitespace falls at the group's edges.
+### Beats anchor to the right
+
+A beat arrives on its last slot rather than its first, so the shares a beat is given are the run-up to it and every part's note for that beat lands together at the far end of them. See [`<group>`](/en/v0_1/reference/elements/group/#where-the-children-fall), which is where that rule is stated.
+
+A part playing one note where another plays a group of two puts that note level with the group's *second* symbol, not its first. The measure's last note sits at the cell's right-hand edge, and the measure reads backwards from there toward the ลูกตก it arrives on.
+
+This is the deepest difference between laying out a Thai score and laying out a Western one. An engraver who anchors beats to their onset will produce a grid that looks nearly right and lines the wrong notes up.
+
+### Two parts subdividing one beat differently
+
+One part may play a group of two where another plays a group of three. The larger count wins the shares, three here, and each part then divides that width evenly among its own children.
+
+The two parts meet on the beat's arrival and nowhere else inside it. That is correct rather than a compromise: two against three genuinely do not coincide, and the arrival is the only alignment the grid promises. Taking a common multiple instead would give that beat six shares out of nine in a four-beat measure, squeezing the other three beats into a third of the cell to make room for notes that still would not line up.
+
+Within a group's share, the symbols sit closer together than adjacent beats do, so the group reads as one fast gesture rather than as separate beats. The extra whitespace falls to the left of the group, ahead of its first symbol, since its last symbol is pinned to the beat.
 
 A `<note>` with a `pitch` renders as its pitch letter carrying its octave mark: นิคหิต above the letter for `octave="1"`, พินทุ below it for `octave="-1"`, and no mark for `octave="0"`.
 
 Which of the three spellings appears is the file's decision rather than the renderer's. A score written in Thai script displays in Thai script, one written in numerals displays in numerals. The spellings are interchangeable and a renderer knows how to convert between them, but an author who wrote a teaching edition in numerals chose that, and re-spelling it on the way to the page would overrule them. This is why [`<note>`](/en/v0_1/reference/elements/note/) asks a generator to settle on one spelling per file. A renderer may offer to display a score in a spelling other than the one it is written in; the file keeps its own either way.
+
+Letter case is not a fourth spelling. A romanized `pitch` may be written in either case, and which case appears on the page is the renderer's decision rather than the file's, defaulting to uppercase. `pitch="d"` and `pitch="D"` are the same note written two ways, so preserving the difference would be preserving nothing.
 
 A `<note>` in an unpitched part renders its `sound` string verbatim, whatever that string is. Sound codes are instrument-specific and the spec assigns them no glyphs, so what the author wrote is what appears in the cell. A part using codes that need explaining should carry an [annotation](#annotations) saying what they mean.
 
@@ -78,7 +95,11 @@ A [lyric part](/en/v0_1/reference/elements/part/#part-types) renders as a row of
 
 Where the syllables sit inside a cell comes from a count. A lyric measure holding exactly as many items as the measure has beats renders one item per beat, each under the beat it belongs to. A lyric measure holding any other number renders as a single group centered in the cell, its items evenly spaced among themselves and lined up with nothing.
 
-The centered form is not a fallback for a badly written measure. A vocal line often does not divide the way the melody does, and three syllables across a four-beat measure say the words belong to that measure without claiming which beat each one starts on. Both forms can appear in the same score, measure by measure.
+The aligned form anchors the way everything else does, on [the beat's arrival](#beats-anchor-to-the-right). A syllable belonging to beat one sits under the position beat one lands on, which is the right-hand end of its share rather than the left, so the words line up with the notes above them.
+
+The centered form does not anchor at all. That is the point of it: a run of syllables placed without reference to the beats is making no claim about which beat any of them falls on, so there is nothing for it to line up with and a renderer should not pin it to the arrivals.
+
+The centered form is not a fallback for a badly written measure. A vocal line often does not divide the way the melody does, and three syllables across a four-beat measure say the words belong to that measure without claiming which beat each one lands on. Both forms can appear in the same score, measure by measure.
 
 Lyric rows take no part in the [subdivision count](#inside-a-measure). That count divides a cell by what the notated parts need, so a lyric measure of three items in a four-beat measure divides nothing, and a lyric measure of ten does not squeeze the notes above it. The cell is sized by the music, and the words fit into what the music leaves.
 
@@ -122,7 +143,7 @@ Turn the labels on when any part is tacet somewhere in the score. A part that om
 
 ## Section headings
 
-A [`<section>`](/en/v0_1/reference/elements/section/) does not print a heading of its own. Its `name` labels the section for the file and for an editor's interface, and the ชั้น set by a [`<direction>`](/en/v0_1/reference/elements/direction/) governs playback. Neither reaches the page by itself.
+A [`<section>`](/en/v0_1/reference/elements/section/) does not print a heading of its own. Its `name` labels the section for the file and for an editor's interface, and the ชั้น set by a [`<direction>`](/en/v0_1/reference/elements/direction/) records the level for whatever reads the file. Neither reaches the page by itself.
 
 The heading a reader sees comes from an [`<annotation>`](/en/v0_1/reference/elements/annotation/) the arranger put in `<structure>` before the section. `สามชั้น ท่อน ๑` is typed, not assembled from `name` and `<chan>`. Leaving it to the arranger keeps the wording theirs: which sections get a heading at all, whether the ชั้น is named, and how, are editorial decisions that vary between scores.
 
