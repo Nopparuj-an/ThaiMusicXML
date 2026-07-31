@@ -43,7 +43,7 @@ Nested repeats multiply. A section wrapped in a `times="2"` inside another `time
 </structure>
 ```
 
-That plays ท่อน 1 four times, then ท่อน 2 once, then the whole thing again: sixteen bars of ท่อน 1 and two of ท่อน 2 in total, in the order 1 1 1 1 2 1 1 1 1 2.
+That plays ท่อน 1 twice, then ท่อน 2 once, then repeats the whole pair again: four bars of ท่อน 1 and two of ท่อน 2 in total, in the order 1 1 2 1 1 2.
 
 ### Total pass count
 

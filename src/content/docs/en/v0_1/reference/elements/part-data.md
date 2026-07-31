@@ -5,6 +5,8 @@ description: Contains the music data for a single instrument
 
 The `<part-data>` element contains the music data for a single instrument.
 
+`<part>` in `<ensemble>` declares that the instrument exists. `<part-data>` is where its notes actually live.
+
 ## Parent
 
 [`<thai-score>`](/en/v0_1/reference/elements/thai-score/)

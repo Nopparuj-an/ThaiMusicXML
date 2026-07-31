@@ -5,6 +5,8 @@ description: A named section of the score
 
 The `<section>` element defines a named section of the score.
 
+`<section>` declares that a section exists and where it falls in the play order. It holds no notes.
+
 ## Parents
 
 - [`<structure>`](/en/v0_1/reference/elements/structure/)

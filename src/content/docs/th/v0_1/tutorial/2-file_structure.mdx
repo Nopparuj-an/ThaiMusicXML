@@ -1,0 +1,116 @@
+---
+title: โครงสร้างไฟล์
+description: วิธีจัดระเบียบไฟล์ ThaiMusicXML
+---
+
+import ExampleXml from "@/components/ExampleXml.astro";
+
+ตัวอย่าง [Hello World](/th/v0_1/tutorial/1-hello_world/) ใช้เครื่องดนตรีชิ้นเดียวและท่อนเดียว ตัวอย่างนี้เพิ่มเครื่องดนตรีชิ้นที่สอง หมายเหตุประกอบและทิศทางการแสดงใน `<structure>` รวมถึงการซ้ำ
+
+![Example Song](../../../../../assets/docs/v0_1/tutorial/2-file_structure/image.png)
+
+## ตัวอย่าง XML
+
+<ExampleXml file="tutorial2-file-structure.txml" />
+
+## ส่วนหัว
+
+`<header>` อาจมี `<composer>` ควบคู่ไปกับ `<title>`:
+
+```xml
+<header>
+  <title>Example Song</title>
+  <composer>Example Composer</composer>
+</header>
+```
+
+## โครงสร้าง
+
+องค์ประกอบ `<structure>` อาจมีลูกหลายประเภทที่อธิบายโครงสร้างโน้ต:
+
+```xml
+<structure>
+  <annotation>Example Comments</annotation>
+  <direction>
+    <chan value="1" />
+    <bpm>65</bpm>
+  </direction>
+  <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
+  <repeat times="2">
+    <section id="s1" name="ท่อน 1" />
+  </repeat>
+  <annotation>End of section 1 message</annotation>
+</structure>
+```
+
+- **`<annotation>`**: หมายเหตุอิสระที่ใส่ไว้ตรงไหนก็ได้ การเล่นจะข้ามไปไม่นำมาใช้ หมายเหตุประกอบใน `<structure>` มีผลกับทั้งโน้ต ส่วนหมายเหตุประกอบภายใน `<section-ref>` มีผลเฉพาะพาร์ตนั้น อาจใส่เป็นข้อความธรรมดาซึ่งจะจัดชิดซ้าย หรือใส่ `<text>` ได้อย่างละไม่เกินหนึ่งตัวต่อการจัดตำแหน่งหนึ่งแบบ:
+
+  ```xml
+  <annotation>
+    <text align="left">ท่อน 1</text>
+    <text align="center">Lao Duang Duen</text>
+    <text align="right">หน้า 1</text>
+  </annotation>
+  ```
+
+  ค่า `align` เป็นได้ทั้ง `left`, `center`, หรือ `right` ห้ามใส่ข้อความธรรมดาปนกับ `<text>` ลูก
+
+- **`<direction>`**: ทิศทางการแสดง ตัวอย่างนี้กำหนดชั้น (`<chan>`) และจังหวะ (`<bpm>`) ชั้นเป็นระบบชั้นจังหวะของดนตรีไทย `value="1"` หมายถึงชั้นเดียว
+- **`<section>`**: ท่อนที่มีชื่อ ห่อด้วย **`<repeat>`** เพื่อเล่นมากกว่าหนึ่งครั้ง `<repeat>` ซ้อนกันได้ และเมื่อซ้อนกันจำนวนครั้งจะคูณกัน
+
+หมายเลขบรรทัดและห้องนับใหม่ภายในองค์ประกอบแม่ของตัวเอง บรรทัดเริ่มนับจาก `1` ในแต่ละ `<section-ref>` ส่วนห้องเริ่มนับจาก `1` ในแต่ละ `<line>`:
+
+```xml
+<section-ref section="s1">
+  <line number="1">
+    <measure number="1">...</measure>
+    <measure number="2">...</measure>
+  </line>
+  <line number="2">
+    <measure number="1">...</measure>
+  </line>
+</section-ref>
+
+<section-ref section="s2">
+  <line number="1">
+    <measure number="1">...</measure>
+  </line>
+</section-ref>
+```
+
+ลำดับของท่อนคือตำแหน่งของ `<section>` แต่ละตัวเมื่อเทียบกับตัวอื่นใน `<structure>` ไม่ใช่จากแอตทริบิวต์ ลำดับนั้นไม่สานต่อการนับบรรทัดหรือห้องข้ามท่อน และการซ้ำท่อนก็ไม่เปลี่ยนตัวเลขเหล่านี้
+
+## เครื่องดนตรีหลายตัว
+
+`<ensemble>` อาจมีหลายพาร์ต:
+
+```xml
+<ensemble>
+  <part id="P1">
+    <instrument-name>Ranat Ek</instrument-name>
+  </part>
+  <part id="P2" type="unpitched">
+    <instrument-name>Ching</instrument-name>
+  </part>
+</ensemble>
+```
+
+เครื่องดนตรีแต่ละตัวมีองค์ประกอบ `<part-data>` ของตัวเองระบุผ่านแอตทริบิวต์ `part` P1 คือระนาดเอก P2 คือฉิ่ง P2 มี `type="unpitched"` โน้ตจึงใช้ `sound` แทน `pitch`
+
+## ข้อมูลพาร์ต
+
+แต่ละ `<part-data>` เชื่อมกับท่อนผ่าน `<section-ref>` พาร์ตฉิ่งมีหมายเหตุประกอบอธิบายการเขียนโน้ต:
+
+```xml
+<part-data part="P2">
+  <section-ref section="s1">
+    <annotation>0 = ฉิ่ง / 1 = ฉับ</annotation>
+    <line number="1">
+      <measure number="1"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
+      ...
+    </line>
+  </section-ref>
+</part-data>
+```
+
+หมายเหตุประกอบภายใน `<section-ref>` ใช้กับพาร์ตนั้นเท่านั้น จึงบันทึกธรรมเนียมการเขียนโน้ตฉิ่งโดยไม่รกเครื่องดนตรีอื่น: `0` หมายถึงฉิ่ง (เปิด) และ `1` หมายถึงฉับ (ปิด)

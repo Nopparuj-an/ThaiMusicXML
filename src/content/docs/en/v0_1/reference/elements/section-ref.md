@@ -5,6 +5,8 @@ description: References a section and contains its music data
 
 The `<section-ref>` element references a section and contains its music data.
 
+`<section>` in `<structure>` declares that the section exists. `<section-ref>` is where one part's notes for that section actually live.
+
 ## Parent
 
 [`<part-data>`](/en/v0_1/reference/elements/part-data/)

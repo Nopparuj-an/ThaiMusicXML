@@ -14,6 +14,7 @@ import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
 const DOCS = "src/content/docs";
+const PAGES = "src/pages";
 const DEFAULT_LOCALE = "en";
 const TREEVIEW = join(DOCS, DEFAULT_LOCALE, "v0_1/reference/elements/index.mdx");
 
@@ -24,6 +25,9 @@ const PUNCTUATION =
   /[ -⁯⸀-⹿\\'!"#$%&()*+,./:;<=>?@[\]^`{|}~]/g;
 
 function slugify(heading) {
+  // Explicit {#id} overrides the auto-generated slug
+  const explicit = heading.match(/\{#([^}]+)\}$/);
+  if (explicit) return explicit[1];
   return heading
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // links keep their text
     .replace(/[*_~]/g, "")
@@ -37,12 +41,12 @@ function slugify(heading) {
 // not references and must not be collected or checked.
 const stripFences = (src) => src.replace(/^```[\s\S]*?^```/gm, "");
 
-function walk(dir) {
+function walk(dir, pattern = /\.mdx?$/) {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
     return statSync(path).isDirectory()
-      ? walk(path)
-      : /\.mdx?$/.test(path)
+      ? walk(path, pattern)
+      : pattern.test(path)
         ? [path]
         : [];
   });
@@ -67,6 +71,18 @@ for (const file of files) {
     [...body.matchAll(/^#{1,6}\s+(.+?)\s*$/gm)].map((m) => slugify(m[1])),
   );
   pages.set(pageSlug(file).replace(/\/$/, ""), anchors);
+}
+
+// Astro pages outside the content collection (e.g. the Playground) are
+// routes too, just with no headings to check anchors against.
+if (existsSync(PAGES)) {
+  for (const file of walk(PAGES, /\.astro$/)) {
+    const rel = relative(PAGES, file).split(sep).join("/");
+    const slug = "/" + rel.replace(/\.astro$/, "").replace(/(^|\/)index$/, "");
+    if (!pages.has(slug.replace(/\/$/, ""))) {
+      pages.set(slug.replace(/\/$/, ""), new Set());
+    }
+  }
 }
 
 // A locale that has not been translated yet falls back to the default one, so

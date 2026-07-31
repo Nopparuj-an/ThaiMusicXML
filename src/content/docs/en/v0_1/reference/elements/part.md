@@ -5,6 +5,8 @@ description: Defines a single instrument in the ensemble
 
 The `<part>` element defines a single instrument in the ensemble.
 
+`<part>` declares that an instrument exists and describes its type, name, and whether it stacks with another row. It holds no notes.
+
 ## Parent
 
 [`<ensemble>`](/en/v0_1/reference/elements/ensemble/)
