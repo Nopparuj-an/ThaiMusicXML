@@ -230,6 +230,19 @@ export function parse(source) {
         if (note) structure.push({ kind: "annotation", ...note });
       } else if (child.localName === "br") structure.push({ kind: "br" });
       else if (child.localName === "repeat") collect(child);
+      else if (child.localName === "direction") {
+        // None of nathap, chan, or bpm reach the page on their own - see each
+        // element's own Rendering section - but chan is what "the ชั้น in
+        // force" for a generated heading reads, so its place in the sequence
+        // still matters even though the value itself is not printed here.
+        const chanEl = el(child, "chan");
+        const bpmEl = el(child, "bpm");
+        structure.push({
+          kind: "direction",
+          chan: chanEl ? chanEl.getAttribute("value") : null,
+          bpm: bpmEl ? Number(text(bpmEl)) : null,
+        });
+      }
     }
   };
   collect(el(score, "structure"));
@@ -283,6 +296,8 @@ export function parse(source) {
     composer: credit(el(header, "composer")),
     lyricist: credit(el(header, "lyricist")),
     arranger: credit(el(header, "arranger")),
+    tuning: el(header, "tuning")?.getAttribute("reference") ?? null,
+    license: text(el(header, "license")),
     parts,
     sections,
     structure,

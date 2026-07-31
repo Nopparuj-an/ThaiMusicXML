@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Session 3 test fixture: octaves beyond the Thai spellings, and the two
+     opt-in settings nothing implemented before this session
+     (generateHeadings, showHeaderExtras). Rendered once with defaults and
+     once with both settings on, for inspection. Not linked from any doc
+     page, the same way khaek-borathes-test.txml is not. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>ทดสอบ: ออกตาฟ และตัวเลือกเสริม</title>
+    <tuning reference="c-major" />
+    <license>CC BY-SA 4.0</license>
+  </header>
+  <structure>
+    <direction>
+      <nathap value="ปรบไก่" />
+      <chan value="2" />
+      <bpm>75</bpm>
+    </direction>
+    <section id="s1" name="ท่อน 1" />
+    <direction>
+      <chan value="3" />
+    </direction>
+    <annotation>เขียนหัวข้อเอง</annotation>
+    <section id="s2" name="ท่อน 2" />
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด" octave="-2" /><note pitch="ด" octave="-1" /><note pitch="ด" /><note pitch="ด" octave="1" />
+        </measure>
+        <measure number="2">
+          <note pitch="ด" octave="2" /><note pitch="ร" octave="3" /><note pitch="ม" octave="-3" /><note pitch="ฟ" />
+        </measure>
+      </line>
+    </section-ref>
+    <section-ref section="s2">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ซ" /><note pitch="ล" /><note pitch="ท" /><note pitch="ด" octave="1" />
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

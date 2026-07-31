@@ -8,8 +8,9 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { shares, arrivals, columnX, linkSpan, layout } from "../src/layout.mjs";
+import { shares, arrivals, columnX, linkSpan, layout, glyph } from "../src/layout.mjs";
 import { parse } from "../src/parse.mjs";
+import { defaults } from "../src/settings.mjs";
 
 const near = (actual, expected, note) =>
   assert.ok(
@@ -120,6 +121,28 @@ test("the run of symbols centers in the cell", () => {
 test("a beat no part subdivides still counts as one", () => {
   assert.deepEqual(shares([[], []]), []);
   assert.deepEqual(shares([[1, 1]]), [1, 1]);
+});
+
+// Octave marks.
+//
+// นิคหิต and พินทุ spell exactly three octaves. Outside that range the mark
+// clamps to whichever side it is on: octave 2 reads the same as octave 1.
+// The author's call, over a distinguishing mark that made the page harder to
+// read - see HANDOVER.md.
+
+const noteSlot = (octave) => ({ kind: "note", pitch: "ด", sound: null, octave });
+
+test("an octave of -1, 0, or 1 gets the plain Thai mark", () => {
+  assert.equal(glyph(noteSlot(0), defaults), "ด");
+  assert.equal(glyph(noteSlot(1), defaults), "ดํ");
+  assert.equal(glyph(noteSlot(-1), defaults), "ดฺ");
+});
+
+test("an octave beyond -1..1 clamps to the same mark as the nearest exact octave", () => {
+  assert.equal(glyph(noteSlot(2), defaults), glyph(noteSlot(1), defaults));
+  assert.equal(glyph(noteSlot(5), defaults), glyph(noteSlot(1), defaults));
+  assert.equal(glyph(noteSlot(-2), defaults), glyph(noteSlot(-1), defaults));
+  assert.equal(glyph(noteSlot(-5), defaults), glyph(noteSlot(-1), defaults));
 });
 
 // Link curves.
@@ -256,4 +279,536 @@ test("a heading annotation moves with the grid it introduces", () => {
 
   assert.ok(headingPage > 0, "the heading did not fit trailing section 1");
   assert.equal(headingPage, gridPage, "the heading and its grid share a page");
+});
+
+// Repeat brackets.
+//
+// "line-repeat" only draws a bracket for times >= 2: a bare ซ้ำ for times="2",
+// "N ครั้ง" above that, and nothing at all for the default of 1, which is not
+// a repeat.
+
+const byRole = (page, role) => page.elements.filter((el) => el.role === role);
+
+test("a line-repeat brackets its range and labels it, unless times is 1", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure>
+    <section id="s1" name="s1">
+      <line-repeat first="1" last="1" times="2"/>
+      <line-repeat first="2" last="2"/>
+      <line-repeat first="3" last="4" times="3"/>
+    </section>
+  </structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      <line number="2"><measure number="1"><note pitch="ร"/></measure></line>
+      <line number="3"><measure number="1"><note pitch="ม"/></measure></line>
+      <line number="4"><measure number="1"><note pitch="ฟ"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const labels = byRole(pages[0], "repeat-label").map((el) => el.text);
+
+  assert.deepEqual(labels.sort(), ["3 ครั้ง", "ซ้ำ"], "times=1 draws no bracket at all");
+
+  const gridRight = defaults.page.margin + (defaults.page.width - 2 * defaults.page.margin) / 8;
+  for (const el of byRole(pages[0], "repeat-label")) {
+    assert.ok(el.x > gridRight, "the bracket sits right of the grid, not inside it");
+  }
+});
+
+// Variant endings.
+//
+// An ending renders below its section as its own detached grid, with its own
+// annotation as heading. lineIndex is pinned to 1 when an ending draws so
+// that a part's own section-ref annotation - which only prints when
+// layBoxes() sees lineIndex 0 - cannot fire a second time underneath it.
+
+test("an ending prints its own heading and grid below the section, without repeating the part's own annotation", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure>
+    <repeat times="2">
+      <section id="s1" name="s1"/>
+    </repeat>
+  </structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <annotation>คำอธิบาย</annotation>
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      <ending pass="2">
+        <annotation>จบครั้งที่ ๒</annotation>
+        <line number="1"><measure number="1"><note pitch="ล"/></measure></line>
+      </ending>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const texts = textsOn(pages[0]);
+
+  const partAnnotationCount = texts.filter((t) => t === "คำอธิบาย").length;
+  assert.equal(partAnnotationCount, 1, "the section-ref annotation prints once, not once per ending too");
+
+  assert.ok(texts.includes("จบครั้งที่ ๒"), "the ending's own annotation prints as its heading");
+  assert.ok(texts.includes("ด") && texts.includes("ล"), "both the section's note and the ending's replacement note print");
+
+  const mainNoteY = byRole(pages[0], "symbol").find((el) => el.text === "ด").y;
+  const endingNoteY = byRole(pages[0], "symbol").find((el) => el.text === "ล").y;
+  assert.ok(endingNoteY > mainNoteY, "the ending's grid sits below the section's own grid");
+});
+
+// Bow and parenthesis spans.
+
+test("a bow span crossing a line resolves to the notes at its true start and stop, not the markers' neighbours", () => {
+  // Start falls before ด, stop falls before ฟ (after ม), so the span is
+  // ด..ม even though ฟ is the next note written after the stop marker.
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <bow type="start" direction="in"/>
+          <note pitch="ด"/>
+          <note pitch="ร"/>
+        </measure>
+      </line>
+      <line number="2">
+        <measure number="1">
+          <note pitch="ม"/>
+          <bow type="stop"/>
+          <note pitch="ฟ"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const spans = parse(doc).music.P1.s1.bowSpans;
+
+  assert.equal(spans.length, 1);
+  assert.equal(spans[0].direction, "in");
+  assert.deepEqual(spans[0].first, { lineIndex: 0, measureIndex: 0, beatIndex: 0, slotIndex: 0 });
+  assert.deepEqual(spans[0].last, { lineIndex: 1, measureIndex: 0, beatIndex: 0, slotIndex: 0 });
+});
+
+test("a bow span crossing a line break draws one arc per line, same facing on every segment", () => {
+  const crossingScore = (direction) => `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <bow type="start" direction="${direction}"/>
+          <note pitch="ด"/>
+        </measure>
+      </line>
+      <line number="2">
+        <measure number="1">
+          <note pitch="ร"/>
+          <bow type="stop"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+
+  // "in": regression coverage for a real fixture bug caught this session -
+  // a <bow type="stop"/> placed before any note in its own line closes on
+  // the *previous* line's last note (per "true start and true stop, not
+  // the marker's neighbours"), so a span meant to cross a line break needs
+  // at least one note ahead of the stop marker on the line it lands in, or
+  // it never actually reaches that line at all.
+  const inArcs = byRole(layout(parse(crossingScore("in"))).pages[0], "bow");
+  assert.equal(inArcs.length, 2, "one arc segment per line the span touches");
+  for (const arc of inArcs) assert.ok(arc.rise > 0, "\"in\" domes up on every segment, cut or not");
+
+  // "out": the same crossing, mirrored. Both segments keep the facing
+  // throughout, not just at the segment nearest either true end.
+  const outArcs = byRole(layout(parse(crossingScore("out"))).pages[0], "bow");
+  assert.equal(outArcs.length, 2, "one arc segment per line here too");
+  for (const arc of outArcs) assert.ok(arc.rise < 0, "\"out\" dips on every segment, cut or not");
+});
+
+test("bow direction is the arc's own facing, not a separate tip mark: \"in\" domes up, \"out\" is the same arc mirrored", () => {
+  const bowScore = (direction) => `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <bow type="start" direction="${direction}"/>
+          <note pitch="ด"/><note pitch="ร"/>
+          <bow type="stop"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+
+  const inArc = byRole(layout(parse(bowScore("in"))).pages[0], "bow")[0];
+  const outArc = byRole(layout(parse(bowScore("out"))).pages[0], "bow")[0];
+
+  assert.ok(inArc.rise > 0, "\"in\" domes up: the middle sits above the tips");
+  assert.ok(outArc.rise < 0, "\"out\" mirrors it: the middle dips down, toward the row's own notes");
+  assert.equal(inArc.rise, -outArc.rise, "same amplitude, opposite facing");
+
+  // No separate tick/direction mark of any kind - the arc's own facing is
+  // the whole signal. Only grid ruling (rowHeight-tall verticals) should be
+  // among the "line" elements; nothing bow-specific.
+  const nonGridLines = layout(parse(bowScore("in")))
+    .pages[0].elements.filter((el) => el.kind === "line" && el.x1 === el.x2 && el.y2 - el.y1 !== defaults.rowHeight);
+  assert.equal(nonGridLines.length, 0, "no tick or other mark beyond the arc itself");
+});
+
+test("a parenthesis span dims its notes and its brackets, on when dim=true or the renderer default is on, off otherwise", () => {
+  const parenScore = (dimAttr) => `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <parenthesis type="start"${dimAttr}/>
+          <note pitch="ด"/><note pitch="ร"/>
+          <parenthesis type="stop"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+
+  const undimmed = layout(parse(parenScore(""))).pages[0];
+  assert.ok(byRole(undimmed, "symbol").every((el) => !el.dim), "no dim by default, no dim attribute");
+  assert.ok(byRole(undimmed, "parenthesis").every((el) => !el.dim));
+
+  const explicit = layout(parse(parenScore(' dim="true"'))).pages[0];
+  assert.ok(
+    byRole(explicit, "symbol").filter((el) => ["ด", "ร"].includes(el.text)).every((el) => el.dim),
+    "dim=\"true\" dims every note the span covers",
+  );
+  assert.ok(byRole(explicit, "parenthesis").every((el) => el.dim), "and both brackets too");
+
+  const byDefault = layout(parse(parenScore("")), { dimParenthesisDefault: true }).pages[0];
+  assert.ok(
+    byRole(byDefault, "symbol").filter((el) => ["ด", "ร"].includes(el.text)).every((el) => el.dim),
+    "the renderer's own default dims a span with no explicit dim attribute at all",
+  );
+
+  const overridden = layout(parse(parenScore(' dim="false"')), { dimParenthesisDefault: true }).pages[0];
+  assert.ok(
+    byRole(overridden, "symbol").filter((el) => ["ด", "ร"].includes(el.text)).every((el) => !el.dim),
+    "dim=\"false\" overrides the renderer's own default back off for this one span",
+  );
+});
+
+test("a span entirely inside a single-line ending still resolves and draws", () => {
+  // Regression: renderGridLine() used to pin every ending line to the same
+  // constant lineIndex for notePos/rowGeom bookkeeping, which never matched
+  // the real, 0-based lineIndex resolveSpans() recorded for a span opening
+  // and closing inside the ending's own lines - so it silently failed to
+  // draw at all.
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure>
+    <repeat times="2">
+      <section id="s1" name="s1"/>
+    </repeat>
+  </structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      <ending pass="2">
+        <line number="1">
+          <measure number="1">
+            <parenthesis type="start" dim="true"/>
+            <note pitch="ล"/><note pitch="ซ"/>
+            <parenthesis type="stop"/>
+          </measure>
+        </line>
+      </ending>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const marks = byRole(pages[0], "parenthesis");
+
+  assert.equal(marks.length, 2, "the ending's own span resolves and draws");
+  assert.ok(marks.every((m) => m.dim), "and picks up its dim attribute");
+});
+
+test("a parenthesis span crossing a line break brackets only its true ends", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <parenthesis type="start"/>
+          <note pitch="ด"/>
+        </measure>
+      </line>
+      <line number="2">
+        <measure number="1">
+          <note pitch="ร"/>
+          <parenthesis type="stop"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const marks = byRole(pages[0], "parenthesis");
+
+  assert.equal(marks.length, 2, "the true start and true stop only, nothing extra at the line break");
+  assert.deepEqual(
+    marks.map((m) => m.text).sort(),
+    ["(", ")"],
+  );
+});
+
+// Lyric rows.
+
+test("a lyric measure matching the beat count aligns to the beats' own arrivals", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble>
+    <part id="P1"/>
+    <part id="P2" type="lyric"/>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><syllable>a</syllable><syllable>b</syllable><syllable>c</syllable><syllable>d</syllable></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const notes = byRole(pages[0], "symbol");
+  const syllables = byRole(pages[0], "lyric");
+
+  assert.equal(syllables.length, 4);
+  ["a", "b", "c", "d"].forEach((text, i) => {
+    const note = notes[i];
+    const syllable = syllables.find((s) => s.text === text);
+    near(syllable.x, note.x, `syllable ${text} lines up with beat ${i + 1}`);
+  });
+});
+
+test("a lyric measure not matching the beat count centers as one group, and a lyric rest is blank rather than a hyphen", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble>
+    <part id="P1"/>
+    <part id="P2" type="lyric"/>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><syllable>x</syllable><rest/><syllable>z</syllable></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const syllables = byRole(pages[0], "lyric");
+
+  assert.deepEqual(syllables.map((s) => s.text), ["x", "z"], "the rest contributes no hyphen, just a gap");
+
+  const left = defaults.page.margin;
+  const cellWidth = (defaults.page.width - 2 * left) / 8;
+  const expectedFirst = columnX(1, 3, left, cellWidth, defaults.spread);
+  const expectedLast = columnX(3, 3, left, cellWidth, defaults.spread);
+
+  near(syllables[0].x, expectedFirst, "x sits at the first of three evenly centered slots");
+  near(syllables[1].x, expectedLast, "z sits at the last of three, skipping the rest's own slot");
+
+  const noteArrival = byRole(pages[0], "symbol")[0].x;
+  assert.notEqual(syllables[0].x, noteArrival, "the centered group makes no claim on any beat's arrival");
+});
+
+// Instrument-name labels.
+
+test("a label reprints only on the first line, a fresh page, or a lineup change", () => {
+  // P2 has only two lines in this section, so line 3's lineup drops to P1
+  // alone - the only thing, short of a page turn, that can change it.
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble>
+    <part id="P1"><instrument-name>หนึ่ง</instrument-name></part>
+    <part id="P2"><instrument-name>สอง</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      <line number="2"><measure number="1"><note pitch="ร"/></measure></line>
+      <line number="3"><measure number="1"><note pitch="ม"/></measure></line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ล"/></measure></line>
+      <line number="2"><measure number="1"><note pitch="ท"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const labels = byRole(pages[0], "label");
+
+  // Line 1: both print (first line). Line 2: same lineup, neither reprints.
+  // Line 3: P2 has dropped out, so P1 alone reprints.
+  assert.equal(labels.length, 3, "2 on the first line + 0 on the second + 1 on the changed third");
+  assert.equal(labels.filter((l) => l.text === "หนึ่ง").length, 2, "P1 prints on line 1 and again on line 3");
+  assert.equal(labels.filter((l) => l.text === "สอง").length, 1, "P2 prints only on line 1, never tacet");
+});
+
+test("a label reprints on the first line of a fresh page even where the lineup has not changed", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble>
+    <part id="P1"><instrument-name>หนึ่ง</instrument-name></part>
+    <part id="P2"><instrument-name>สอง</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      <line number="2"><measure number="1"><note pitch="ร"/></measure></line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ล"/></measure></line>
+      <line number="2"><measure number="1"><note pitch="ท"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc), { page: { width: 595.28, height: 170, margin: 20 } });
+
+  assert.equal(pages.length, 2, "the two-row second line forced a page break");
+  assert.equal(byRole(pages[0], "label").length, 2, "both labels print on the first page");
+  assert.equal(byRole(pages[1], "label").length, 2, "and both reprint on the fresh page, same lineup or not");
+});
+
+// Generated headings and header extras: both off by default, opt-in only.
+
+test("generateHeadings is off by default, so a bare section prints no heading at all", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure>
+    <direction><chan value="3"/></direction>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  assert.ok(!textsOn(pages[0]).some((t) => t.includes("ท่อน 1")), "nothing generates the heading unasked");
+});
+
+test("a generated heading combines the ชั้น in force with the section's name, but only where nothing was already written", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure>
+    <direction><chan value="3"/></direction>
+    <section id="s1" name="ท่อน 1"/>
+    <annotation>เขียนเอง</annotation>
+    <section id="s2" name="ท่อน 2"/>
+  </structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+    </section-ref>
+    <section-ref section="s2">
+      <line number="1"><measure number="1"><note pitch="ร"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc), { generateHeadings: true });
+  const texts = textsOn(pages[0]);
+
+  assert.ok(texts.includes("สามชั้น ท่อน 1"), "s1's empty gap gets a generated heading naming the ชั้น in force");
+  assert.ok(texts.includes("เขียนเอง"), "s2's authored annotation still prints");
+  assert.ok(!texts.includes("สามชั้น ท่อน 2"), "s2 already has a heading, so nothing is generated for it");
+});
+
+test("showHeaderExtras is off by default, and prints tuning, bpm, and license but never nathap when on", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header>
+    <title>ทดสอบ</title>
+    <tuning reference="c-major"/>
+    <license>CC BY-SA 4.0</license>
+  </header>
+  <structure>
+    <direction><nathap value="ปรบไก่"/><bpm>90</bpm></direction>
+    <section id="s1" name="s1"/>
+  </structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+
+  const off = layout(parse(doc));
+  assert.ok(!textsOn(off.pages[0]).some((t) => t.includes("c-major")), "off by default");
+
+  const on = layout(parse(doc), { showHeaderExtras: true });
+  const extra = byRole(on.pages[0], "header-extra-left")[0]?.text;
+  assert.ok(extra?.includes("c-major"), "tuning shows when on");
+  assert.ok(extra?.includes("90 bpm"), "bpm shows when on");
+  assert.ok(extra?.includes("CC BY-SA 4.0"), "license shows when on");
+  assert.ok(!extra?.includes("ปรบไก่"), "nathap never shows: its Rendering section forbids it outright");
 });

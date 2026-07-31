@@ -14,6 +14,15 @@ import { wrapText } from "./text.mjs";
 const NIKHAHIT = "ํ"; // octave="1", set above the letter
 const PINTHU = "ฺ"; // octave="-1", set below it
 
+// The five ชั้น levels <chan>'s Values table names, for a generated heading.
+const CHAN_NAMES = { "0.5": "ครึ่งชั้น", 1: "ชั้นเดียว", 2: "สองชั้น", 3: "สามชั้น", 4: "สี่ชั้น" };
+
+// Lexicographic order over a note's position indices - line, then measure,
+// beat, slot - matching the document order resolveSpans() walks a part's
+// lines in. Used to test whether a position falls inside a resolved span.
+const comparePos = (a, b) =>
+  a.lineIndex - b.lineIndex || a.measureIndex - b.measureIndex || a.beatIndex - b.beatIndex || a.slotIndex - b.slotIndex;
+
 // ---------------------------------------------------------------------------
 // The subdivision count
 // ---------------------------------------------------------------------------
@@ -124,8 +133,12 @@ export function glyph(slotValue, settings) {
   if (!THAI.test(pitch) && settings.pitchCase === "upper") pitch = pitch.toUpperCase();
 
   // An octave attribute adds the mark the spelling does not already carry.
-  if (slotValue.octave === 1) pitch += NIKHAHIT;
-  else if (slotValue.octave === -1) pitch += PINTHU;
+  // Outside -1..1 there is no Thai spelling to add, so the mark clamps to
+  // whichever side it is on rather than growing an extra symbol - the
+  // author's call, favoring a plain, readable page over flagging the
+  // display as capped. See "Octaves beyond the Thai spellings".
+  if (slotValue.octave >= 1) pitch += NIKHAHIT;
+  else if (slotValue.octave <= -1) pitch += PINTHU;
 
   return pitch;
 }
@@ -340,12 +353,49 @@ export function layout(score, options = {}) {
     y += height;
   };
 
+  // "A renderer may offer to generate a heading from name and the ชั้น in
+  // force for a score whose annotations are sparse" - off by default, and
+  // only where the gap ahead of a section is genuinely empty. Any authored
+  // annotation there, found by walking back to the previous section or the
+  // start of the document, already serves as that section's heading, so
+  // "keep it off by default, or a score with headings already annotated
+  // ends up with two" is applied gap by gap rather than to the whole score
+  // at once.
+  const structure = (() => {
+    if (!s.generateHeadings) return score.structure;
+
+    const hasHeading = (index) => {
+      for (let j = index - 1; j >= 0; j--) {
+        if (score.structure[j].kind === "annotation") return true;
+        if (score.structure[j].kind === "section") return false;
+      }
+      return false;
+    };
+
+    const out = [];
+    let chan = null;
+    score.structure.forEach((item, index) => {
+      if (item.kind === "direction" && item.chan) chan = item.chan;
+      if (item.kind === "section" && item.name && !hasHeading(index)) {
+        const chanName = CHAN_NAMES[chan];
+        out.push({
+          kind: "annotation",
+          left: chanName ? `${chanName} ${item.name}` : item.name,
+          center: null,
+          right: null,
+        });
+      }
+      out.push(item);
+    });
+    return out;
+  })();
+
   // Annotations before the first section belong to the title band. Everything
   // from the first section on is the body, where an annotation renders in the
   // gap it sits in.
-  const firstSection = score.structure.findIndex((item) => item.kind === "section");
-  const band = firstSection === -1 ? score.structure : score.structure.slice(0, firstSection);
-  const body = firstSection === -1 ? [] : score.structure.slice(firstSection);
+  const firstSection = structure.findIndex((item) => item.kind === "section");
+  const band = firstSection === -1 ? structure : structure.slice(0, firstSection);
+  const body = firstSection === -1 ? [] : structure.slice(firstSection);
 
   // Credits print exactly as written and the renderer prefixes nothing, so a
   // label like ผู้ประพันธ์ : is there only because the arranger typed it. The
@@ -358,6 +408,28 @@ export function layout(score, options = {}) {
   }
 
   let bandDrew = false;
+
+  // "A renderer may offer to show them, but no printed convention places
+  // them" - <tuning> and <license> from <header>, and <bpm> from whichever
+  // <direction> falls in the title band (a later one, changing tempo partway
+  // through the score, is left to the reading order it already has - see
+  // HANDOVER.md). <nathap> is not offered here at all: its own Rendering
+  // section says it is never printed, not an opt-in choice the way these
+  // three are.
+  if (s.showHeaderExtras) {
+    const bandDirection = band.find((item) => item.kind === "direction");
+    const extras = [score.tuning, bandDirection?.bpm ? `${bandDirection.bpm} bpm` : null, score.license].filter(
+      Boolean,
+    );
+    if (extras.length > 0) {
+      annotationRow(
+        { left: extras.join(" · "), center: null, right: null },
+        { size: s.headerExtraSize, role: "header-extra" },
+      );
+      bandDrew = true;
+    }
+  }
+
   for (const item of band) {
     if (item.kind === "br") blankLine();
     else if (item.kind === "annotation") annotationRow(item);
@@ -416,7 +488,16 @@ export function layout(score, options = {}) {
   // one place a line's height comes from: measureLine() below calls it against
   // a scratch page to size a line before committing it to a position, and the
   // real drawing pass calls it again to place it for real.
-  const layBoxes = (rows, section, lineIndex, gridTop) => {
+  // `ownAnnotations` defaults from `lineIndex === 0`, which is right for the
+  // section's regular lines, but an ending's own grid needs the two ideas
+  // pulled apart: `lineIndex` there is the ending's own real line index
+  // (0-based, needed so notePos/rowGeom keys line up with what
+  // resolveSpans() recorded), while whether to reprint the section-ref's own
+  // annotations must stay false regardless, since those belong to the
+  // section's regular grid and already printed there. Callers rendering an
+  // ending pass `ownAnnotations: false` explicitly rather than relying on the
+  // default.
+  const layBoxes = (rows, section, lineIndex, gridTop, { ownAnnotations = lineIndex === 0 } = {}) => {
     const boxes = [];
     for (const r of rows) {
       const key = instrumentOf(r.part);
@@ -431,10 +512,9 @@ export function layout(score, options = {}) {
       // box, which is where they can only be once instruments are ruled
       // separately. They belong to the section rather than to the line, so
       // they print once, above the first line of it.
-      const notes =
-        lineIndex === 0
-          ? box.rows.flatMap((r) => score.music[r.part.id][section.id].annotations)
-          : [];
+      const notes = ownAnnotations
+        ? box.rows.flatMap((r) => score.music[r.part.id][section.id].annotations)
+        : [];
       if (notes.length > 0) {
         y = boxTop;
         // Clear of the instrument above, where there is one. The first box in
@@ -463,14 +543,14 @@ export function layout(score, options = {}) {
   // throwaway page and reading off where it ended. Annotation heights do not
   // depend on where the page starts, so the number this returns is exact
   // rather than an estimate.
-  const measureLine = (rows, section, lineIndex) => {
+  const measureLine = (rows, section, lineIndex, boxOptions) => {
     const savedSink = activeSink;
     const savedY = y;
     const savedPending = pending;
     activeSink = [];
     y = 0;
     pending = 0;
-    const boxes = layBoxes(rows, section, lineIndex, 0);
+    const boxes = layBoxes(rows, section, lineIndex, 0, boxOptions);
     const height = boxes.at(-1).bottom;
     activeSink = savedSink;
     y = savedY;
@@ -494,18 +574,19 @@ export function layout(score, options = {}) {
     rows,
     section,
     lineIndex,
-    { firstOfGroup = false, notePos, rowGeom, labels = true } = {},
+    { firstOfGroup = false, notePos, rowGeom, labels = true, ownAnnotations, dimmed } = {},
   ) => {
     if (!firstOfGroup) pending = gap.line;
 
-    ensureRoom(measureLine(rows, section, lineIndex));
+    const boxOptions = { ownAnnotations };
+    ensureRoom(measureLine(rows, section, lineIndex, boxOptions));
     spend();
 
     const measureCount = Math.max(...rows.map((r) => r.line.measures.length));
     const gridRight = left + measureCount * cellWidth;
     const gridTop = y;
 
-    const boxes = layBoxes(rows, section, lineIndex, gridTop);
+    const boxes = layBoxes(rows, section, lineIndex, gridTop, boxOptions);
     const gridBottom = boxes.at(-1).bottom;
 
     // A line shorter than eight measures is left-aligned and its ruling
@@ -645,6 +726,7 @@ export function layout(score, options = {}) {
             if (notePos) notePos.set(posKey(row.part.id, { lineIndex, measureIndex: m, beatIndex, slotIndex }), symbolX);
             const text = glyph(slotValue, s);
             if (!text) return;
+            const dim = dimmed?.(row.part.id, { lineIndex, measureIndex: m, beatIndex, slotIndex });
             push({
               kind: "text",
               x: symbolX,
@@ -653,6 +735,7 @@ export function layout(score, options = {}) {
               size: s.pitchSize,
               anchor: "middle",
               role: "symbol",
+              ...(dim ? { dim: true } : {}),
             });
           });
         });
@@ -747,6 +830,13 @@ export function layout(score, options = {}) {
     // decoration at a line break: unlike a bow, a cued passage does not need
     // a mark saying the span continues, since the brackets at its true ends
     // already say everything a reader needs.
+    //
+    // Dimming ("showing the span in a less distinct color") is on top of the
+    // brackets, not instead of them - the brackets always appear regardless.
+    // `dim` overrides the renderer's own default for this one span; the
+    // notes themselves are dimmed where renderGridLine() drew them, via the
+    // same `span.dim ?? s.dimParenthesisDefault` test.
+    const dim = (span.dim ?? s.dimParenthesisDefault) ? { dim: true } : {};
     const step = s.linkSideStep * s.pitchSize;
     pushTo(firstGeom.page, {
       kind: "text",
@@ -756,6 +846,7 @@ export function layout(score, options = {}) {
       size: s.pitchSize,
       anchor: "middle",
       role: "parenthesis",
+      ...dim,
     });
     pushTo(lastGeom.page, {
       kind: "text",
@@ -765,18 +856,22 @@ export function layout(score, options = {}) {
       size: s.pitchSize,
       anchor: "middle",
       role: "parenthesis",
+      ...dim,
     });
   };
 
   // "Both bow directions render above the notes: `in` as a curve with both
-  // tips pointing down, `out` as a curve with both tips pointing up." Drawn
-  // as the same shallow arc a single-row link uses, one segment per line the
-  // span touches, with a short tick at the true start and true stop only. A
-  // cut mid-span gets no tick, "signalling that the stroke continues onto the
-  // next line" - which a page break is, here, the same thing as.
+  // tips pointing down, `out` as a curve with both tips pointing up." The
+  // direction is the arc's own facing rather than a separate mark at the
+  // tip: `in` domes up over the row (tips low, middle high, the same shape a
+  // single-row link curve uses), `out` is that arc mirrored about the tips'
+  // own height (tips high, middle low) - both entirely above the notes
+  // either way. Drawn as one segment per line the span touches; a cut
+  // mid-span gets the same facing as the rest of the span, since there is no
+  // longer a separate tip mark to withhold there.
   //
-  // The tip shape is a first pass rather than a settled convention: see
-  // HANDOVER.md.
+  // The exact amplitude is a first pass rather than a settled convention:
+  // see HANDOVER.md.
   const drawBowSpan = (part, span, notePos, rowGeom) => {
     const firstX = notePos.get(posKey(part.id, span.first));
     const lastX = notePos.get(posKey(part.id, span.last));
@@ -784,31 +879,32 @@ export function layout(score, options = {}) {
     const lastGeom = rowGeom.get(`${part.id}:${span.last.lineIndex}`);
     if (firstX === undefined || lastX === undefined || !firstGeom || !lastGeom) return;
 
-    const tickUp = span.direction === "out";
-    const tickLen = s.bowTickLength * s.pitchSize;
+    const facesUp = span.direction === "in";
+    const magnitude = s.bowRise * s.pitchSize;
 
     for (let li = span.first.lineIndex; li <= span.last.lineIndex; li++) {
       const geom = rowGeom.get(`${part.id}:${li}`);
       if (!geom) continue;
 
       const baseline = geom.top + s.rowHeight / 2 + s.pitchSize / 3;
-      const arcY = baseline - s.linkTop * s.pitchSize;
+      // "in" ties its tip height to a link curve's (linkTop), the same
+      // shape either already uses. "out" needs its own, taller anchor
+      // (bowTop) instead of that same height: it dips back down from the
+      // tip by the same rise, and doing that from linkTop's height would
+      // cut into the note glyphs (and marks like นิคหิต reaching up from
+      // one) rather than clearing them.
+      const arcY = baseline - (facesUp ? s.linkTop : s.bowTop) * s.pitchSize;
       const x1 = li === span.first.lineIndex ? firstX : geom.left;
       const x2 = li === span.last.lineIndex ? lastX : geom.right;
 
-      pushTo(geom.page, {
-        kind: "arc",
-        x1,
-        x2,
-        y: arcY,
-        rise: Math.min(s.linkRise * s.pitchSize, arcY - geom.top - 1),
-        role: "bow",
-      });
+      // Unclamped, unlike a link curve: a bow marks a whole passage rather
+      // than one beat, so it is expected to reach past its own row's ruling
+      // into the gap above - that is what makes it read as a span rather
+      // than a beat-sized grace mark, and it holds for "out" dipping down
+      // toward the baseline just as much as for "in" rising up.
+      const rise = facesUp ? magnitude : -magnitude;
 
-      if (li === span.first.lineIndex)
-        pushTo(geom.page, { x1, y1: arcY, x2: x1, y2: arcY + (tickUp ? -tickLen : tickLen), kind: "line" });
-      if (li === span.last.lineIndex)
-        pushTo(geom.page, { x1: x2, y1: arcY, x2, y2: arcY + (tickUp ? -tickLen : tickLen), kind: "line" });
+      pushTo(geom.page, { kind: "arc", x1, x2, y: arcY, rise, role: "bow" });
     }
   };
 
@@ -818,6 +914,7 @@ export function layout(score, options = {}) {
       blankLine();
       continue;
     }
+    if (item.kind === "direction") continue;
     if (item.kind === "annotation") {
       const heading = headsNextGrid(index);
       let extra = 0;
@@ -837,6 +934,15 @@ export function layout(score, options = {}) {
       ...parts.map((p) => score.music[p.id][section.id].lines.length),
     );
 
+    // A position is dimmed where a resolved parenthesis span covers it and
+    // that span's own `dim` (or, absent that, the renderer's own default)
+    // says so. Read straight off the position indices resolveSpans()
+    // recorded, so this needs no separate range bookkeeping of its own.
+    const isDimmed = (partId, pos) =>
+      (score.music[partId]?.[section.id]?.parenSpans ?? []).some(
+        (sp) => (sp.dim ?? s.dimParenthesisDefault) && comparePos(sp.first, pos) <= 0 && comparePos(pos, sp.last) <= 0,
+      );
+
     const notePos = new Map();
     const rowGeom = new Map();
     const lineBoxes = [];
@@ -845,7 +951,12 @@ export function layout(score, options = {}) {
         .map((p) => ({ part: p, line: score.music[p.id][section.id].lines[lineIndex] }))
         .filter((r) => r.line);
       lineBoxes.push(
-        renderGridLine(rows, section, lineIndex, { firstOfGroup: lineIndex === 0, notePos, rowGeom }),
+        renderGridLine(rows, section, lineIndex, {
+          firstOfGroup: lineIndex === 0,
+          notePos,
+          rowGeom,
+          dimmed: isDimmed,
+        }),
       );
     }
 
@@ -894,9 +1005,14 @@ export function layout(score, options = {}) {
 
     // An ending renders below its section, detached from the line(s) it
     // replaces: its own annotation as a heading, then its replacement lines
-    // as their own grid. lineIndex is pinned to 1 so layBoxes() never treats
-    // it as a section's first line and reprints that part's own annotations
-    // a second time underneath.
+    // as their own grid. `ownAnnotations: false` is passed explicitly rather
+    // than relying on `lineIndex === 0`, since `lineIndex` here is the
+    // ending's own real line index - needed so notePos/rowGeom keys line up
+    // with the lineIndex resolveSpans() recorded for this ending's spans -
+    // and that is genuinely 0 for an ending's first line. Conflating the two
+    // used to mean a span opening and closing entirely inside one ending's
+    // own lines silently failed to draw at all, since rowGeom was only ever
+    // keyed under the pinned constant.
     for (const p of parts) {
       const endings = score.music[p.id][section.id].endings;
       endings.forEach((ending, endingIndex) => {
@@ -904,18 +1020,26 @@ export function layout(score, options = {}) {
 
         pending = endingIndex === 0 ? gap.section : gap.line;
         ending.annotations.forEach((note, i) => {
-          const extra = i === 0 ? measureLine([{ part: p, line: ending.lines[0] }], section, 1) : 0;
+          const extra =
+            i === 0 ? measureLine([{ part: p, line: ending.lines[0] }], section, 0, { ownAnnotations: false }) : 0;
           annotationRow(note, { heading: i === 0, extra });
         });
+
+        const isEndingDimmed = (partId, pos) =>
+          ending.parenSpans.some(
+            (sp) => (sp.dim ?? s.dimParenthesisDefault) && comparePos(sp.first, pos) <= 0 && comparePos(pos, sp.last) <= 0,
+          );
 
         const endingNotePos = new Map();
         const endingRowGeom = new Map();
         ending.lines.forEach((line, li) => {
-          renderGridLine([{ part: p, line }], section, 1, {
+          renderGridLine([{ part: p, line }], section, li, {
             firstOfGroup: li === 0,
             labels: false,
+            ownAnnotations: false,
             notePos: endingNotePos,
             rowGeom: endingRowGeom,
+            dimmed: isEndingDimmed,
           });
         });
 

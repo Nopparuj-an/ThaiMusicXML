@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Session 3 test fixture: the bow curve shape and repeat bracket
+     proportions ("First pass, not settled" in HANDOVER.md), and the
+     documented gap in span/ending/pass interaction ("Not resolved" under
+     Bow and parenthesis spans). Not linked from any doc page.
+
+     Line 1: a bow closed within its own line.
+     Lines 2-3: a bow crossing a line break, with the two lines a different
+     length so the repeat bracket over them has to align to the longer one.
+     Line 3 also carries a parenthesis span, and ends with a bow "start"
+     that is never closed within the regular lines - see the ending below.
+     The ending's own line opens with a bow "stop" with no "start" in its
+     own scope. Per the "Not resolved" note, neither marker is matched
+     across that boundary, so this section prints two open ends: nothing
+     connects the end of line 3 into the ending, on purpose, to show what
+     that gap actually looks like on the page. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>ทดสอบ: โยง วงเล็บ ซ้ำ และรอบ</title>
+  </header>
+  <structure>
+    <repeat times="2">
+      <section id="s1" name="ท่อน 1">
+        <line-repeat first="1" last="1" times="2" />
+        <line-repeat first="2" last="3" times="4" />
+      </section>
+    </repeat>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <bow type="start" direction="in" />
+          <note pitch="ด" /><note pitch="ร" /><note pitch="ม" /><note pitch="ฟ" />
+        </measure>
+        <measure number="2">
+          <note pitch="ซ" /><bow type="stop" /><note pitch="ล" /><note pitch="ท" />
+        </measure>
+        <measure number="3">
+          <note pitch="ด" octave="1" /><note pitch="ล" /><note pitch="ซ" /><note pitch="ม" />
+        </measure>
+      </line>
+      <line number="2">
+        <measure number="1">
+          <bow type="start" direction="out" />
+          <note pitch="ร" /><note pitch="ม" /><note pitch="ฟ" /><note pitch="ซ" />
+        </measure>
+        <measure number="2">
+          <note pitch="ล" /><note pitch="ท" /><note pitch="ด" octave="1" /><note pitch="ล" />
+        </measure>
+      </line>
+      <line number="3">
+        <measure number="1">
+          <note pitch="ซ" />
+          <bow type="stop" />
+          <note pitch="ม" /><note pitch="ร" /><note pitch="ด" />
+        </measure>
+        <measure number="2">
+          <parenthesis type="start" dim="true" />
+          <note pitch="ร" /><note pitch="ม" /><note pitch="ฟ" /><note pitch="ซ" />
+        </measure>
+        <measure number="3">
+          <note pitch="ล" /><note pitch="ท" /><note pitch="ด" octave="1" /><note pitch="ล" />
+        </measure>
+        <measure number="4">
+          <note pitch="ซ" /><parenthesis type="stop" /><note pitch="ม" /><note pitch="ร" />
+        </measure>
+        <measure number="5">
+          <note pitch="ด" />
+          <bow type="start" direction="in" />
+          <note pitch="ร" /><note pitch="ม" /><note pitch="ฟ" />
+        </measure>
+      </line>
+      <ending pass="2">
+        <annotation>รอบสุดท้ายเปลี่ยนเป็น</annotation>
+        <line number="1">
+          <measure number="1">
+            <bow type="stop" />
+            <note pitch="ซ" /><note pitch="ล" /><note pitch="ท" /><note pitch="ด" octave="1" />
+          </measure>
+        </line>
+      </ending>
+    </section-ref>
+  </part-data>
+</thai-score>

@@ -1,0 +1,25 @@
+---
+// Inlines a renderer/examples/*.txml file as a highlighted code block at
+// build time, the way CorpusTable.astro lists the corpus: reading the file
+// itself rather than a hand-copied transcript, so a doc page cannot drift
+// from the file that actually renders.
+import { Code } from "astro-expressive-code/components";
+
+const sources = import.meta.glob("../../renderer/examples/*.txml", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+});
+
+interface Props {
+  /** Basename inside renderer/examples/, e.g. "tutorial1-hello-world.txml". */
+  file: string;
+}
+
+const { file } = Astro.props;
+const entry = Object.entries(sources).find(([path]) => path.endsWith(`/${file}`));
+if (!entry) throw new Error(`ExampleXml: no renderer/examples/${file}`);
+const [, source] = entry;
+---
+
+<Code code={String(source).trimEnd()} lang="xml" />

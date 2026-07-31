@@ -113,26 +113,57 @@ export const defaults = {
   titleGap: 26,
   bandGap: 18,
 
+  // "A renderer may offer to generate a heading from name and the ชั้น in
+  // force... Keep it off by default, or a score with headings already
+  // annotated ends up with two." Off, so a score that already writes its own
+  // headings never gets a second one.
+  generateHeadings: false,
+
+  // "A renderer may offer to show them, but no printed convention places
+  // them" - <tuning> and <license> from <header>, and <bpm> from whichever
+  // <direction> sits in the title band. <nathap> is excluded: its own
+  // Rendering section says it is not printed, full stop, not an opt-in
+  // choice the way these three are. Off by default, and the placement and
+  // size below are a first pass with nothing to judge them against, since
+  // the spec names no convention for it. OPEN.
+  showHeaderExtras: false,
+  headerExtraSize: 9,
+
   // Lyric rows. A syllable is several times wider than a pitch letter and
   // nothing widens the cell to help, so "Lyric rows" allows setting the row
   // smaller to buy some of that room back. OPEN.
   lyricSize: 10,
 
-  // Bow spans. Drawn as a shallow arc above the row, at the same height a
-  // link curve attaches (linkTop), with a short tick at the true start and
-  // true stop only - the marks "in" and "out" describe, per
-  // "Bow spans across a line break" - and no tick at a cut mid-span. All OPEN,
-  // and judged against a printed score the way the link curve was: this is a
-  // first pass, not a settled convention.
-  bowTickLength: 0.5,
+  // Bow spans. Drawn as an arc above the row - "in" domes up toward the row
+  // above, "out" is the same arc mirrored back down toward the row's own
+  // notes, the direction itself being the "tips pointing down"/"pointing
+  // up" the spec describes rather than a separate mark at the tip.
+  //
+  // "in" ties its tip height to linkTop, the same a single-row link curve
+  // uses. "out" needs a taller anchor of its own (bowTop): it dips down
+  // from the tip by the same bowRise, and doing that from linkTop's height
+  // would cut into the note glyphs rather than clearing them. Neither is
+  // clamped to the row's own height the way a link curve's rise is - a bow
+  // spans a whole passage rather than one beat, so it is expected to reach
+  // past its own row's ruling into the gap above. All OPEN, and judged
+  // against a printed score the way the link curve was: this is a first
+  // pass, not a settled convention.
+  bowTop: 1.1,
+  bowRise: 0.75,
   bowStroke: 0.8,
 
   // Cued passages. A parenthesis span prints its brackets at pitchSize; no
-  // width setting needed since the glyphs come from the font.
+  // width setting needed since the glyphs come from the font. Dimming is the
+  // renderer's own default here, overridden per span by `dim`, per "Cued
+  // passages": both the brackets and the notes between them take the dimmed
+  // color. `mute` has no visual effect at all - it is a playback instruction
+  // this renderer, producing only static SVG, has no way to act on.
+  dimParenthesisDefault: false,
+  dimColor: "#999",
 
-  // Instrument-name label column. "Off on an ensemble score, on wherever a
-  // part is tacet" - null means let layout() decide from the score, since
-  // only it knows whether any part omits a section. true/false override that
+  // Instrument-name label column. On for every ensemble score, off for a
+  // solo one (which already carries its name top-right) - null means let
+  // layout() decide from the score's part count. true/false override that
   // for every score laid out with these settings. Labels take their width
   // from the margin rather than from the eight cells, so they never move the
   // grid: printed just left of it, in the blank margin band.

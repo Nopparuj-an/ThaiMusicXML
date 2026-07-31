@@ -2,7 +2,11 @@
 
 Where the renderer stands and what finishing it involves. Written at the end of
 the session that built annotations and link curves; updated at the end of the
-session that added pagination and the rest of the features below.
+session that added pagination and the rest of the features below, and again at
+the end of the session that closed the remaining gaps: the one real bug left
+(octaves outside the Thai spellings), the two opt-in settings the spec named
+but nothing implemented, and unit test coverage for everything Session 2 had
+only verified by eyeballing a render.
 
 ## Progress log
 
@@ -13,6 +17,21 @@ session that added pagination and the rest of the features below.
   lyric rows, and the instrument-name label column. Every item that was on the
   "What is left" list is implemented; see below for what is still worth
   treating as a first pass rather than a settled convention.
+- Session 3: an audit against every schema element found one real default-
+  behavior bug (octaves outside `-1`..`1` printed a bare, unmarked letter,
+  indistinguishable from an exact one), fixed and then revised twice more
+  after the author looked at renders of it, ending in a silent clamp; unit
+  tests for endings, repeat brackets, bow/parenthesis spans, lyric row
+  alignment, and label dedup, which Session 2 had only verified by
+  rendering and looking; the two settings-table rows nothing implemented
+  (`generateHeadings`, `showHeaderExtras`); `renderer/examples/*.txml` no
+  longer duplicates the docs — a docs page now inlines the file itself at
+  build time; a parenthesis span's `dim` attribute, parsed since Session 2
+  but never actually wired to anything until now; a real bug that dimming
+  work turned up, where a span resolving entirely inside one ending's own
+  lines silently failed to draw at all; and the bow curve reworked from a
+  separate tip-direction tick to the arc's own facing, with its amplitude
+  fixed twice more after the author looked at renders of that too.
 
 ## Working practice
 
@@ -24,7 +43,7 @@ session that added pagination and the rest of the features below.
   comparing a render to print, and each one was a real defect.
 - English first, per `AGENTS.md`. `CLAUDE.md` is a symlink to it, and the Edit
   tool refuses to write through the symlink.
-- `npm run check` runs links, corpus, and 25 unit tests. `npx astro build`
+- `npm run check` runs links, corpus, and 42 unit tests. `npx astro build`
   instead of `astro check`, which is broken here.
 - Schema and design changes need explicit sign-off before editing, then get
   applied across every affected file in one pass.
@@ -32,8 +51,14 @@ session that added pagination and the rest of the features below.
 ### Rendering something to look at
 
 ```
-node renderer/render.mjs renderer/examples/khaek-borathes.txml /tmp/out.svg
+node renderer/render.mjs renderer/examples/example-khaek-borathes.txml /tmp/out.svg
 ```
+
+`renderer/examples/*.txml` are named for where they surface in the docs:
+`tutorial1-`/`tutorial2-` for the two tutorial pages, `example-` for
+`reference/examples/`. `khaek-borathes-test.txml` is the exception — a dense,
+deliberately-overloaded fixture for stress-testing a render by eye during
+development, not linked from any doc page and not meant to be.
 
 A score spanning more than one page writes `/tmp/out-1.svg`, `/tmp/out-2.svg`,
 and so on instead of `/tmp/out.svg` — check `stderr` for the names actually
@@ -70,12 +95,13 @@ The author has retuned `pitchSize`, `rowHeight`, `spread`, and
 Grid and measures, right-anchored beats, group tightening, the four-level break
 scale, per-instrument boxes, title band and credits, link curves and arcs,
 annotations in all three placements, `<br>`, text wrapping, pagination,
-endings, repeat brackets, bow spans and parentheses, lyric rows, and the
-instrument-name label column. That is everything `rendering/index.md`
-describes except the typeface itself (Sarabun is set in `fontFamily`, but
-nothing checks the font is actually installed wherever this runs) and octaves
-outside `-1`..`1`, which have no Thai spelling and are left to `glyph()`
-falling through to `pitch` unchanged — worth a look if a file ever uses one.
+endings, repeat brackets, bow spans and parentheses, lyric rows, the
+instrument-name label column, octaves beyond the Thai spellings, and the two
+settings the table names but does not default on: generated section headings
+and header extras (tuning/bpm/license) on the page. That is everything
+`rendering/index.md` describes except the typeface itself (Sarabun is set in
+`fontFamily`, but nothing checks the font is actually installed wherever this
+runs).
 
 ### Invariants worth not rediscovering
 
@@ -187,46 +213,196 @@ falling through to `pitch` unchanged — worth a look if a file ever uses one.
   default 42pt margin can still be too narrow for a *full* name in the
   top-right corner or a label column on a part with no short name; that
   pairing is still worth revisiting against a printed score, same as before.
+- **An octave outside `-1`..`1` clamps silently to the nearest Thai mark**
+  (`octave="2"` prints identically to `octave="1"`) rather than the bare,
+  unmarked letter it used to print before this session, which is where the
+  behavior started: Session 3's audit against every schema element found
+  that bare letter indistinguishable from an exact octave-0 note, actual
+  default behavior violating "Octaves beyond the Thai spellings"' "must not
+  pass off a capped spelling as exact." Went through two further rounds
+  after that fix landed, both the author's own call after inspecting a
+  render rather than something derivable from the prose alone:
+
+  1. A superscript signed digit (`ด⁺²`, `D⁻²`) — unambiguous, but visually
+     cramped on a portrait cell's already-tight columns.
+  2. The plain nikhahit/pinthu plus a trailing asterisk as a "there is more
+     to this note" cue — closer to an ordinary note, satisfies the same
+     "must not pass off as exact" sentence, but the author found the
+     asterisks made a real sheet *harder* to read across a page than the
+     thing they were warning about.
+  3. **Current**: the plain mark, no cue at all. `octave` itself stays
+     exact and is still what a player reads; only the page's display now
+     genuinely does what the spec's sentence says not to. This is a
+     considered exception to that sentence, not an oversight, and
+     `rendering/index.md` is worth revisiting to say so explicitly if this
+     holds up — it currently still reads as a hard "must not".
+- **`generateHeadings` and `showHeaderExtras`** (both `settings.mjs`, both
+  `false`) implement the two rows the settings table always documented but
+  that had no code path at all: "a renderer may offer to generate a heading
+  from `name` and the ชั้น in force" and "a renderer may offer to show
+  [`<tuning>`, `<license>`, `<bpm>`]." Both stayed unbuilt because the
+  default is to show neither, which the renderer already achieved by simply
+  never parsing `<direction>`, `<tuning>`, or `<license>` at all — the gap
+  was the toggle, not the default.
+
+  A generated heading is spliced into the parsed `<structure>` sequence as
+  an ordinary synthetic `annotation`, before `band`/`body` are split out,
+  specifically so it flows through the exact same pagination and "text
+  inside a break" machinery an author-typed heading does rather than adding
+  a second code path next to it. It fires only where a section's gap has no
+  annotation in it at all — walking back to the previous section or the
+  start of the document — so a score that already annotates some sections
+  and not others only gets headings filled in where it is actually sparse,
+  matching "keep it off by default, or a score with headings already
+  annotated ends up with two" applied gap by gap.
+
+  `showHeaderExtras` prints `<tuning>` and `<license>` from `<header>`, and
+  `<bpm>` from whichever `<direction>` lands in the title band, as one small
+  line under the credits. `<nathap>` is never included even when this is on:
+  its own Rendering section says it is not printed, full stop, which is a
+  stronger rule than "off by default." **Scoped deliberately**: a `<bpm>`
+  inside a later `<direction>` — a tempo change partway through the piece —
+  is parsed (so `generateHeadings`' ชั้น-in-force tracking sees `<chan>`
+  changes anywhere in the document) but is not displayed anywhere, since the
+  spec's own placement language ("the title band") only really describes the
+  single-direction-before-the-first-section shape every corpus example
+  actually uses. Worth building if a real score ever puts a second `<bpm>`
+  or `<chan>` change mid-piece and wants it on the page.
+- **Every eyeballed-only feature from Session 2 now has unit tests**:
+  endings (an ending's own annotation heading, and that it does not
+  re-print the section-ref's own annotation underneath it), repeat brackets
+  (label text for `times=2` vs. above, and that `times=1` draws nothing),
+  bow and parenthesis spans (position resolution at the true start/stop
+  rather than a marker's document-order neighbour, one arc per line a bow
+  touches with a tick only at the true ends, and that a parenthesis adds no
+  extra decoration at a line-break cut), lyric rows (the aligned and
+  centered split, and that a lyric `<rest>` is blank rather than the
+  notated rows' hyphen), and label dedup (first line, page turn, lineup
+  change). `renderer/test/layout.test.mjs` still needed no new exports from
+  `parse.mjs` to do it — a bow/parenthesis span is tested by reading
+  `parse(doc).music[part][section].bowSpans` straight off `parse()`'s own
+  return value rather than calling `resolveSpans()` in isolation.
+- **The tutorial and example doc pages no longer hand-copy a `.txml` file
+  into a fenced code block.** `src/components/ExampleXml.astro` reads the
+  named file from `renderer/examples/` at build time (`import.meta.glob`,
+  the same pattern `CorpusTable.astro` already used for the corpus) and
+  renders it through `astro-expressive-code`'s `<Code>` component, so the
+  block on the page is always exactly the file that actually renders.
+  Needed adding `astro-expressive-code` as a direct dependency — it was
+  already resolvable as a transitive one via `@astrojs/starlight`, this
+  just makes importing it from project code legal under pnpm's strict
+  linking — and converting the three affected pages from `.md` to `.mdx`,
+  since a component only renders inside MDX. This is why the files got
+  renamed: `renderer/examples/lao-duang-duen.txml` →
+  `tutorial1-hello-world.txml`, `example-song.txml` →
+  `tutorial2-file-structure.txml`, `khaek-borathes.txml` →
+  `example-khaek-borathes.txml`. The smaller illustrative fragments further
+  down each tutorial page (`## Header`, `## Structure`, ...) are still
+  hand-written prose excerpts, not derived from the file — only the one
+  "complete file" block near the top of each page pulls from disk.
+- **A parenthesis span's `dim` now actually dims something.** It was parsed
+  since Session 2 (`openParen.dim`/`.mute` in `parse.mjs`) but never read
+  anywhere in `layout.mjs` — the attribute existed and did nothing. Dimming
+  now covers both the notes the span covers and its own brackets: every
+  `role: "symbol"` push inside `renderGridLine()` checks a `dimmed(partId,
+  pos)` predicate the caller builds once per section (or once per ending)
+  from that scope's own `parenSpans`, using a plain lexicographic compare
+  over `{lineIndex, measureIndex, beatIndex, slotIndex}` (`comparePos`) to
+  test whether a position falls between a span's `first` and `last`.
+  `drawParenSpan()` makes the same `span.dim ?? s.dimParenthesisDefault`
+  check directly, since it already has the span in hand. A dimmed element
+  gets `dim: true`; `draw.mjs` renders that as an explicit `fill`
+  (`s.dimColor`) overriding the text group's default black. `mute` still
+  does nothing and is not meant to — it is a playback instruction, and this
+  renderer only ever produces static SVG.
+
+  Wiring this up found a real, separate bug: `renderGridLine()`'s ending
+  call always passed the constant `lineIndex: 1` (to keep `layBoxes()` from
+  re-printing the section-ref's own annotations under the ending), but that
+  same `lineIndex` also keys `notePos`/`rowGeom`, which need the ending's
+  own *real*, 0-based line index to match what `resolveSpans()` recorded.
+  A span opening and closing entirely inside one ending's own lines was
+  silently failing to draw at all — `rowGeom.get(partId:0)` returning
+  `undefined` when the only entry on record was `partId:1`. Fixed by
+  pulling the two concerns apart: `layBoxes()`/`measureLine()` now take an
+  explicit `ownAnnotations` option (defaulting to the old `lineIndex === 0`
+  everywhere else), and the ending loop passes the real `li` as `lineIndex`
+  with `ownAnnotations: false` set explicitly instead of relying on a
+  pinned constant to imply both at once.
+- **Bow direction is the arc's own facing, not a separate mark at the tip
+  — reworked from Session 2's first pass after the author looked at a
+  render.** The original reading of "a curve with both tips pointing down/
+  up" added a short straight tick at the true start and stop, on top of the
+  same shallow dome every direction used. That put two different signals in
+  one mark and got flagged on sight: the ticks looked wrong, and asking
+  "which way is this bow drawn" secretly meant "which way does the tick
+  point", not "which way does the arc bow." `drawBowSpan()` now drops the
+  tick entirely and lets direction flip which way the arc itself curves:
+  `in` domes up toward the row above (`rise` positive), `out` is that same
+  arc mirrored — dipping down toward the row's own notes instead (`rise`
+  negative) — with no other difference in how either is drawn. A cut
+  mid-span (a bow crossing a page or line break) gets the same facing as
+  the rest of its span; there is no longer a separate tip mark to withhold
+  there the way the tick version had one.
+
+  Getting the amplitude right took two more rounds after that, both driven
+  by the same "looked at a render" loop:
+  - The rise used to inherit the *link curve's* clamp
+    (`arcY - geom.top - 1`), which for a single-row instrument caps out
+    around 3-4pt regardless of any rise setting — the actual reason the
+    first arcs looked flat, not that the setting itself was too small. Bow
+    spans are no longer clamped to their own row's height at all: a bow
+    marks a whole passage, not one beat, and is expected to reach past its
+    own row's ruling into the gap above.
+  - "out"'s dip used the same tip height as "in" (`linkTop`), which left
+    only about 1pt of clearance above the baseline once `bowRise` grew —
+    close enough to read as cutting through the note glyphs (and a นิคหิต
+    reaching up from one). "out" now anchors to its own, taller `bowTop`
+    instead; "in" still uses `linkTop`, unchanged, since that half was
+    already confirmed correct and didn't need moving.
+
+  `bowTop`, `bowRise`, and `bowStroke` in `settings.mjs` are still marked
+  `OPEN` for this reason; treat a further correction here as expected, not
+  a regression. `renderer/examples/spans-and-endings-test.txml` is a
+  standing fixture for this exact shape (both directions, one within a
+  line and one crossing a line break) — regenerate it via
+  `renderer/out/render-doc-image.mjs` rather than re-describing the shape
+  from scratch if this needs another look.
+
+  One thing worth remembering about *testing* this: a `<bow type="stop"/>`
+  closes on the note immediately before it in document order, not on
+  whichever line it happens to sit on. Placed at the very start of a line,
+  before that line's first note, the span it closes never actually reaches
+  that line at all — it closes on the *previous* line's last note instead.
+  A fixture meant to demonstrate a bow crossing a line break needs at least
+  one note ahead of the stop marker on the line it is meant to land in, or
+  the crossing never happens. This is exactly what the earlier
+  `spans-and-endings-test.txml` got wrong the first time it was written.
 
 ## First pass, not settled
 
-Everything above is implemented and checked against `npm run check`, but two
-pieces are genuinely a first guess rather than something verified against
-print, the way both link-curve rounds and both break-spacing rounds needed a
-real comparison to land right:
+Everything above is implemented and checked against `npm run check`. The
+repeat bracket's proportions (`repeatBracketGap`, `repeatBracketDepth`,
+`repeatLabelSize`) were the other item in this section as of Session 2, built
+to the prose description without a printed score to hold them against; the
+author looked at `spans-and-endings-test.txml`'s rendering of one in Session
+3 and confirmed the proportions as they stand, so that one moves to settled.
+One piece remains genuinely a first guess rather than something verified
+against print, the way both link-curve rounds and both break-spacing rounds
+needed a real comparison to land right:
 
-- **The bow curve's shape.** `in`/`out` direction is drawn as a shallow arc
-  (the same primitive the single-row link curve uses) with a short tick at the
-  true start and stop pointing down or up, and no tick at a line-break cut.
-  The spec's own wording — "a curve with both tips pointing down" / "pointing
-  up" — is consistent with more than one actual shape, and this is the one
-  that seemed most defensible without a printed reference. `bowTickLength` and
-  `bowStroke` in `settings.mjs` are marked `OPEN` for this reason; treat a
-  correction here as expected, not a regression.
-- **The repeat bracket and its label's exact proportions**
-  (`repeatBracketGap`, `repeatBracketDepth`, `repeatLabelSize`), same reason:
-  built to the prose description (a bracket in the margin, ticks at top and
-  bottom, ซ้ำ or "N ครั้ง" beside it) without a printed score to hold it
-  against.
+- **The bow curve's shape and amplitude** (`bowTop`, `bowRise`,
+  `bowStroke` in `settings.mjs`), covered in detail above. Direction as the
+  arc's own facing rather than a tip mark, and the amplitude fix, both came
+  from the author looking at a render rather than from the prose alone —
+  expect more rounds of this the same way link curves and break spacing
+  needed more than one round each to land.
 
 ## Loose ends
 
-- **`renderer/examples/*.txml` duplicate the docs markdown** and can drift.
-  `CorpusTable.astro` solves the same problem by generating from files;
-  pointing the tutorial and example pages at these would close it.
 - **Text widths in `text.mjs` are estimates**, not font metrics. They only have
   to be close enough that text does not run off the page. Thai line breaking
   falls back to letters for an unbroken run, which is wrong about where words
   end and would need a dictionary to do properly.
 - **Nathap and tuning warning lists** are duplicated between the element pages
   and `check-corpus.mjs`. The author said they would handle it.
-- **Endings, repeat brackets, bow/parenthesis spans, lyric rows, labels, and
-  pagination are verified by rendering and eyeballing, not by unit tests.**
-  The existing `layout.test.mjs` tests are all pure-function tests (`shares`,
-  `arrivals`, `linkSpan`, `columnX`) plus the three pagination tests added
-  this session, which go through `parse()` + `layout()` on small inline XML
-  and assert on `pages`. The same pattern — a tiny inline score, a tiny page
-  where useful, assertions on which page or coordinate something landed on —
-  would work for `resolveSpans()` and the lyric aligned/centered split too;
-  neither is exported from `parse.mjs` yet, which is the first thing that
-  would need to change.

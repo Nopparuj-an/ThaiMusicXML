@@ -35,9 +35,10 @@ export function draw(page, options = {}) {
       );
 
     const weight = el.weight ? ` font-weight="${el.weight}"` : "";
+    const fill = el.dim ? ` fill="${s.dimColor}"` : "";
     return (
       `  <text x="${round(el.x)}" y="${round(el.y)}" font-size="${el.size}"` +
-      ` text-anchor="${el.anchor}"${weight}>${escape(el.text)}</text>`
+      ` text-anchor="${el.anchor}"${weight}${fill}>${escape(el.text)}</text>`
     );
   });
 
