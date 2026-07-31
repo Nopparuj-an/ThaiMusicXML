@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Render a ThaiMusicXML file to SVG.
 //
 //   node renderer/render.mjs <score.txml> [out.svg]

@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Score model to positioned elements.
 //
 // This is where the specification actually lives. Everything that can be wrong

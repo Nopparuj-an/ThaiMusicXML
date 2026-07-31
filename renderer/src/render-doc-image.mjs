@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Render a .txml (file path or inline XML string) to a PNG for docs, cropped
 // to content height but keeping the page's full left/right margin in place
 // (even where a short line leaves it blank) since that margin is part of the

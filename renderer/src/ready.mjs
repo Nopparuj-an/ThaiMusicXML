@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // The one thing every caller awaits once, before the first parse/layout/draw:
 // text.mjs and draw.mjs each load their own font bytes lazily (Node reads
 // them off disk, a browser fetches them - see #font-loader), and both need

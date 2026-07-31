@@ -26,10 +26,7 @@ We express our deepest respect and gratitude to the masters, scholars, and music
 
 ## License
 
-ThaiMusicXML is released under the GNU General Public License (GPLv3).
-
-- Feel free to use, modify, and distribute ThaiMusicXML files for any purpose, including commercially.
-- Give back to the community: If you build upon or distribute improvements to the core standard, code, or tools, you must keep those changes open-source under the same GPL license.
+ThaiMusicXML is released under the [Apache License 2.0](https://github.com/Nopparuj-an/ThaiMusicXML/blob/main/LICENSE.txt) - free to use, adapt, and ship with your applications, even inside closed-source commercial software. All we ask is that you keep our name in the credits (see [NOTICE](https://github.com/Nopparuj-an/ThaiMusicXML/blob/main/NOTICE)) when you pass files along. The license also covers patents, protecting contributors and adopters alike. The linked files have the exact terms, if you ever need them.
 
 ## Contributions
 

@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Checks internal documentation links: that every /<locale>/... markdown link
 // resolves to a page, and that every #anchor resolves to a heading on it.
 //

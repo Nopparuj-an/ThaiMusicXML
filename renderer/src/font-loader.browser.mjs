@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Font bytes for the browser: static ?url imports so Vite bundles exactly
 // these six files (the ones text.mjs measures with and draw.mjs embeds),
 // fetched once and cached.

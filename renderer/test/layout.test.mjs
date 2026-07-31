@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // The layout arithmetic, checked against expectations derived from the
 // specification rather than from this renderer's own output.
 //

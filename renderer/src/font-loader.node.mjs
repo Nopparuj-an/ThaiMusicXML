@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Font bytes for the Node CLI: read straight off disk, the same file
 // @fontsource/sarabun ships and pnpm already resolves.
 

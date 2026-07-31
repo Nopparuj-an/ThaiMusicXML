@@ -2,7 +2,7 @@
 
 An open, royalty-free digital notation standard for Thai traditional music (เพลงไทยเดิม/Phleng Thai Doem).
 
-[![GPLv3 License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.txt)
+[![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.txt)
 
 ## About
 
@@ -28,4 +28,4 @@ Contributions are welcome from software developers, ethnomusicologists, Thai tra
 
 ## License
 
-This project is licensed under the [GNU General Public License v3.0](LICENSE.txt).
+This project is licensed under the [Apache License 2.0](LICENSE.txt). See [NOTICE](NOTICE) for attribution and [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.md) for the licenses of bundled dependencies, including the Sarabun font.

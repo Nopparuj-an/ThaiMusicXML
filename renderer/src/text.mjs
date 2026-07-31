@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Measuring how wide a string sets, and breaking it to fit a measure.
 //
 // SVG text does not wrap, so the renderer has to do it, and doing it needs

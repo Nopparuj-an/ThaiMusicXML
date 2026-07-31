@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Measuring and breaking annotation text.
 //
 // The widths are estimates, so these assert relationships that any reasonable

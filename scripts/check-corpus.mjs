@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Runs the conformance corpus in public/corpus against two layers of checking:
 // the RELAX NG schema, via xmllint, and the rules that reach across a document
 // and so cannot be expressed in a grammar.

@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // Positioned elements to SVG.
 //
 // Deliberately stupid. It receives coordinates and emits shapes, and knows

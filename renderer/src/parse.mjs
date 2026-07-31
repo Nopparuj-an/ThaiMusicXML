@@ -1,3 +1,6 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
 // ThaiMusicXML document to a plain object tree.
 //
 // This stage does no layout and makes no display decisions. It reads what the
