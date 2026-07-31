@@ -20,13 +20,14 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     <div class="toolbar">
       <label for="template-select">แม่แบบ</label>
       <select id="template-select">
+        <option value="example-khaek-borathes.txml">ตัวอย่าง: แขกบรเทศ</option>
+        <option value="example-sathukan.txml">ตัวอย่าง: สาธุการ</option>
         <option value="tutorial1-hello-world.txml"
           >บทช่วยสอน 1: Hello World</option
         >
         <option value="tutorial2-file-structure.txml"
           >บทช่วยสอน 2: โครงสร้างไฟล์</option
         >
-        <option value="example-khaek-borathes.txml">ตัวอย่าง: แขกบรเทศ</option>
       </select>
     </div>
 
@@ -247,9 +248,9 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   import { draw } from "../../../renderer/src/draw.mjs";
   import { ready } from "../../../renderer/src/ready.mjs";
 
-  // Only the three examples the docs themselves link to (see
-  // renderer/HANDOVER.md) - the "-test.txml" fixtures are internal stress
-  // tests, not something to hand a first-time visitor.
+  // Only the examples the docs themselves link to (see renderer/HANDOVER.md)
+  // - the "-test.txml" fixtures are internal stress tests, not something to
+  // hand a first-time visitor.
   const templates = import.meta.glob("../../../renderer/examples/*.txml", {
     query: "?raw",
     import: "default",
@@ -327,8 +328,12 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
       backgroundColor: "var(--sl-color-bg-nav)",
       color: "var(--sl-color-text)",
     },
-    ".cm-panels.cm-panels-top": { borderBottomColor: "var(--sl-color-hairline)" },
-    ".cm-panels.cm-panels-bottom": { borderTopColor: "var(--sl-color-hairline)" },
+    ".cm-panels.cm-panels-top": {
+      borderBottomColor: "var(--sl-color-hairline)",
+    },
+    ".cm-panels.cm-panels-bottom": {
+      borderTopColor: "var(--sl-color-hairline)",
+    },
     ".cm-panel input, .cm-panel button": { font: "inherit" },
     ".cm-tooltip": {
       backgroundColor: "var(--sl-color-bg-nav)",
@@ -358,8 +363,10 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     { tag: [t.angleBracket, t.definitionOperator], color: "var(--cm-punct)" },
     { tag: t.attributeName, color: "var(--cm-attr)" },
     { tag: [t.attributeValue, t.special(t.string)], color: "var(--cm-value)" },
-    { tag: [t.processingInstruction, t.documentMeta, t.character],
-      color: "var(--cm-meta)" },
+    {
+      tag: [t.processingInstruction, t.documentMeta, t.character],
+      color: "var(--cm-meta)",
+    },
     { tag: t.blockComment, color: "var(--cm-comment)", fontStyle: "italic" },
     { tag: t.content, color: "var(--sl-color-text)" },
     // Last, so that a mismatched close tag - which @lezer/xml tags as both

@@ -18,3 +18,12 @@ A three-instrument piece (ระนาดเอก, ฆ้องวงใหญ�
 - [`<note>`](/en/v0_1/reference/elements/note/) pitches using Thai octave modifiers (nikhahit and pinthu)
 - [`<rest>`](/en/v0_1/reference/elements/rest/)
 - [`<group>`](/en/v0_1/reference/elements/group/) subdividing a beat into three, with `link` joining a group to the other row's beat
+
+## [Sathukan](/en/v0_1/reference/examples/sathukan/)
+
+A two-row ฆ้องวงใหญ่ transcription of the หน้าพาทย์ piece สาธุการ, covering:
+
+- Four [`<section>`](/en/v0_1/reference/elements/section/)s split at a source's live-cued branch points, each transition carried as an [`<annotation>`](/en/v0_1/reference/elements/annotation/) rather than an encoded repeat
+- `<part>`'s `stack` and `row` attributes joining ฆ้องวงใหญ่ R and L as the two rows of one instrument
+- A long score written entirely without Thai octave modifiers
+- [`<rest>`](/en/v0_1/reference/elements/rest/) with no [`<direction>`](/en/v0_1/reference/elements/direction/) set at all
