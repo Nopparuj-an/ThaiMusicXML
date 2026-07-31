@@ -142,7 +142,19 @@ export function glyph(slotValue, settings) {
  */
 export function layout(score, options = {}) {
   const s = { ...defaults, ...options };
-  const elements = [];
+
+  // A score longer than one page continues on the next, keeping the same
+  // margins and cell width. `activeSink` is whichever page is currently being
+  // drawn into; `push` always targets it, so the rest of this function never
+  // has to know which page it is on.
+  const pages = [[]];
+  let page = 0;
+  let activeSink = pages[0];
+  const push = (el) => activeSink.push(el);
+  // For an element whose page was decided earlier - a repeat bracket or a
+  // bow span, both drawn only once every line touching them is already laid
+  // out and may be several lines, and pages, behind by then.
+  const pushTo = (pageIndex, el) => pages[pageIndex].push(el);
 
   const left = s.page.margin;
   const right = s.page.width - s.page.margin;
@@ -153,6 +165,22 @@ export function layout(score, options = {}) {
   const playing = (sectionId) => score.parts.filter((p) => score.music[p.id]?.[sectionId]);
 
   const solo = score.parts.length === 1;
+
+  // A solo score already carries its instrument name beside the title, so a
+  // label column would only repeat it; an ensemble score always gets one,
+  // since position in the stack alone cannot be trusted once any part is
+  // tacet somewhere and the rows below it move up to close the gap.
+  const showLabels = s.showLabels ?? !solo;
+
+  // A label repeats only where it earns its keep: the first grid line, the
+  // first one on a fresh page (a reader who just turned the page has lost the
+  // run of identical lines behind them), or the first after the row lineup
+  // itself changes - which, since nothing else reorders rows, only a tacet
+  // part causes. Consecutive lines with the same parts in the same order
+  // print nothing, the way a Western score does not repeat a system's names
+  // when the instrumentation has not moved.
+  let lastLabelRows = null;
+  let lastLabelPage = null;
 
   // Which levels the score actually has. A level with one member is skipped, so
   // the breaks step outward from whichever level survives innermost.
@@ -176,40 +204,32 @@ export function layout(score, options = {}) {
   let y = s.page.margin + s.titleSize;
 
   // --- Title band ---------------------------------------------------------
-  // The title centers at the top. On a solo score the instrument name sits
-  // beside it in a smaller size, which is the default for name labels.
+  // The title centers at the top. On a solo score the instrument name prints
+  // separately in the top-right corner, level with the title rather than
+  // stacked under it as a centered subtitle would read - too much like a
+  // second header, the way a composer's name would if it were set that way
+  // instead of in the credits band. It takes no part in the vertical flow the
+  // rest of the band uses, so it does not push the credits down.
   const centre = (left + right) / 2;
+  push({
+    kind: "text",
+    x: centre,
+    y,
+    text: score.title,
+    size: s.titleSize,
+    weight: "bold",
+    anchor: "middle",
+    role: "title",
+  });
   if (solo && score.parts[0].name) {
-    elements.push({
+    push({
       kind: "text",
-      x: centre,
+      x: right,
       y,
-      text: score.title,
-      size: s.titleSize,
-      weight: "bold",
-      anchor: "middle",
-      role: "title",
-    });
-    elements.push({
-      kind: "text",
-      x: centre,
-      y: y + s.instrumentNameSize + 6,
       text: score.parts[0].name,
       size: s.instrumentNameSize,
-      anchor: "middle",
+      anchor: "end",
       role: "instrument-name",
-    });
-    y += s.instrumentNameSize + 6;
-  } else {
-    elements.push({
-      kind: "text",
-      x: centre,
-      y,
-      text: score.title,
-      size: s.titleSize,
-      weight: "bold",
-      anchor: "middle",
-      role: "title",
     });
   }
 
@@ -227,13 +247,45 @@ export function layout(score, options = {}) {
     pending -= taken;
   };
 
+  // --- Pagination -----------------------------------------------------------
+  //
+  // "Where a section runs past the bottom margin it continues on the next
+  // page... Do not split one line's part rows across a page: a line's rows
+  // belong together." That rule generalizes to every atomic thing this
+  // function places: an annotation block, a blank line, and a grid line each
+  // move to a fresh page whole rather than being cut by the bottom margin.
+  //
+  // `ensureRoom` is checked before the pending break is spent, since spending
+  // it is what actually commits the vertical position. The `y > pageTop`
+  // guard is what stops a block taller than a whole page from looping forever:
+  // once a break has already put it at the top of a fresh page, it is placed
+  // there even if it still overflows, because there is nowhere else to put it.
+  const pageTop = s.page.margin;
+  const pageBottom = s.page.height - s.page.margin;
+  const newPage = () => {
+    page += 1;
+    pages.push([]);
+    activeSink = pages[page];
+    y = pageTop;
+    pending = 0;
+  };
+  const ensureRoom = (height, cap = Infinity) => {
+    if (y > pageTop && y + Math.min(pending, cap) + height > pageBottom) newPage();
+  };
+
   // An annotation prints its three alignments as one line, at the same left,
   // centre and right the grid uses. Plain text arrives as the left one.
-  const annotationRow = (note, { heading = false, size = s.annotationSize, role = "annotation" } = {}) => {
-    // Only a heading takes the whole break. Anything else is trailing the grid
-    // above and stays with it.
-    spend(heading ? Infinity : s.annotationGap);
-
+  //
+  // `extra` folds in the height of whatever this annotation heads, so a
+  // heading and the grid it introduces move to a fresh page together rather
+  // than leaving the heading stranded at the bottom of the one before.
+  // `paginate` is off for a part's own annotation atop an instrument box: that
+  // annotation is already inside a block measureLine() sized as a whole, so it
+  // must not make its own, separate break.
+  const annotationRow = (
+    note,
+    { heading = false, size = s.annotationSize, role = "annotation", extra = 0, paginate = true } = {},
+  ) => {
     // Text wider than the grid wraps rather than running off the page. Each
     // alignment wraps against the full width, so a long one keeps its own edge
     // while the others stay where they are.
@@ -252,11 +304,19 @@ export function layout(score, options = {}) {
 
     const step = size * s.annotationLeading;
     const deepest = Math.max(0, ...columns.map((c) => c.lines.length));
+    const cap = heading ? Infinity : s.annotationGap;
+    const height = size + Math.max(0, deepest - 1) * step;
+
+    if (paginate) ensureRoom(height + extra, cap);
+
+    // Only a heading takes the whole break. Anything else is trailing the grid
+    // above and stays with it.
+    spend(cap);
 
     y += size;
     for (const column of columns)
       column.lines.forEach((line, i) => {
-        elements.push({
+        push({
           kind: "text",
           x: column.x,
           y: y + i * step,
@@ -274,8 +334,10 @@ export function layout(score, options = {}) {
 
   // A <br> is worth one blank line, the way it is in a text document.
   const blankLine = () => {
+    const height = s.annotationSize + s.annotationGap;
+    ensureRoom(height);
     spend();
-    y += s.annotationSize + s.annotationGap;
+    y += height;
   };
 
   // Annotations before the first section belong to the title band. Everything
@@ -325,6 +387,431 @@ export function layout(score, options = {}) {
     return false;
   };
 
+  // The first line a heading annotation is about to introduce, so its height
+  // can be folded into that annotation's own pagination check. Without this a
+  // heading can end up alone at the foot of a page with its grid pushed to the
+  // one after, which is the stranding "Text inside a break" exists to avoid,
+  // now also possible across a page break.
+  const nextLineRows = (from) => {
+    for (let j = from + 1; j < body.length; j++) {
+      if (body[j].kind === "annotation") return null;
+      if (body[j].kind !== "section") continue;
+      const section = body[j];
+      const parts = playing(section.id);
+      if (parts.length === 0) return null;
+      const rows = parts
+        .map((p) => ({ part: p, line: score.music[p.id][section.id].lines[0] }))
+        .filter((r) => r.line);
+      return rows.length > 0 ? { rows, section } : null;
+    }
+    return null;
+  };
+
+  // Rows belonging to one instrument are ruled together as a single box. Parts
+  // sharing a stack are that instrument's rows; a part without one is an
+  // instrument on its own. The break between boxes is what tells a reader
+  // where one instrument ends and the next begins.
+  //
+  // This is the one place box tops and bottoms are worked out, and so also the
+  // one place a line's height comes from: measureLine() below calls it against
+  // a scratch page to size a line before committing it to a position, and the
+  // real drawing pass calls it again to place it for real.
+  const layBoxes = (rows, section, lineIndex, gridTop) => {
+    const boxes = [];
+    for (const r of rows) {
+      const key = instrumentOf(r.part);
+      const open = boxes.at(-1);
+      if (open && open.key === key) open.rows.push(r);
+      else boxes.push({ key, rows: [r] });
+    }
+
+    let boxTop = gridTop;
+    for (const box of boxes) {
+      // A part's own annotations sit directly on top of that instrument's
+      // box, which is where they can only be once instruments are ruled
+      // separately. They belong to the section rather than to the line, so
+      // they print once, above the first line of it.
+      const notes =
+        lineIndex === 0
+          ? box.rows.flatMap((r) => score.music[r.part.id][section.id].annotations)
+          : [];
+      if (notes.length > 0) {
+        y = boxTop;
+        // Clear of the instrument above, where there is one. The first box in
+        // a line already has the break that opened it.
+        pending = boxTop > gridTop ? s.annotationGap : 0;
+        // paginate: false because this annotation is inside a block
+        // measureLine() has already sized as a whole; it must not take its
+        // own, separate page break.
+        for (const note of notes) annotationRow(note, { paginate: false });
+        spend(s.annotationGap);
+        boxTop = y;
+      }
+
+      box.top = boxTop;
+      box.rows.forEach((r, i) => {
+        r.top = boxTop + i * s.rowHeight;
+      });
+      box.bottom = boxTop + box.rows.length * s.rowHeight;
+      boxTop = box.bottom + gap.instrument;
+    }
+
+    return boxes;
+  };
+
+  // The height a line would take, worked out by laying it out at the top of a
+  // throwaway page and reading off where it ended. Annotation heights do not
+  // depend on where the page starts, so the number this returns is exact
+  // rather than an estimate.
+  const measureLine = (rows, section, lineIndex) => {
+    const savedSink = activeSink;
+    const savedY = y;
+    const savedPending = pending;
+    activeSink = [];
+    y = 0;
+    pending = 0;
+    const boxes = layBoxes(rows, section, lineIndex, 0);
+    const height = boxes.at(-1).bottom;
+    activeSink = savedSink;
+    y = savedY;
+    pending = savedPending;
+    return height;
+  };
+
+  const posKey = (partId, pos) => `${partId}:${pos.lineIndex}:${pos.measureIndex}:${pos.beatIndex}:${pos.slotIndex}`;
+
+  // Draws one grid line whole - box ruling, symbols, and link curves - and
+  // returns its geometry. `firstOfGroup` is the same first-line-inherits,
+  // later-lines-take-gap.line rule the section loop always applied; endings
+  // reuse it as a plain multi-line grid of their own.
+  //
+  // `notePos`/`rowGeom`, when given, record where every notated symbol and
+  // row ended up, keyed by part id and this call's `lineIndex`. A bow or
+  // parenthesis span reads them back once every line it touches has been
+  // drawn, since a span can reach across lines a single call here never sees
+  // at once.
+  const renderGridLine = (
+    rows,
+    section,
+    lineIndex,
+    { firstOfGroup = false, notePos, rowGeom, labels = true } = {},
+  ) => {
+    if (!firstOfGroup) pending = gap.line;
+
+    ensureRoom(measureLine(rows, section, lineIndex));
+    spend();
+
+    const measureCount = Math.max(...rows.map((r) => r.line.measures.length));
+    const gridRight = left + measureCount * cellWidth;
+    const gridTop = y;
+
+    const boxes = layBoxes(rows, section, lineIndex, gridTop);
+    const gridBottom = boxes.at(-1).bottom;
+
+    // A line shorter than eight measures is left-aligned and its ruling
+    // stops after the last measure rather than stretching to fill the row.
+    for (const box of boxes) {
+      push({ kind: "line", x1: left, y1: box.top, x2: gridRight, y2: box.top });
+      push({ kind: "line", x1: left, y1: box.bottom, x2: gridRight, y2: box.bottom });
+      for (let m = 0; m <= measureCount; m++) {
+        const mx = left + m * cellWidth;
+        push({ kind: "line", x1: mx, y1: box.top, x2: mx, y2: box.bottom });
+      }
+      for (let r = 1; r < box.rows.length; r++) {
+        const ry = box.top + r * s.rowHeight;
+        push({ kind: "line", x1: left, y1: ry, x2: gridRight, y2: ry });
+      }
+    }
+
+    // Labels take their width from the margin, not from the eight cells, so
+    // they print left of the grid rather than moving it. Not offered for an
+    // ending's own grid, which is already unambiguous - its heading names the
+    // part - so a label would only repeat what the annotation already said.
+    if (labels && showLabels) {
+      const rowParts = rows.map((r) => r.part.id);
+      const changed =
+        page !== lastLabelPage ||
+        !lastLabelRows ||
+        rowParts.length !== lastLabelRows.length ||
+        rowParts.some((id, i) => id !== lastLabelRows[i]);
+
+      if (changed) {
+        for (const r of rows) {
+          // The label column has only the page margin to work with, so a
+          // short name takes precedence where the part has one.
+          const label = r.part.shortName ?? r.part.name;
+          if (!label) continue;
+          push({
+            kind: "text",
+            x: left - s.labelGap * s.pitchSize,
+            y: r.top + s.rowHeight / 2 + s.labelSize / 3,
+            text: label,
+            size: s.labelSize,
+            anchor: "end",
+            role: "label",
+          });
+        }
+        lastLabelRows = rowParts;
+        lastLabelPage = page;
+      }
+    }
+
+    if (rowGeom)
+      for (const r of rows) {
+        if (r.part.type === "lyric") continue;
+        rowGeom.set(`${r.part.id}:${lineIndex}`, { top: r.top, left, right: gridRight, page });
+      }
+
+    // Symbols. The share count is worked out for the measure as a whole so
+    // that beat positions line up vertically across every part playing it.
+    // A lyric row takes no part in it - "Lyric rows take no part in the
+    // subdivision count" - so it is excluded here and placed afterward
+    // against the columns the notated rows already settled on.
+    for (let m = 0; m < measureCount; m++) {
+      const cellLeft = left + m * cellWidth;
+
+      const perPart = rows
+        .filter((r) => r.part.type !== "lyric")
+        .map((r) => (r.line.measures[m]?.beats ?? []).map((b) => b.slots.length));
+      const shareList = shares(perPart);
+      const total = shareList.reduce((a, b) => a + b, 0);
+
+      // Pack a beat's symbols as tightly as the type allows. The wanted
+      // fraction of a column is the target; the legibility floor wins where a
+      // crowded measure has made columns narrower than the letters standing
+      // in them, which is what a group of three does on a portrait page.
+      const columnWidth = (cellWidth * s.spread) / total;
+      const floor = (s.minSymbolAdvance * s.pitchSize) / columnWidth;
+      const tightness = Math.min(1, Math.max(s.groupTightness, floor));
+
+      const x = (column) => columnX(column, total, cellLeft, cellWidth, s.spread);
+
+      // One arrival column per beat: where a lyric measure's item count
+      // matches, syllable i sits exactly where a plain note on beat i would.
+      const beatArrivals = arrivals(shareList, shareList.map(() => 1)).map((c) => c[0]);
+
+      // Place every row before drawing anything, because a link curve on one
+      // row has to know where another row's symbols ended up.
+      const placed = rows.map((r) => {
+        const measure = r.line.measures[m];
+        if (!measure) return null;
+        if (r.part.type === "lyric") {
+          return { part: r.part, measure, lyric: true, baseline: r.top + s.rowHeight / 2 + s.lyricSize / 3 };
+        }
+        return {
+          part: r.part,
+          measure,
+          columns: arrivals(
+            shareList,
+            measure.beats.map((b) => b.slots.length),
+            tightness,
+          ),
+          baseline: r.top + s.rowHeight / 2 + s.pitchSize / 3,
+        };
+      });
+
+      for (const row of placed) {
+        if (!row) continue;
+
+        if (row.lyric) {
+          // "A lyric measure holding exactly as many items as the measure
+          // has beats renders one item per beat... Any other number renders
+          // as a single group centered in the cell." A <rest> is เอื้อน and
+          // prints as blank space, never the notated rows' hyphen.
+          const items = row.measure.items;
+          const n = items.length;
+          if (n === 0) continue;
+          const aligned = n === beatArrivals.length;
+          const at = (i) =>
+            aligned ? x(beatArrivals[i]) : columnX(i + 1, n, cellLeft, cellWidth, s.spread);
+          items.forEach((item, i) => {
+            if (item.kind !== "syllable") return;
+            push({
+              kind: "text",
+              x: at(i),
+              y: row.baseline,
+              text: item.text,
+              size: s.lyricSize,
+              anchor: "middle",
+              role: "lyric",
+            });
+          });
+          continue;
+        }
+
+        row.measure.beats.forEach((beat, beatIndex) => {
+          beat.slots.forEach((slotValue, slotIndex) => {
+            const symbolX = x(row.columns[beatIndex][slotIndex]);
+            if (notePos) notePos.set(posKey(row.part.id, { lineIndex, measureIndex: m, beatIndex, slotIndex }), symbolX);
+            const text = glyph(slotValue, s);
+            if (!text) return;
+            push({
+              kind: "text",
+              x: symbolX,
+              y: row.baseline,
+              text,
+              size: s.pitchSize,
+              anchor: "middle",
+              role: "symbol",
+            });
+          });
+        });
+      }
+
+      // Link curves, once the symbols they join are positioned. A lyric row
+      // has no beats to link and takes no part in an instrument's link
+      // curve either, even where it shares a stack.
+      for (const row of placed) {
+        if (!row || row.lyric) continue;
+        row.measure.beats.forEach((beat, beatIndex) => {
+          if (!beat.link) return;
+
+          // The gesture is whatever the instrument sounds on this beat, so
+          // read every row of the stack at once rather than a row at a time.
+          const stackRows = row.part.stack
+            ? placed.filter((o) => o && !o.lyric && o.part.stack === row.part.stack)
+            : [row];
+
+          const span = linkSpan(
+            stackRows.map((o) => ({
+              slots: o.measure.beats[beatIndex]?.slots ?? [],
+              columns: o.columns[beatIndex] ?? [],
+              y: o.baseline,
+            })),
+          );
+          if (!span) return;
+
+          const top = (note) => note.y - s.linkTop * s.pitchSize;
+          const x1 = x(span.first.column);
+          const x2 = x(span.last.column);
+
+          if (span.first.y === span.last.y) {
+            // A level run, so the curve only has to mark it. It bows above
+            // the notes, taking whatever room the row leaves.
+            const arcY = top(span.first);
+            const rowTop = row.baseline - s.rowHeight / 2 - s.pitchSize / 3;
+            push({
+              kind: "arc",
+              x1,
+              x2,
+              y: arcY,
+              rise: Math.min(s.linkRise * s.pitchSize, arcY - rowTop - 1),
+              role: "link",
+            });
+            return;
+          }
+
+          // Across rows the stroke arches over the run. Which way it turns
+          // follows from where the two notes fell: a run ending higher up the
+          // page leaves the first note upward and comes in flat above the
+          // last, and one ending lower leaves flat and turns down. Either way
+          // it stays above the notes rather than cutting between them.
+          const rising = span.last.y < span.first.y;
+
+          // Step off the first note's centre so the stroke starts at that
+          // letter's corner, on the side it departs towards.
+          const from = x1 + (rising ? -1 : 1) * s.linkSideStep * s.pitchSize;
+          const y1 = top(span.first);
+          const y2 = top(span.last);
+
+          push({
+            kind: "curve",
+            x1: from,
+            y1,
+            x2,
+            y2,
+            cx: rising ? from : x2,
+            cy: rising ? y2 : y1,
+            role: "link",
+          });
+        });
+      }
+    }
+
+    y = gridBottom;
+    return { gridTop, gridBottom, gridRight, boxes, page };
+  };
+
+  // Bow and parenthesis spans, drawn once every line they touch has already
+  // been placed. `notePos`/`rowGeom` come from the renderGridLine() calls
+  // that drew those lines - the section's regular grid, or one ending's own
+  // grid, each its own scope, since line numbering restarts inside an ending.
+  const drawParenSpan = (part, span, notePos, rowGeom) => {
+    const firstX = notePos.get(posKey(part.id, span.first));
+    const lastX = notePos.get(posKey(part.id, span.last));
+    const firstGeom = rowGeom.get(`${part.id}:${span.first.lineIndex}`);
+    const lastGeom = rowGeom.get(`${part.id}:${span.last.lineIndex}`);
+    if (firstX === undefined || lastX === undefined || !firstGeom || !lastGeom) return;
+
+    // "The `(` before its first symbol and a `)` after its last." No further
+    // decoration at a line break: unlike a bow, a cued passage does not need
+    // a mark saying the span continues, since the brackets at its true ends
+    // already say everything a reader needs.
+    const step = s.linkSideStep * s.pitchSize;
+    pushTo(firstGeom.page, {
+      kind: "text",
+      x: firstX - step,
+      y: firstGeom.top + s.rowHeight / 2 + s.pitchSize / 3,
+      text: "(",
+      size: s.pitchSize,
+      anchor: "middle",
+      role: "parenthesis",
+    });
+    pushTo(lastGeom.page, {
+      kind: "text",
+      x: lastX + step,
+      y: lastGeom.top + s.rowHeight / 2 + s.pitchSize / 3,
+      text: ")",
+      size: s.pitchSize,
+      anchor: "middle",
+      role: "parenthesis",
+    });
+  };
+
+  // "Both bow directions render above the notes: `in` as a curve with both
+  // tips pointing down, `out` as a curve with both tips pointing up." Drawn
+  // as the same shallow arc a single-row link uses, one segment per line the
+  // span touches, with a short tick at the true start and true stop only. A
+  // cut mid-span gets no tick, "signalling that the stroke continues onto the
+  // next line" - which a page break is, here, the same thing as.
+  //
+  // The tip shape is a first pass rather than a settled convention: see
+  // HANDOVER.md.
+  const drawBowSpan = (part, span, notePos, rowGeom) => {
+    const firstX = notePos.get(posKey(part.id, span.first));
+    const lastX = notePos.get(posKey(part.id, span.last));
+    const firstGeom = rowGeom.get(`${part.id}:${span.first.lineIndex}`);
+    const lastGeom = rowGeom.get(`${part.id}:${span.last.lineIndex}`);
+    if (firstX === undefined || lastX === undefined || !firstGeom || !lastGeom) return;
+
+    const tickUp = span.direction === "out";
+    const tickLen = s.bowTickLength * s.pitchSize;
+
+    for (let li = span.first.lineIndex; li <= span.last.lineIndex; li++) {
+      const geom = rowGeom.get(`${part.id}:${li}`);
+      if (!geom) continue;
+
+      const baseline = geom.top + s.rowHeight / 2 + s.pitchSize / 3;
+      const arcY = baseline - s.linkTop * s.pitchSize;
+      const x1 = li === span.first.lineIndex ? firstX : geom.left;
+      const x2 = li === span.last.lineIndex ? lastX : geom.right;
+
+      pushTo(geom.page, {
+        kind: "arc",
+        x1,
+        x2,
+        y: arcY,
+        rise: Math.min(s.linkRise * s.pitchSize, arcY - geom.top - 1),
+        role: "bow",
+      });
+
+      if (li === span.first.lineIndex)
+        pushTo(geom.page, { x1, y1: arcY, x2: x1, y2: arcY + (tickUp ? -tickLen : tickLen), kind: "line" });
+      if (li === span.last.lineIndex)
+        pushTo(geom.page, { x1: x2, y1: arcY, x2, y2: arcY + (tickUp ? -tickLen : tickLen), kind: "line" });
+    }
+  };
+
   for (let index = 0; index < body.length; index++) {
     const item = body[index];
     if (item.kind === "br") {
@@ -332,7 +819,13 @@ export function layout(score, options = {}) {
       continue;
     }
     if (item.kind === "annotation") {
-      annotationRow(item, { heading: headsNextGrid(index) });
+      const heading = headsNextGrid(index);
+      let extra = 0;
+      if (heading) {
+        const next = nextLineRows(index);
+        if (next) extra = measureLine(next.rows, next.section, 0);
+      }
+      annotationRow(item, { heading, extra });
       continue;
     }
 
@@ -344,210 +837,100 @@ export function layout(score, options = {}) {
       ...parts.map((p) => score.music[p.id][section.id].lines.length),
     );
 
+    const notePos = new Map();
+    const rowGeom = new Map();
+    const lineBoxes = [];
     for (let lineIndex = 0; lineIndex < lineCount; lineIndex++) {
-      if (lineIndex > 0) pending = gap.line;
-      spend();
-
       const rows = parts
         .map((p) => ({ part: p, line: score.music[p.id][section.id].lines[lineIndex] }))
         .filter((r) => r.line);
+      lineBoxes.push(
+        renderGridLine(rows, section, lineIndex, { firstOfGroup: lineIndex === 0, notePos, rowGeom }),
+      );
+    }
 
-      const measureCount = Math.max(...rows.map((r) => r.line.measures.length));
-      const gridRight = left + measureCount * cellWidth;
-      const gridTop = y;
+    for (const p of parts) {
+      for (const span of score.music[p.id][section.id].bowSpans) drawBowSpan(p, span, notePos, rowGeom);
+      for (const span of score.music[p.id][section.id].parenSpans) drawParenSpan(p, span, notePos, rowGeom);
+    }
 
-      // Rows belonging to one instrument are ruled together as a single box.
-      // Parts sharing a stack are that instrument's rows; a part without one is
-      // an instrument on its own. The break between boxes is what tells a
-      // reader where one instrument ends and the next begins.
-      const boxes = [];
-      for (const r of rows) {
-        const key = instrumentOf(r.part);
-        const open = boxes.at(-1);
-        if (open && open.key === key) open.rows.push(r);
-        else boxes.push({ key, rows: [r] });
-      }
+    // A line repeat prints as a bracket in the margin right of the grid,
+    // aligned to the longest line the span covers. Where the covered lines
+    // land on more than one page, split into one bracket per page - the same
+    // "belongs together but a page break still falls between lines" the
+    // grid itself follows.
+    for (const lr of section.lineRepeats ?? []) {
+      if (lr.times < 2) continue;
+      const covered = lineBoxes.slice(lr.first - 1, lr.last);
+      if (covered.length === 0) continue;
 
-      let boxTop = gridTop;
-      for (const box of boxes) {
-        // A part's own annotations sit directly on top of that instrument's
-        // box, which is where they can only be once instruments are ruled
-        // separately. They belong to the section rather than to the line, so
-        // they print once, above the first line of it.
-        const notes =
-          lineIndex === 0
-            ? box.rows.flatMap((r) => score.music[r.part.id][section.id].annotations)
-            : [];
-        if (notes.length > 0) {
-          y = boxTop;
-          // Clear of the instrument above, where there is one. The first box in
-          // a line already has the break that opened it.
-          pending = boxTop > gridTop ? s.annotationGap : 0;
-          for (const note of notes) annotationRow(note);
-          spend(s.annotationGap);
-          boxTop = y;
-        }
+      const bracketX = Math.max(...covered.map((b) => b.gridRight)) + s.repeatBracketGap * s.pitchSize;
+      const depth = s.repeatBracketDepth * s.pitchSize;
+      const label = lr.times === 2 ? "ซ้ำ" : `${lr.times} ครั้ง`;
 
-        box.top = boxTop;
-        box.rows.forEach((r, i) => {
-          r.top = boxTop + i * s.rowHeight;
+      let runStart = 0;
+      for (let i = 1; i <= covered.length; i++) {
+        if (i < covered.length && covered[i].page === covered[runStart].page) continue;
+        const run = covered.slice(runStart, i);
+        const top = run[0].gridTop;
+        const bottom = run.at(-1).gridBottom;
+        const pageIndex = run[0].page;
+
+        pushTo(pageIndex, { kind: "line", x1: bracketX, y1: top, x2: bracketX, y2: bottom });
+        pushTo(pageIndex, { kind: "line", x1: bracketX, y1: top, x2: bracketX - depth, y2: top });
+        pushTo(pageIndex, { kind: "line", x1: bracketX, y1: bottom, x2: bracketX - depth, y2: bottom });
+        pushTo(pageIndex, {
+          kind: "text",
+          x: bracketX + 2,
+          y: (top + bottom) / 2 + s.repeatLabelSize / 3,
+          text: label,
+          size: s.repeatLabelSize,
+          anchor: "start",
+          role: "repeat-label",
         });
-        box.bottom = boxTop + box.rows.length * s.rowHeight;
-        boxTop = box.bottom + gap.instrument;
+        runStart = i;
       }
-      const gridBottom = boxes.at(-1).bottom;
+    }
 
-      // A line shorter than eight measures is left-aligned and its ruling
-      // stops after the last measure rather than stretching to fill the row.
-      for (const box of boxes) {
-        elements.push({ kind: "line", x1: left, y1: box.top, x2: gridRight, y2: box.top });
-        elements.push({
-          kind: "line",
-          x1: left,
-          y1: box.bottom,
-          x2: gridRight,
-          y2: box.bottom,
-        });
-        for (let m = 0; m <= measureCount; m++) {
-          const x = left + m * cellWidth;
-          elements.push({ kind: "line", x1: x, y1: box.top, x2: x, y2: box.bottom });
-        }
-        for (let r = 1; r < box.rows.length; r++) {
-          const ry = box.top + r * s.rowHeight;
-          elements.push({ kind: "line", x1: left, y1: ry, x2: gridRight, y2: ry });
-        }
-      }
+    // An ending renders below its section, detached from the line(s) it
+    // replaces: its own annotation as a heading, then its replacement lines
+    // as their own grid. lineIndex is pinned to 1 so layBoxes() never treats
+    // it as a section's first line and reprints that part's own annotations
+    // a second time underneath.
+    for (const p of parts) {
+      const endings = score.music[p.id][section.id].endings;
+      endings.forEach((ending, endingIndex) => {
+        if (ending.lines.length === 0) return;
 
-      // Symbols. The share count is worked out for the measure as a whole so
-      // that beat positions line up vertically across every part playing it.
-      for (let m = 0; m < measureCount; m++) {
-        const cellLeft = left + m * cellWidth;
-
-        const perPart = rows.map((r) =>
-          (r.line.measures[m]?.beats ?? []).map((b) => b.slots.length),
-        );
-        const shareList = shares(perPart);
-        const total = shareList.reduce((a, b) => a + b, 0);
-
-        // Pack a beat's symbols as tightly as the type allows. The wanted
-        // fraction of a column is the target; the legibility floor wins where a
-        // crowded measure has made columns narrower than the letters standing
-        // in them, which is what a group of three does on a portrait page.
-        const columnWidth = (cellWidth * s.spread) / total;
-        const floor = (s.minSymbolAdvance * s.pitchSize) / columnWidth;
-        const tightness = Math.min(1, Math.max(s.groupTightness, floor));
-
-        const x = (column) => columnX(column, total, cellLeft, cellWidth, s.spread);
-
-        // Place every row before drawing anything, because a link curve on one
-        // row has to know where another row's symbols ended up.
-        const placed = rows.map((r) => {
-          const measure = r.line.measures[m];
-          if (!measure) return null;
-          return {
-            part: r.part,
-            measure,
-            columns: arrivals(
-              shareList,
-              measure.beats.map((b) => b.slots.length),
-              tightness,
-            ),
-            baseline: r.top + s.rowHeight / 2 + s.pitchSize / 3,
-          };
+        pending = endingIndex === 0 ? gap.section : gap.line;
+        ending.annotations.forEach((note, i) => {
+          const extra = i === 0 ? measureLine([{ part: p, line: ending.lines[0] }], section, 1) : 0;
+          annotationRow(note, { heading: i === 0, extra });
         });
 
-        for (const row of placed) {
-          if (!row) continue;
-          row.measure.beats.forEach((beat, beatIndex) => {
-            beat.slots.forEach((slotValue, slotIndex) => {
-              const text = glyph(slotValue, s);
-              if (!text) return;
-              elements.push({
-                kind: "text",
-                x: x(row.columns[beatIndex][slotIndex]),
-                y: row.baseline,
-                text,
-                size: s.pitchSize,
-                anchor: "middle",
-                role: "symbol",
-              });
-            });
+        const endingNotePos = new Map();
+        const endingRowGeom = new Map();
+        ending.lines.forEach((line, li) => {
+          renderGridLine([{ part: p, line }], section, 1, {
+            firstOfGroup: li === 0,
+            labels: false,
+            notePos: endingNotePos,
+            rowGeom: endingRowGeom,
           });
-        }
+        });
 
-        // Link curves, once the symbols they join are positioned.
-        for (const row of placed) {
-          if (!row) continue;
-          row.measure.beats.forEach((beat, beatIndex) => {
-            if (!beat.link) return;
-
-            // The gesture is whatever the instrument sounds on this beat, so
-            // read every row of the stack at once rather than a row at a time.
-            const stackRows = row.part.stack
-              ? placed.filter((o) => o && o.part.stack === row.part.stack)
-              : [row];
-
-            const span = linkSpan(
-              stackRows.map((o) => ({
-                slots: o.measure.beats[beatIndex]?.slots ?? [],
-                columns: o.columns[beatIndex] ?? [],
-                y: o.baseline,
-              })),
-            );
-            if (!span) return;
-
-            const top = (note) => note.y - s.linkTop * s.pitchSize;
-            const x1 = x(span.first.column);
-            const x2 = x(span.last.column);
-
-            if (span.first.y === span.last.y) {
-              // A level run, so the curve only has to mark it. It bows above
-              // the notes, taking whatever room the row leaves.
-              const y = top(span.first);
-              const rowTop = row.baseline - s.rowHeight / 2 - s.pitchSize / 3;
-              elements.push({
-                kind: "arc",
-                x1,
-                x2,
-                y,
-                rise: Math.min(s.linkRise * s.pitchSize, y - rowTop - 1),
-                role: "link",
-              });
-              return;
-            }
-
-            // Across rows the stroke arches over the run. Which way it turns
-            // follows from where the two notes fell: a run ending higher up the
-            // page leaves the first note upward and comes in flat above the
-            // last, and one ending lower leaves flat and turns down. Either way
-            // it stays above the notes rather than cutting between them.
-            const rising = span.last.y < span.first.y;
-
-            // Step off the first note's centre so the stroke starts at that
-            // letter's corner, on the side it departs towards.
-            const from = x1 + (rising ? -1 : 1) * s.linkSideStep * s.pitchSize;
-            const y1 = top(span.first);
-            const y2 = top(span.last);
-
-            elements.push({
-              kind: "curve",
-              x1: from,
-              y1,
-              x2,
-              y2,
-              cx: rising ? from : x2,
-              cy: rising ? y2 : y1,
-              role: "link",
-            });
-          });
-        }
-      }
-
-      y = gridBottom;
+        for (const span of ending.bowSpans) drawBowSpan(p, span, endingNotePos, endingRowGeom);
+        for (const span of ending.parenSpans) drawParenSpan(p, span, endingNotePos, endingRowGeom);
+      });
     }
 
     pending = gap.section;
   }
 
-  return { width: s.page.width, height: s.page.height, cellWidth, elements };
+  return {
+    width: s.page.width,
+    height: s.page.height,
+    cellWidth,
+    pages: pages.map((elements) => ({ elements })),
+  };
 }

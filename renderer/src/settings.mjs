@@ -112,4 +112,37 @@ export const defaults = {
 
   titleGap: 26,
   bandGap: 18,
+
+  // Lyric rows. A syllable is several times wider than a pitch letter and
+  // nothing widens the cell to help, so "Lyric rows" allows setting the row
+  // smaller to buy some of that room back. OPEN.
+  lyricSize: 10,
+
+  // Bow spans. Drawn as a shallow arc above the row, at the same height a
+  // link curve attaches (linkTop), with a short tick at the true start and
+  // true stop only - the marks "in" and "out" describe, per
+  // "Bow spans across a line break" - and no tick at a cut mid-span. All OPEN,
+  // and judged against a printed score the way the link curve was: this is a
+  // first pass, not a settled convention.
+  bowTickLength: 0.5,
+  bowStroke: 0.8,
+
+  // Cued passages. A parenthesis span prints its brackets at pitchSize; no
+  // width setting needed since the glyphs come from the font.
+
+  // Instrument-name label column. "Off on an ensemble score, on wherever a
+  // part is tacet" - null means let layout() decide from the score, since
+  // only it knows whether any part omits a section. true/false override that
+  // for every score laid out with these settings. Labels take their width
+  // from the margin rather than from the eight cells, so they never move the
+  // grid: printed just left of it, in the blank margin band.
+  showLabels: null,
+  labelSize: 10,
+  labelGap: 0.4,
+
+  // Repeat brackets: a bracket in the margin right of the grid. OPEN.
+  repeatBracketGap: 0.6, // gap between the grid and the bracket, x pitchSize
+  repeatBracketDepth: 0.5, // how far the bracket's arms reach in, x pitchSize
+  repeatBracketStroke: 0.8,
+  repeatLabelSize: 10,
 };

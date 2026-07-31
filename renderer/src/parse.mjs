@@ -83,6 +83,112 @@ function beats(measure) {
   return out;
 }
 
+/** A lyric measure's children: a <syllable> or a <rest>, in document order. */
+function lyricItems(measure) {
+  const out = [];
+  for (const child of Array.from(measure.childNodes)) {
+    if (child.nodeType !== 1) continue;
+    if (child.localName === "syllable") out.push({ kind: "syllable", text: text(child) });
+    else if (child.localName === "rest") out.push({ kind: "rest" });
+  }
+  return out;
+}
+
+/**
+ * One <line>'s measures, shaped by the part's type: a notated part gets beats
+ * of slots, a lyric part gets items that do not divide into beats at all. See
+ * "Lyric rows" in reference/rendering.
+ */
+function parseLine(line, partType) {
+  return {
+    number: Number(line.getAttribute("number")),
+    measures: els(line, "measure").map((m) =>
+      partType === "lyric"
+        ? { number: Number(m.getAttribute("number")), items: lyricItems(m) }
+        : { number: Number(m.getAttribute("number")), beats: beats(m) },
+    ),
+  };
+}
+
+/**
+ * Bow and parenthesis spans, matched across a run of <line> elements in
+ * document order. Positions are array indices into the lines this walk was
+ * given, in the same shape parseLine() produces, so layout.mjs can address a
+ * span's ends directly once it has laid those lines out.
+ *
+ * A span may cross <measure> and <line> boundaries but never a <section>
+ * boundary, so this is called once per <section-ref> over its regular lines,
+ * and once more per <ending> over its own lines - a marker left dangling by
+ * an ending that substitutes for part of a still-open span (see <ending>'s
+ * "Spans across an overridden line") is a resolved-pass subtlety this static
+ * renderer does not attempt; the dangling marker is silently unmatched.
+ */
+function resolveSpans(lineEls) {
+  const bowSpans = [];
+  const parenSpans = [];
+  let openBow = null;
+  let openParen = null;
+  let last = null;
+
+  const noteAt = (position) => {
+    last = position;
+    if (openBow && !openBow.first) openBow.first = position;
+    if (openParen && !openParen.first) openParen.first = position;
+  };
+
+  const marker = (node) => {
+    const type = node.getAttribute("type");
+    if (node.localName === "bow") {
+      if (type === "start") {
+        openBow = { direction: node.getAttribute("direction") || null, first: null };
+      } else if (openBow) {
+        bowSpans.push({ ...openBow, last });
+        openBow = null;
+      }
+    } else if (node.localName === "parenthesis") {
+      if (type === "start") {
+        openParen = {
+          dim: node.hasAttribute("dim") ? node.getAttribute("dim") === "true" : null,
+          mute: node.hasAttribute("mute") ? node.getAttribute("mute") === "true" : null,
+          first: null,
+        };
+      } else if (openParen) {
+        parenSpans.push({ ...openParen, last });
+        openParen = null;
+      }
+    }
+  };
+
+  lineEls.forEach((lineEl, lineIndex) => {
+    els(lineEl, "measure").forEach((measureEl, measureIndex) => {
+      let beatIndex = -1;
+      for (const child of Array.from(measureEl.childNodes)) {
+        if (child.nodeType !== 1) continue;
+        if (child.localName === "group") {
+          beatIndex++;
+          let slotIndex = 0;
+          for (const gc of Array.from(child.childNodes)) {
+            if (gc.nodeType !== 1) continue;
+            if (gc.localName === "note" || gc.localName === "rest") {
+              noteAt({ lineIndex, measureIndex, beatIndex, slotIndex });
+              slotIndex++;
+            } else if (gc.localName === "bow" || gc.localName === "parenthesis") {
+              marker(gc);
+            }
+          }
+        } else if (child.localName === "note" || child.localName === "rest") {
+          beatIndex++;
+          noteAt({ lineIndex, measureIndex, beatIndex, slotIndex: 0 });
+        } else if (child.localName === "bow" || child.localName === "parenthesis") {
+          marker(child);
+        }
+      }
+    });
+  });
+
+  return { bowSpans, parenSpans };
+}
+
 export function parse(source) {
   const doc = new DOMParser().parseFromString(source, "text/xml");
   const score = doc.documentElement;
@@ -94,6 +200,7 @@ export function parse(source) {
     stack: p.getAttribute("stack") || null,
     row: p.hasAttribute("row") ? Number(p.getAttribute("row")) : null,
     name: text(el(p, "instrument-name")),
+    shortName: text(el(p, "instrument-short-name")),
   }));
 
   // <structure> in the order it lays the score out. A <repeat> contributes what
@@ -111,6 +218,12 @@ export function parse(source) {
           kind: "section",
           id: child.getAttribute("id"),
           name: child.getAttribute("name"),
+          // A bracket in the margin right of the grid; see "Repeat brackets".
+          lineRepeats: els(child, "line-repeat").map((lr) => ({
+            first: Number(lr.getAttribute("first")),
+            last: Number(lr.getAttribute("last")),
+            times: lr.hasAttribute("times") ? Number(lr.getAttribute("times")) : 1,
+          })),
         });
       else if (child.localName === "annotation") {
         const note = annotation(child);
@@ -122,23 +235,43 @@ export function parse(source) {
   collect(el(score, "structure"));
   const sections = structure.filter((item) => item.kind === "section");
 
-  // part id -> section id -> { annotations, lines }
+  // part id -> section id -> { annotations, lines, bowSpans, parenSpans, endings }
   const music = {};
   for (const pd of els(score, "part-data")) {
     const partId = pd.getAttribute("part");
+    const partType = parts.find((p) => p.id === partId)?.type;
     music[partId] = {};
     for (const ref of els(pd, "section-ref")) {
+      const lineEls = els(ref, "line");
+      // Bow and parenthesis spans are invalid inside a lyric part, so there is
+      // nothing to resolve there.
+      const { bowSpans, parenSpans } =
+        partType === "lyric" ? { bowSpans: [], parenSpans: [] } : resolveSpans(lineEls);
+
       music[partId][ref.getAttribute("section")] = {
         // Annotations here belong to this part alone, and render above its
         // first row in the section.
         annotations: els(ref, "annotation").map(annotation).filter(Boolean),
-        lines: els(ref, "line").map((line) => ({
-          number: Number(line.getAttribute("number")),
-          measures: els(line, "measure").map((m) => ({
-            number: Number(m.getAttribute("number")),
-            beats: beats(m),
-          })),
-        })),
+        lines: lineEls.map((line) => parseLine(line, partType)),
+        bowSpans,
+        parenSpans,
+        // An ending renders below the section, detached from the line(s) it
+        // replaces, so it carries its own annotation and its own spans.
+        endings: els(ref, "ending").map((endingEl) => {
+          const endingLineEls = els(endingEl, "line");
+          const spans =
+            partType === "lyric" ? { bowSpans: [], parenSpans: [] } : resolveSpans(endingLineEls);
+          return {
+            pass: (endingEl.getAttribute("pass") || "")
+              .split(",")
+              .map((n) => Number(n.trim()))
+              .filter((n) => Number.isInteger(n)),
+            annotations: els(endingEl, "annotation").map(annotation).filter(Boolean),
+            lines: endingLineEls.map((line) => parseLine(line, partType)),
+            bowSpans: spans.bowSpans,
+            parenSpans: spans.parenSpans,
+          };
+        }),
       };
     }
   }

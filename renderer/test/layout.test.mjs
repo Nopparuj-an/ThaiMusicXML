@@ -8,7 +8,8 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { shares, arrivals, columnX, linkSpan } from "../src/layout.mjs";
+import { shares, arrivals, columnX, linkSpan, layout } from "../src/layout.mjs";
+import { parse } from "../src/parse.mjs";
 
 const near = (actual, expected, note) =>
   assert.ok(
@@ -188,4 +189,71 @@ test("a single row's linked group spans its own notes and stays level", () => {
 test("a beat sounding fewer than two notes has no run to span", () => {
   assert.equal(linkSpan([{ slots: [note("ด"), rest], columns: [5, 6], y: 0 }]), null);
   assert.equal(linkSpan([{ slots: [rest, rest], columns: [5, 6], y: 0 }]), null);
+});
+
+// Pagination.
+//
+// "Where a section runs past the bottom margin it continues on the next
+// page... Do not split one line's part rows across a page: a line's rows
+// belong together." A tiny page height forces a break after one grid line
+// without needing a long score to prove it.
+
+const NS = "https://thaimusicxml.anan.ovh/ns/0.1";
+
+const score = (structureXml) => `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure>${structureXml}</structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+    </section-ref>
+    <section-ref section="s2">
+      <line number="1"><measure number="1"><note pitch="ร"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+
+const tinyPage = { page: { width: 595.28, height: 110, margin: 20 } };
+
+const textsOn = (page) =>
+  page.elements.filter((el) => el.kind === "text").map((el) => el.text);
+
+test("a score that fits on one page produces one page", () => {
+  const doc = score('<section id="s1" name="s1"/>');
+  const { pages } = layout(parse(doc), tinyPage);
+  assert.equal(pages.length, 1);
+});
+
+test("a line too tall for what remains moves whole to the next page", () => {
+  const doc = score('<section id="s1" name="s1"/><section id="s2" name="s2"/>');
+  const { pages } = layout(parse(doc), tinyPage);
+
+  assert.equal(pages.length, 2, "the second section did not fit and moved on");
+  assert.ok(!textsOn(pages[0]).includes("ร"), "section 2's note is not on page 1");
+  assert.ok(textsOn(pages[1]).includes("ร"), "it is on page 2 instead");
+
+  // Nothing on the first page was cut by the bottom margin.
+  const bottom = tinyPage.page.height - tinyPage.page.margin;
+  for (const el of pages[0].elements) {
+    const y = el.kind === "line" ? Math.max(el.y1, el.y2) : el.y;
+    assert.ok(y <= bottom + 1e-9, `an element at y=${y} sits past the bottom margin`);
+  }
+});
+
+test("a heading annotation moves with the grid it introduces", () => {
+  // ท่อน 2 heads section s2 per "Text inside a break", so if s2's grid has to
+  // move to a fresh page, the heading must go with it rather than being left
+  // alone at the foot of the page before.
+  const doc = score(
+    '<section id="s1" name="s1"/><annotation>ท่อน 2</annotation><section id="s2" name="s2"/>',
+  );
+  const { pages } = layout(parse(doc), tinyPage);
+
+  const headingPage = pages.findIndex((p) => textsOn(p).includes("ท่อน 2"));
+  const gridPage = pages.findIndex((p) => textsOn(p).includes("ร"));
+
+  assert.ok(headingPage > 0, "the heading did not fit trailing section 1");
+  assert.equal(headingPage, gridPage, "the heading and its grid share a page");
 });

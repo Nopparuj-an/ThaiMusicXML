@@ -1,7 +1,18 @@
 # Renderer handover
 
 Where the renderer stands and what finishing it involves. Written at the end of
-the session that built annotations and link curves.
+the session that built annotations and link curves; updated at the end of the
+session that added pagination and the rest of the features below.
+
+## Progress log
+
+- Session 1: grid, right-anchored beats, group tightening, break scale,
+  per-instrument boxes, title band and credits, link curves, annotations,
+  `<br>`, text wrapping.
+- Session 2: pagination, endings, repeat brackets, bow spans and parentheses,
+  lyric rows, and the instrument-name label column. Every item that was on the
+  "What is left" list is implemented; see below for what is still worth
+  treating as a first pass rather than a settled convention.
 
 ## Working practice
 
@@ -13,7 +24,7 @@ the session that built annotations and link curves.
   comparing a render to print, and each one was a real defect.
 - English first, per `AGENTS.md`. `CLAUDE.md` is a symlink to it, and the Edit
   tool refuses to write through the symlink.
-- `npm run check` runs links, corpus, and 22 unit tests. `npx astro build`
+- `npm run check` runs links, corpus, and 25 unit tests. `npx astro build`
   instead of `astro check`, which is broken here.
 - Schema and design changes need explicit sign-off before editing, then get
   applied across every affected file in one pass.
@@ -23,6 +34,10 @@ the session that built annotations and link curves.
 ```
 node renderer/render.mjs renderer/examples/khaek-borathes.txml /tmp/out.svg
 ```
+
+A score spanning more than one page writes `/tmp/out-1.svg`, `/tmp/out-2.svg`,
+and so on instead of `/tmp/out.svg` — check `stderr` for the names actually
+written rather than assuming the one you asked for exists.
 
 Then convert and crop to inspect, since reading an SVG tells you nothing about
 whether it looks right:
@@ -54,7 +69,13 @@ The author has retuned `pitchSize`, `rowHeight`, `spread`, and
 
 Grid and measures, right-anchored beats, group tightening, the four-level break
 scale, per-instrument boxes, title band and credits, link curves and arcs,
-annotations in all three placements, `<br>`, and text wrapping.
+annotations in all three placements, `<br>`, text wrapping, pagination,
+endings, repeat brackets, bow spans and parentheses, lyric rows, and the
+instrument-name label column. That is everything `rendering/index.md`
+describes except the typeface itself (Sarabun is set in `fontFamily`, but
+nothing checks the font is actually installed wherever this runs) and octaves
+outside `-1`..`1`, which have no Thai spelling and are left to `glyph()`
+falling through to `pitch` unchanged — worth a look if a file ever uses one.
 
 ### Invariants worth not rediscovering
 
@@ -83,53 +104,110 @@ annotations in all three placements, `<br>`, and text wrapping.
   spend carries its remainder forward, or the section break vanishes. This is
   now written up in `rendering/index.md` §Text inside a break, which exists
   because getting it wrong produced two separate bugs in two rounds.
+- **A page break falls only between grid lines**, per `rendering/index.md`:
+  "Do not split one line's part rows across a page: a line's rows belong
+  together." `layout()` now returns `{ width, height, cellWidth, pages }`
+  instead of a flat `elements` array; `draw()` is unchanged and is called once
+  per page. `render.mjs` writes `<name>-1.svg`, `<name>-2.svg`, ... when there
+  is more than one page, or the bare output path when there is exactly one, so
+  a single-page score's filename is unaffected. Stdout only works for a
+  single-page score; a multi-page one to stdout is a hard error, since there is
+  nowhere to put a second page.
 
-## What is left, in the order I would take it
+  A line's height is worked out by laying it out once against a throwaway
+  page (`measureLine`, backed by the same `layBoxes` the real drawing pass
+  uses) before it is committed to a position, so the fit check and the actual
+  height can never disagree. A heading annotation folds the height of the grid
+  it introduces into its own fit check (`extra` on `annotationRow`), so the two
+  move to a fresh page together rather than stranding the heading at the foot
+  of the one before — the page-break version of the same stranding "Text
+  inside a break" already had to solve once.
+- **Endings, and any per-part grid that is not the section's main one, reuse
+  `renderGridLine`** (factored out of the old inline per-line code this
+  session) rather than duplicating box/ruling/symbol/curve logic. It takes an
+  explicit `lineIndex`; endings always pass `1` regardless of which of their
+  own lines they are on, so `layBoxes`'s "is this the section's first line"
+  check for a part's own annotations never fires a second time underneath an
+  ending. `measureLine` and pagination both fall out of calling the same
+  function rather than needing their own version of it.
+- **Bow and parenthesis spans are resolved at parse time** (`resolveSpans` in
+  `parse.mjs`), walking a part's `<line>` elements in document order and
+  matching `start`/`stop` by a simple open/closed flag — spans "cannot nest or
+  overlap" per the element pages, so no stack is needed. What comes out is a
+  position (`lineIndex`/`measureIndex`/`beatIndex`/`slotIndex`, all array
+  indices into the parsed shape) for each span's first and last note, not
+  coordinates — `layout.mjs` resolves those once the lines they fall in have
+  actually been placed, since a span can cross a line (and so, now, a page).
+  A bow's curve is drawn one segment per line it touches (`drawBowSpan`), with
+  a directional tick only at the true start and stop; a parenthesis just
+  brackets its two ends (`drawParenSpan`), no segmenting needed since there is
+  nothing to draw at a line break.
 
-### 1. Endings
+  **Not resolved**: pass-aware span matching across an `<ending>`. Per
+  `<ending>`'s "Spans across an overridden line", a span can open in a
+  section-ref's regular lines and close inside an ending's replacement line,
+  which needs the pass resolved before matching. This renderer does not
+  simulate passes — every `<ending>` prints once, unconditionally, as its own
+  detached grid — so spans are matched separately within the regular lines and
+  separately within each ending's own lines. A marker an ending leaves
+  dangling (its matching `start` sits only in the regular line it replaces)
+  is silently unmatched rather than drawn. Rare in practice; worth fixing if a
+  real score hits it.
+- **Lyric rows are excluded from the subdivision count** (`shares()` only sees
+  notated parts) and placed afterward against the columns those parts already
+  settled on: one syllable per beat-arrival where the item count matches the
+  beat count, or centered as one group across the whole cell where it does
+  not. A `<rest>` prints as blank space there, never the notated rows' hyphen.
+  Lyric rows also take no part in a stack's link curve, even when `stack` is
+  set on the lyric part itself.
+- **Instrument names split into two, unrelated defaults, corrected mid-session
+  after the first pass got both wrong.** A solo score's name does not stack
+  under the title as a centered subtitle any more — it prints in the
+  top-right corner, level with the title (`y` shared with the title's own
+  push, `x: right`, `anchor: "end"`), and no longer consumes vertical flow, so
+  the credits band closed the gap the old subtitle line used to hold. An
+  ensemble score's label column now defaults **on** always (`showLabels: s.showLabels ?? !solo`),
+  not just when a part is tacet — tacet was the reason labels are load-bearing
+  at all, but the author wanted the column on the first line regardless, the
+  way a Western score prints names once even when nothing is ever tacet.
+  Labels print left of the grid, in the margin, and never change
+  `left`/`cellWidth` — "take their width from the margin rather than from the
+  eight cells" is taken literally. A label reprints only on the first grid
+  line, the first line of a fresh page, or the first line after the row
+  lineup changes (`lastLabelRows`/`lastLabelPage` in `layout()`) —
+  consecutive lines with the same parts in the same order print nothing.
+- **`<instrument-short-name>`** is a new optional element (schema, parse.mjs,
+  `part.shortName`) sibling to `<instrument-name>`, added this session because
+  the label column has only the page margin to work with and full names
+  routinely ran off the physical page edge at the default margin/labelSize
+  pairing. The label column prefers it (`r.part.shortName ?? r.part.name`);
+  everywhere else — the top-right solo placement included — always uses the
+  full `<instrument-name>`, which has room. `stacked-instrument.txml` in the
+  corpus now carries short names on both rows as the worked example. The
+  default 42pt margin can still be too narrow for a *full* name in the
+  top-right corner or a label column on a part with no short name; that
+  pairing is still worth revisiting against a printed score, same as before.
 
-`rendering/index.md` §Variant endings. An `<ending>` renders below the section
-it belongs to, not inside the grid: print its `<annotation>` as a heading, then
-the replacement lines under it as their own grid, ruled and sized like any
-other. `parse.mjs` does not read `<ending>` at all yet. The annotation carries
-which instrument and which pass in the author's words; do not generate that
-sentence from `pass`.
+## First pass, not settled
 
-### 2. Repeat brackets
+Everything above is implemented and checked against `npm run check`, but two
+pieces are genuinely a first guess rather than something verified against
+print, the way both link-curve rounds and both break-spacing rounds needed a
+real comparison to land right:
 
-`rendering/index.md` §Repeat brackets. A `<line-repeat>` is a bracket in the
-margin right of the grid, spanning lines `first` through `last`, labelled ซ้ำ.
-It sits immediately right of the grid it covers rather than at a fixed margin
-position, so it moves with a seven-measure line, and aligns to the longest line
-where a span mixes lengths. A bare ซ้ำ means twice and needs no number.
-
-A `<repeat>` in `<structure>` prints nothing. The arranger writes กลับต้น as an
-annotation instead. That already works.
-
-### 3. Bow spans and parentheses
-
-Both are zero-duration markers inside a measure or group. `parse.mjs` filters
-them out of slots already, so they do not disturb the division, but it also
-discards them, so they need reading before they can be drawn. Bow spans sit
-above the notes and can cross line breaks.
-
-A linked group carrying a bow puts both curves in the same place. The author
-settled this: they overlap, and each is drawn as it would be alone. Do not add
-logic to separate them. The combination is rare and the strokes are close
-enough in meaning that sharing a space costs a reader nothing.
-
-### 4. Lyric rows
-
-A lyric part carries words rather than beats, so its row is not a measure grid
-and does not divide into columns. Check `part.md` for how it aligns.
-
-### 5. Instrument name label column
-
-Small and independent. Off by default and correct that way: an ensemble score
-identifies a part by its position in the stack. Turn it on when any part is
-tacet somewhere, because a part that omits a `<section-ref>` has no row there
-and position stops identifying parts reliably. Labels take their width from the
-margin, not from the eight cells.
+- **The bow curve's shape.** `in`/`out` direction is drawn as a shallow arc
+  (the same primitive the single-row link curve uses) with a short tick at the
+  true start and stop pointing down or up, and no tick at a line-break cut.
+  The spec's own wording — "a curve with both tips pointing down" / "pointing
+  up" — is consistent with more than one actual shape, and this is the one
+  that seemed most defensible without a printed reference. `bowTickLength` and
+  `bowStroke` in `settings.mjs` are marked `OPEN` for this reason; treat a
+  correction here as expected, not a regression.
+- **The repeat bracket and its label's exact proportions**
+  (`repeatBracketGap`, `repeatBracketDepth`, `repeatLabelSize`), same reason:
+  built to the prose description (a bracket in the margin, ticks at top and
+  bottom, ซ้ำ or "N ครั้ง" beside it) without a printed score to hold it
+  against.
 
 ## Loose ends
 
@@ -142,3 +220,13 @@ margin, not from the eight cells.
   end and would need a dictionary to do properly.
 - **Nathap and tuning warning lists** are duplicated between the element pages
   and `check-corpus.mjs`. The author said they would handle it.
+- **Endings, repeat brackets, bow/parenthesis spans, lyric rows, labels, and
+  pagination are verified by rendering and eyeballing, not by unit tests.**
+  The existing `layout.test.mjs` tests are all pure-function tests (`shares`,
+  `arrivals`, `linkSpan`, `columnX`) plus the three pagination tests added
+  this session, which go through `parse()` + `layout()` on small inline XML
+  and assert on `pages`. The same pattern — a tiny inline score, a tiny page
+  where useful, assertions on which page or coordinate something landed on —
+  would work for `resolveSpans()` and the lyric aligned/centered split too;
+  neither is exported from `parse.mjs` yet, which is the first thing that
+  would need to change.
