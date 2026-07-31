@@ -22,5 +22,4 @@ pnpm-debug.log*
 .DS_Store
 
 # Rendered score output
-/*.svg
 renderer/out/

@@ -17,12 +17,21 @@
     <annotation><text align="right">กลับต้น</text></annotation>
     <annotation><text align="right">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse consectetur cursus iaculis. Sed quis ornare dui. Morbi dignissim nec lorem nec fringilla. Aliquam ac erat ac risus lacinia porttitor. Etiam in erat sed dolor rhoncus fermentum ut eget felis. Nam bibendum convallis felis non gravida.</text></annotation>
     <br/>
+    <annotation><text align="center">เป็นมนุษย์สุดประเสริฐเลิศคุณค่า		กว่าบรรดาฝูงสัตว์เดรัจฉาน
+      จงฝ่าฟันพัฒนาวิชาการ		อย่าล้างผลาญฤๅเข่นฆ่าบีฑาใคร
+      ไม่ถือโทษโกรธแช่งซัดฮึดฮัดด่า		หัดอภัยเหมือนกีฬาอัชฌาสัย
+      ปฏิบัติประพฤติกฎกำหนดใจ		พูดจาให้จ๊ะ ๆ จ๋า น่าฟังเอยฯ</text>
+    </annotation>
+    <br/>
     <annotation><text align="left">เป็นมนุษย์สุดประเสริฐเลิศคุณค่า		กว่าบรรดาฝูงสัตว์เดรัจฉาน
-จงฝ่าฟันพัฒนาวิชาการ		อย่าล้างผลาญฤๅเข่นฆ่าบีฑาใคร
-ไม่ถือโทษโกรธแช่งซัดฮึดฮัดด่า		หัดอภัยเหมือนกีฬาอัชฌาสัย
-ปฏิบัติประพฤติกฎกำหนดใจ		พูดจาให้จ๊ะ ๆ จ๋า น่าฟังเอยฯ</text></annotation>
+      จงฝ่าฟันพัฒนาวิชาการ		อย่าล้างผลาญฤๅเข่นฆ่าบีฑาใคร
+      ไม่ถือโทษโกรธแช่งซัดฮึดฮัดด่า		หัดอภัยเหมือนกีฬาอัชฌาสัย
+      ปฏิบัติประพฤติกฎกำหนดใจ		พูดจาให้จ๊ะ ๆ จ๋า น่าฟังเอยฯ</text>
+    </annotation>
     <annotation>ท่อน 2</annotation>
     <section id="s2" name="ท่อน 2" />
+    <annotation>ท่อน 3 (A lot of content to cause overflow)</annotation>
+    <section id="s3" name="ท่อน 3" />
   </structure>
   <ensemble>
     <part id="P1">
@@ -37,6 +46,7 @@
   </ensemble>
   <part-data part="P1">
     <section-ref section="s1">
+      <annotation>Message from P1</annotation>
       <line number="1">
         <measure number="1"><note pitch="ดํ"/><note pitch="ล"/><note pitch="ล"/><note pitch="ล"/></measure>
         <measure number="2"><note pitch="ดํ"/><note pitch="ล"/><note pitch="ล"/><note pitch="ล"/></measure>
@@ -70,9 +80,112 @@
         <measure number="8"><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
       </line>
     </section-ref>
+    <section-ref section="s3">
+      <line number="1">
+        <measure number="1"><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="2"><note pitch="ซ"/><note pitch="ดํ"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ล"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="5"><note pitch="ท"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ดํ"/><note pitch="รํ"/><note pitch="มํ"/></measure>
+        <measure number="7"><note pitch="ดํ"/><note pitch="รํ"/><note pitch="ล"/><note pitch="ท"/></measure>
+        <measure number="8"><note pitch="ดํ"/><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/></measure>
+      </line>
+      <line number="2">
+        <measure number="1"><note pitch="รํ"/><note pitch="มํ"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="2"><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/></measure>
+        <measure number="5"><note pitch="ทฺ"/><note pitch="ลฺ"/><note pitch="ซฺ"/><note pitch="ลฺ"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="7"><note pitch="ฟ"/><note pitch="ซ"/><note pitch="ล"/><note pitch="ซ"/></measure>
+        <measure number="8"><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
+      </line>
+      <line number="3">
+        <measure number="1"><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="2"><note pitch="ซ"/><note pitch="ดํ"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ล"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="5"><note pitch="ท"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ดํ"/><note pitch="รํ"/><note pitch="มํ"/></measure>
+        <measure number="7"><note pitch="ดํ"/><note pitch="รํ"/><note pitch="ล"/><note pitch="ท"/></measure>
+        <measure number="8"><note pitch="ดํ"/><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/></measure>
+      </line>
+      <line number="4">
+        <measure number="1"><note pitch="รํ"/><note pitch="มํ"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="2"><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/></measure>
+        <measure number="5"><note pitch="ทฺ"/><note pitch="ลฺ"/><note pitch="ซฺ"/><note pitch="ลฺ"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="7"><note pitch="ฟ"/><note pitch="ซ"/><note pitch="ล"/><note pitch="ซ"/></measure>
+        <measure number="8"><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
+      </line>
+      <line number="5">
+        <measure number="1"><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="2"><note pitch="ซ"/><note pitch="ดํ"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ล"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="5"><note pitch="ท"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ดํ"/><note pitch="รํ"/><note pitch="มํ"/></measure>
+        <measure number="7"><note pitch="ดํ"/><note pitch="รํ"/><note pitch="ล"/><note pitch="ท"/></measure>
+        <measure number="8"><note pitch="ดํ"/><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/></measure>
+      </line>
+      <line number="6">
+        <measure number="1"><note pitch="รํ"/><note pitch="มํ"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="2"><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/></measure>
+        <measure number="5"><note pitch="ทฺ"/><note pitch="ลฺ"/><note pitch="ซฺ"/><note pitch="ลฺ"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="7"><note pitch="ฟ"/><note pitch="ซ"/><note pitch="ล"/><note pitch="ซ"/></measure>
+        <measure number="8"><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
+      </line>
+      <line number="7">
+        <measure number="1"><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="2"><note pitch="ซ"/><note pitch="ดํ"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ล"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="5"><note pitch="ท"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ดํ"/><note pitch="รํ"/><note pitch="มํ"/></measure>
+        <measure number="7"><note pitch="ดํ"/><note pitch="รํ"/><note pitch="ล"/><note pitch="ท"/></measure>
+        <measure number="8"><note pitch="ดํ"/><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/></measure>
+      </line>
+      <line number="8">
+        <measure number="1"><note pitch="รํ"/><note pitch="มํ"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="2"><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/></measure>
+        <measure number="5"><note pitch="ทฺ"/><note pitch="ลฺ"/><note pitch="ซฺ"/><note pitch="ลฺ"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="7"><note pitch="ฟ"/><note pitch="ซ"/><note pitch="ล"/><note pitch="ซ"/></measure>
+        <measure number="8"><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
+      </line>
+      <line number="9">
+        <measure number="1"><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="2"><note pitch="ซ"/><note pitch="ดํ"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ล"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="5"><note pitch="ท"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ล"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ดํ"/><note pitch="รํ"/><note pitch="มํ"/></measure>
+        <measure number="7"><note pitch="ดํ"/><note pitch="รํ"/><note pitch="ล"/><note pitch="ท"/></measure>
+        <measure number="8"><note pitch="ดํ"/><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/></measure>
+      </line>
+      <line number="10">
+        <measure number="1"><note pitch="รํ"/><note pitch="มํ"/><note pitch="ดํ"/><note pitch="รํ"/></measure>
+        <measure number="2"><note pitch="มํ"/><note pitch="รํ"/><note pitch="ดํ"/><note pitch="ล"/></measure>
+        <measure number="3"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+        <measure number="4"><note pitch="ซ"/><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/></measure>
+        <measure number="5"><note pitch="ทฺ"/><note pitch="ลฺ"/><note pitch="ซฺ"/><note pitch="ลฺ"/></measure>
+        <measure number="6"><note pitch="ท"/><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="7"><note pitch="ฟ"/><note pitch="ซ"/><note pitch="ล"/><note pitch="ซ"/></measure>
+        <measure number="8"><note pitch="ฟ"/><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/></measure>
+      </line>
+    </section-ref>
   </part-data>
   <part-data part="P2">
     <section-ref section="s1">
+      <annotation>Message from P2</annotation>
       <line number="1">
         <measure number="1"><rest/><rest/><note pitch="ล"/><note pitch="ล"/></measure>
         <measure number="2"><rest/><rest/><note pitch="ล"/><note pitch="ล"/></measure>
@@ -137,6 +250,7 @@
   </part-data>
   <part-data part="P3">
     <section-ref section="s1">
+      <annotation>Message from P3</annotation>
       <line number="1">
         <measure number="1"><rest/><note pitch="ลฺ"/><rest/><rest/></measure>
         <measure number="2"><rest/><note pitch="ลฺ"/><rest/><rest/></measure>
