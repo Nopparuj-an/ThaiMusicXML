@@ -27,4 +27,4 @@ On one row of a [stacked instrument](/en/v0_1/reference/elements/part/#stacked-i
 
 ## Rendering
 
-Whether the name prints depends on the ensemble. See [Instrument names](/en/v0_1/reference/rendering/#instrument-names).
+Whether the name prints depends on the ensemble. See [Instrument names](/en/v0_1/reference/rendering/#instrument-names). Where this name does not fit — the ensemble label column has only the page margin to work with — a [`<instrument-short-name>`](/en/v0_1/reference/elements/instrument-short-name/) takes its place there.

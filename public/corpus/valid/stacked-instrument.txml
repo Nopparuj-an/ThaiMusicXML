@@ -2,7 +2,8 @@
 <!-- A two-row instrument. Both parts share a stack value and number their
      rows from 1, and they sit adjacent in <ensemble> in row order. The group
      in row 1 carries link, drawing a connector to what row 2 plays on the
-     same beat. -->
+     same beat. Each row also carries an instrument-short-name, since the
+     ensemble label column has only the page margin to work with. -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
   <header>
     <title>ฆ้องวงใหญ่ สองมือ</title>
@@ -13,9 +14,11 @@
   <ensemble>
     <part id="P1" stack="khong" row="1">
       <instrument-name>ฆ้องวงใหญ่ มือขวา</instrument-name>
+      <instrument-short-name>ฆ้องวงใหญ่ R</instrument-short-name>
     </part>
     <part id="P2" stack="khong" row="2">
       <instrument-name>ฆ้องวงใหญ่ มือซ้าย</instrument-name>
+      <instrument-short-name>ฆ้องวงใหญ่ L</instrument-short-name>
     </part>
   </ensemble>
   <part-data part="P1">

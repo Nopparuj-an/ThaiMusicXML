@@ -21,6 +21,7 @@ The `<part>` element defines a single instrument in the ensemble.
 ## Children
 
 - [`<instrument-name>`](/en/v0_1/reference/elements/instrument-name/) - required
+- [`<instrument-short-name>`](/en/v0_1/reference/elements/instrument-short-name/) - optional
 
 ## Example
 

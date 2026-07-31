@@ -239,6 +239,9 @@
         </group>
       </optional>
       <element name="instrument-name"><text/></element>
+      <optional>
+        <element name="instrument-short-name"><text/></element>
+      </optional>
     </element>
   </define>
 

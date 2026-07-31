@@ -19,7 +19,7 @@ None of these lives in the document. There is nowhere in a ThaiMusicXML file to 
 | Case of romanized pitch letters | Uppercase | [Inside a measure](#inside-a-measure) |
 | How thoroughly rests print | A hyphen for every rest in every notated part, blank in a lyric row | [Inside a measure](#inside-a-measure) |
 | Lyric row type size | Smaller than the notated rows | [Lyric rows](#lyric-rows) |
-| Instrument-name labels | Beside the title on a solo score, off on an ensemble score, on wherever a part is tacet | [Instrument names](#instrument-names) |
+| Instrument-name labels | Top-right corner on a solo score; a deduplicated label column on an ensemble score | [Instrument names](#instrument-names) |
 | Headings generated from `name` and ชั้น | Off | [Section headings](#section-headings) |
 | `<tuning>`, `<license>`, and `<bpm>` on the page | Off | [The title band](#the-title-band) |
 | Numerals in labels the renderer writes itself | Arabic | [Section headings](#section-headings) |
@@ -109,7 +109,7 @@ A `<rest>` in a lyric row prints as blank space rather than as the hyphen it tak
 
 ## The title band
 
-The [`<title>`](/en/v0_1/reference/elements/title/) sits centered at the top of the first page. On a score written for one instrument, printed editions often set the [`<instrument-name>`](/en/v0_1/reference/elements/instrument-name/) beside the title in a smaller size.
+The [`<title>`](/en/v0_1/reference/elements/title/) sits centered at the top of the first page. On a score written for one instrument, the [`<instrument-name>`](/en/v0_1/reference/elements/instrument-name/) prints separately, in the top-right corner — see [Instrument names](#instrument-names).
 
 Below it comes a band holding the credits from [`<header>`](/en/v0_1/reference/elements/header/), meaning [`<composer>`](/en/v0_1/reference/elements/composer/), [`<lyricist>`](/en/v0_1/reference/elements/lyricist/), and [`<arranger>`](/en/v0_1/reference/elements/arranger/), followed by any [`<annotation>`](/en/v0_1/reference/elements/annotation/) that appears in `<structure>` before the first section.
 
@@ -133,13 +133,13 @@ A [`<br>`](/en/v0_1/reference/elements/br/) adds vertical space at the point it 
 
 ## Instrument names
 
-On a solo score the [`<instrument-name>`](/en/v0_1/reference/elements/instrument-name/) sits beside the title, as ระนาดเอก does in ฉิ่งมุล่ง.
+On a solo score the [`<instrument-name>`](/en/v0_1/reference/elements/instrument-name/) prints in the top-right corner of the first page, level with the title rather than stacked under it. A centered subtitle position reads too much like a second header, the way a composer's name would if it were set that way instead of in the credits band.
 
-On an ensemble score it is not printed by default. Thai scores identify a part by its position in the stack, and repeating the name on every line would crowd the grid. The name is still doing work off the page: an editor uses it to label parts in its own interface, and to let a reader turn individual instruments on and off.
+On an ensemble score it prints as a label column left of the first measure of each line, the way Western scores do. Thai scores otherwise identify a part by its position in the stack, and that stops working once any part is tacet somewhere: a part that omits a [`<section-ref>`](/en/v0_1/reference/elements/section-ref/) has no row in that section's grid at all, and the parts below it move up to close the gap. The label column is what tells a reader which row is which regardless.
 
-A renderer may offer to print names as a label column left of the first measure of each line, the way Western scores do. That is an option rather than the convention, and the labels take their width from the margin rather than from the eight cells.
+A label does not repeat on every line, the way a Western score does not repeat a system's names when the instrumentation has not moved. It prints on the first grid line, on the first line of a page, and on the first line after the row lineup itself changes — which, since nothing else reorders rows, only a tacet part causes. Consecutive lines with the same parts in the same order print nothing.
 
-Turn the labels on when any part is tacet somewhere in the score. A part that omits a [`<section-ref>`](/en/v0_1/reference/elements/section-ref/) has no row in that section's grid at all, and the parts below it move up to close the gap. Position in the stack therefore stops identifying a part reliably, and the labels are what tell a reader which row is which.
+Labels take their width from the margin rather than from the eight cells, so a long name never moves the grid. Where a part carries an [`<instrument-short-name>`](/en/v0_1/reference/elements/instrument-short-name/), the label column uses that instead of the full [`<instrument-name>`](/en/v0_1/reference/elements/instrument-name/), which stays reserved for the top-right corner and any other full-width use. A part with no short name uses its full name in the column regardless of whether it fits.
 
 ## Section headings
 
