@@ -78,10 +78,21 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
      @codemirror/view), so an !important reset wins over it and the line
      numbers slide out of sync with their lines on every scroll. */
 
+  /* The side-by-side split has to collapse on the pane's own width, not the
+     viewport's: Starlight drops its 18rem sidebar somewhere around 800px, so
+     a window getting *narrower* hands this page ~250px more room right at
+     that point, and any `@media (max-width: ...)` tuned for the wide case
+     stacks the panes exactly where they just got roomier. Measured, the split
+     runs about `viewport - 300px` while the sidebar is up and about
+     `viewport - 48px` once it folds away. A container query reads the width
+     that actually exists, so the two layouts stay in sync with the sidebar
+     for free - see the @container rule below the .divider styles. */
   .playground-root {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    container-type: inline-size;
+    container-name: playground;
   }
 
   /* The editor's palette. Starlight's own --sl-color-{green,purple,...} hues
@@ -191,9 +202,18 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     background: var(--sl-color-text-accent);
   }
 
-  @media (max-width: 768px) {
+  /* 880px is two 437px panes. The editor sets 13px monospace, so a pane
+     narrower than that shows under ~55 columns once the line-number gutter
+     takes its share - less than the example files' own longest lines, which
+     means horizontal scrolling to read the markup you are editing. Stacked,
+     each pane gets the full width instead, and the divider trades what it
+     splits. */
+  @container playground (max-width: 880px) {
     .split {
       flex-direction: column;
+      /* Two panes share this height rather than sitting side by side in it,
+         so the row-mode 640px would leave about 317px each. */
+      height: min(80vh, 800px);
     }
 
     .divider {
@@ -391,7 +411,8 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     }
   }
 
-  // --- Draggable divider: row split above the breakpoint, column below it. ---
+  // --- Draggable divider: splits horizontally while the panes sit side by
+  // side, vertically once they stack. ---
   let ratio = 0.5;
   const applyRatio = () => {
     (editorPane as HTMLElement).style.flexGrow = String(ratio);
@@ -399,7 +420,11 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   };
   applyRatio();
 
-  const isRow = () => matchMedia("(min-width: 769px)").matches;
+  // Asking the layout which way it went, rather than re-testing the width
+  // here: the switch is a container query now (see the <style> block), and
+  // matchMedia cannot express one. Reading the resolved flex-direction also
+  // means the drag axis cannot drift from the CSS if the threshold moves.
+  const isRow = () => getComputedStyle(split).flexDirection === "row";
   let dragging = false;
   divider.addEventListener("pointerdown", (e) => {
     dragging = true;
