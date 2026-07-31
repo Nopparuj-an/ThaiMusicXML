@@ -11,6 +11,7 @@ import path from "node:path";
 import { parse } from "./src/parse.mjs";
 import { layout } from "./src/layout.mjs";
 import { draw } from "./src/draw.mjs";
+import { ready } from "./src/ready.mjs";
 
 const [input, output] = process.argv.slice(2);
 
@@ -19,6 +20,7 @@ if (!input) {
   process.exit(2);
 }
 
+await ready();
 const laidOut = layout(parse(readFileSync(input, "utf8")));
 const svgs = laidOut.pages.map((page) =>
   draw({ width: laidOut.width, height: laidOut.height, elements: page.elements }),

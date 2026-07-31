@@ -83,6 +83,7 @@ export default defineConfig({
       lastUpdated: true,
       sidebar: [
         { label: "Home", translations: { th: "หน้าหลัก" }, slug: "index" },
+        { label: "Playground", translations: { th: "สนามทดลอง" }, link: "/playground/" },
         { label: "About", translations: { th: "เกี่ยวกับ" }, slug: "about" },
         {
           label: "Versions",

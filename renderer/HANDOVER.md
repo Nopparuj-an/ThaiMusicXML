@@ -366,7 +366,7 @@ runs).
   a regression. `renderer/examples/spans-and-endings-test.txml` is a
   standing fixture for this exact shape (both directions, one within a
   line and one crossing a line break) — regenerate it via
-  `renderer/out/render-doc-image.mjs` rather than re-describing the shape
+  `renderer/src/render-doc-image.mjs` rather than re-describing the shape
   from scratch if this needs another look.
 
   One thing worth remembering about *testing* this: a `<bow type="stop"/>`

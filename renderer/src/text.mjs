@@ -8,26 +8,38 @@
 // emoji - falls back to the old estimate, which only has to be close enough
 // not to run text off the page.
 
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import opentype from "opentype.js";
+import { loadFontFile } from "#font-loader";
 
 // Fontsource splits one family into per-script subsets. A Thai score's text is
 // Thai plus occasional Latin (romanized pitches, an English title), so those
 // are the two subsets worth loading; nothing else in the family's range comes
 // up in practice.
-function loadFont(file) {
-  const url = import.meta.resolve(`@fontsource/sarabun/files/${file}`);
-  const buffer = readFileSync(fileURLToPath(url));
-  return opentype.parse(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength));
-}
+//
+// Loading the bytes is the one part that differs between the Node CLI and a
+// browser (see #font-loader, package.json's "imports"); parsing them into
+// widths does not, so that stays here. Call textReady() once before measuring
+// anything - render.mjs and the playground both do this via ready.mjs.
+let thaiFont = null;
+let latinFont = null;
+let readyPromise = null;
 
-const thaiFont = loadFont("sarabun-thai-400-normal.woff");
-const latinFont = loadFont("sarabun-latin-400-normal.woff");
+export function textReady() {
+  readyPromise ??= (async () => {
+    const [thaiBytes, latinBytes] = await Promise.all([
+      loadFontFile("sarabun-thai-400-normal.woff"),
+      loadFontFile("sarabun-latin-400-normal.woff"),
+    ]);
+    thaiFont = opentype.parse(thaiBytes);
+    latinFont = opentype.parse(latinBytes);
+  })();
+  return readyPromise;
+}
 
 // Advance width as a fraction of one em, or null if neither subset maps the
 // character (glyph index 0 is .notdef, not a real zero-width glyph).
 function realWidth(ch) {
+  if (!thaiFont) throw new Error("text.mjs: await textReady() (or ready() from ready.mjs) before measuring text");
   const glyph = thaiFont.charToGlyph(ch);
   if (glyph.index !== 0) return glyph.advanceWidth / thaiFont.unitsPerEm;
   const latinGlyph = latinFont.charToGlyph(ch);

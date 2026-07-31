@@ -6,7 +6,9 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { textWidth, clusters, wrapText } from "../src/text.mjs";
+import { textWidth, clusters, wrapText, textReady } from "../src/text.mjs";
+
+await textReady();
 
 const SIZE = 11;
 const fits = (lines, width) =>

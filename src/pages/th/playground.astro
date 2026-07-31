@@ -1,0 +1,430 @@
+---
+// A live editor + renderer preview: type ThaiMusicXML, see the score it draws.
+// The renderer itself runs entirely client-side (see renderer/src/#font-loader
+// and #dom-parser in package.json's "imports" for the Node/browser split), so
+// this page needs no server and works the same offline as it does deployed.
+//
+// Thai counterpart of ../en/playground.astro - same script and layout,
+// translated UI strings, matching how the rest of the site keeps one content
+// file per locale rather than a shared translation layer.
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+---
+
+<StarlightPage frontmatter={{ title: "สนามทดลอง", tableOfContents: false }}>
+  <div class="playground-root not-content">
+    <p class="intro">
+      แก้ไข ThaiMusicXML ทางด้านซ้าย แล้วดูโน้ตที่แสดงผลทางด้านขวา
+      เลือกจุดเริ่มต้นด้านล่าง หรือล้างช่องแก้ไขแล้วเขียนเอง
+    </p>
+
+    <div class="toolbar">
+      <label for="template-select">แม่แบบ</label>
+      <select id="template-select">
+        <option value="tutorial1-hello-world.txml"
+          >บทช่วยสอน 1: Hello World</option
+        >
+        <option value="tutorial2-file-structure.txml"
+          >บทช่วยสอน 2: โครงสร้างไฟล์</option
+        >
+        <option value="example-khaek-borathes.txml">ตัวอย่าง: แขกบรเทศ</option>
+      </select>
+    </div>
+
+    <div class="split" id="split">
+      <div class="pane editor-pane" id="editor-pane"></div>
+      <div
+        class="divider"
+        id="divider"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="ปรับขนาดช่องแก้ไขและตัวอย่าง"
+      >
+      </div>
+      <div class="pane preview-pane" id="preview-pane"></div>
+    </div>
+
+    <p class="status" id="status" role="status"></p>
+  </div>
+</StarlightPage>
+
+<style>
+  /* This page's content wants the full main-pane width Starlight already
+     grants when there is no table of contents, not the site's usual prose
+     cap - ContentPanel.astro's .sl-container isn't rendered by this
+     component, so :global() plus :has() is what reaches it without loosening
+     the cap on every other page.
+
+     The match has to start at <main>, not at the container holding this
+     page's own markup: Page.astro renders the <h1> in a *separate*
+     .content-panel > .sl-container, so a :has(.playground-root) test only
+     ever sees the second one. Left capped at --sl-content-width and centred
+     by ContentPanel's `margin-inline: auto` (>= 72rem), the title container
+     is narrower than the panel below it, and the heading ends up indented
+     from everything else on the page. Uncapping both containers puts them
+     on the same left edge; auto margins then resolve to 0 on their own. */
+  :global(main:has(.playground-root) .sl-container) {
+    max-width: none;
+  }
+
+  /* <StarlightPage> always renders its content through <MarkdownContent>
+     (Page.astro), even for a fully custom page like this one - there is no
+     opt-out. That wraps everything in .sl-markdown-content, whose prose
+     spacing rules reach straight into CodeMirror's own internal DOM: every
+     .cm-line and .cm-gutterElement is a plain <div>, so each one picks up a
+     stray margin-top from markdown.css's lobotomized-owl "* + *" selector.
+     Starlight's own escape hatch for embedded UI is the .not-content class
+     on the wrapper (every one of those rules excludes ":where(.not-content
+     *)"), which is what the root carries - see the markup above.
+
+     Do NOT "fix" this instead with a blanket `margin-top: 0 !important`
+     under this root: CodeMirror positions the first gutter element of the
+     rendered viewport with an inline margin-top (GutterElement.update in
+     @codemirror/view), so an !important reset wins over it and the line
+     numbers slide out of sync with their lines on every scroll. */
+
+  .playground-root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* The editor's palette. Starlight's own --sl-color-{green,purple,...} hues
+     are tuned as prose accents - 82% saturation against a page that shows one
+     at a time - and a whole screen of markup painted in them reads as neon.
+     These are the same family (hue 224 greys, matched to the site chrome) at
+     saturations that stay legible for a solid wall of text. Every syntax
+     colour clears 4.5:1 against its own background, and stays above 4:1 over
+     the active-line tint; the line numbers sit a little under that on
+     purpose, so they stay secondary to the code they label.
+
+     Dark is the default set and [data-theme='light'] overrides it, mirroring
+     how Starlight's own props.css is layered, so the editor follows the site's
+     theme toggle with no JS and no flash on load. Every value is consumed
+     through var() by EditorView.theme and HighlightStyle down in the script. */
+  .playground-root {
+    --cm-punct: hsl(224, 12%, 65%);
+    --cm-tag: hsl(205, 70%, 72%);
+    --cm-attr: hsl(280, 55%, 80%);
+    --cm-value: hsl(140, 45%, 70%);
+    --cm-comment: hsl(224, 10%, 60%);
+    --cm-meta: hsl(38, 70%, 70%);
+    --cm-invalid: hsl(355, 75%, 72%);
+
+    --cm-gutter-text: hsl(224, 10%, 55%);
+    --cm-active-line: hsl(224, 14%, 21%);
+    --cm-selection: hsl(224, 40%, 36%);
+    --cm-match: hsl(224, 20%, 32%);
+    --cm-cursor: hsl(205, 85%, 72%);
+  }
+
+  :global([data-theme="light"]) .playground-root {
+    --cm-punct: hsl(224, 10%, 38%);
+    --cm-tag: hsl(211, 70%, 34%);
+    --cm-attr: hsl(283, 45%, 40%);
+    --cm-value: hsl(152, 62%, 25%);
+    --cm-comment: hsl(224, 9%, 40%);
+    --cm-meta: hsl(28, 70%, 32%);
+    --cm-invalid: hsl(355, 72%, 40%);
+
+    --cm-gutter-text: hsl(224, 8%, 50%);
+    --cm-active-line: hsl(224, 25%, 93%);
+    --cm-selection: hsl(224, 70%, 85%);
+    --cm-match: hsl(224, 45%, 84%);
+    --cm-cursor: hsl(211, 80%, 42%);
+  }
+
+  .intro {
+    margin: 0;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .toolbar select {
+    font: inherit;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .split {
+    display: flex;
+    flex-direction: row;
+    height: min(75vh, 640px);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .pane {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .editor-pane :global(.cm-editor) {
+    height: 100%;
+  }
+
+  .preview-pane {
+    background: #fff;
+    padding: 0.75rem;
+  }
+
+  .preview-pane :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: 0.75rem;
+  }
+
+  .divider {
+    flex: none;
+    width: 6px;
+    background: var(--sl-color-hairline);
+    cursor: col-resize;
+    touch-action: none;
+  }
+
+  .divider:hover,
+  .divider:active {
+    background: var(--sl-color-text-accent);
+  }
+
+  @media (max-width: 768px) {
+    .split {
+      flex-direction: column;
+    }
+
+    .divider {
+      width: auto;
+      height: 6px;
+      cursor: row-resize;
+    }
+  }
+
+  .status {
+    margin: 0;
+    min-height: 1.5em;
+    color: var(--sl-color-red, #c53030);
+    white-space: pre-wrap;
+    font-family: var(--__sl-font-mono, monospace);
+    font-size: 0.85rem;
+  }
+</style>
+
+<script>
+  import { EditorView, basicSetup } from "codemirror";
+  import { xml } from "@codemirror/lang-xml";
+  import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+  import { tags as t } from "@lezer/highlight";
+  import { parse } from "../../../renderer/src/parse.mjs";
+  import { layout } from "../../../renderer/src/layout.mjs";
+  import { draw } from "../../../renderer/src/draw.mjs";
+  import { ready } from "../../../renderer/src/ready.mjs";
+
+  // Only the three examples the docs themselves link to (see
+  // renderer/HANDOVER.md) - the "-test.txml" fixtures are internal stress
+  // tests, not something to hand a first-time visitor.
+  const templates = import.meta.glob("../../../renderer/examples/*.txml", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  });
+  const templateSource = (file: string) => {
+    const entry = Object.entries(templates).find(([path]) =>
+      path.endsWith(`/${file}`),
+    );
+    if (!entry) throw new Error(`playground: no renderer/examples/${file}`);
+    return String(entry[1]);
+  };
+
+  const editorPane = document.getElementById("editor-pane")!;
+  const previewPane = document.getElementById("preview-pane")!;
+  const statusEl = document.getElementById("status")!;
+  const templateSelect = document.getElementById(
+    "template-select",
+  ) as HTMLSelectElement;
+  const split = document.getElementById("split")!;
+  const divider = document.getElementById("divider")!;
+
+  // Two bugs in one theme: the site's own `body { line-height: 1.75 }`
+  // (reset.css, meant for prose) inherits into .cm-content and stretches
+  // every code line; and CodeMirror's default chrome is a plain light theme
+  // with no idea the site has a dark mode, so `html { color-scheme: dark }`
+  // (also reset.css) makes the browser's own dark-mode heuristics repaint
+  // whatever CodeMirror left unstyled, clashing with syntax colors picked for
+  // a white background. Both the chrome below and the highlight style after it
+  // are painted from CSS custom properties (--sl-* where a site token is the
+  // right answer, --cm-* from this page's own palette otherwise), so one theme
+  // object covers light and dark and the toggle costs no JS - see the palette
+  // block in this page's <style>.
+  const editorTheme = EditorView.theme({
+    "&": {
+      height: "100%",
+      fontSize: "13px",
+      backgroundColor: "var(--sl-color-bg-nav)",
+      color: "var(--sl-color-text)",
+    },
+    ".cm-scroller": { fontFamily: "var(--__sl-font-mono, monospace)" },
+    ".cm-content": {
+      lineHeight: "1.4",
+      caretColor: "var(--cm-cursor)",
+    },
+    ".cm-gutters": {
+      backgroundColor: "var(--sl-color-bg-nav)",
+      color: "var(--cm-gutter-text)",
+      border: "none",
+    },
+    ".cm-gutterElement": { lineHeight: "1.4" },
+    // Code folding is not something this playground needs, and its chevron
+    // column only adds noise next to the line numbers.
+    ".cm-foldGutter": { display: "none" },
+    ".cm-activeLine": { backgroundColor: "var(--cm-active-line)" },
+    ".cm-activeLineGutter": {
+      backgroundColor: "var(--cm-active-line)",
+      color: "var(--sl-color-text)",
+    },
+    // The selection has to stay visible *on top of* the active-line tint, so
+    // these two can't be the same token the way they were.
+    ".cm-selectionBackground, &.cm-focused .cm-selectionBackground": {
+      backgroundColor: "var(--cm-selection)",
+    },
+    "&.cm-focused .cm-matchingBracket, .cm-matchingBracket": {
+      backgroundColor: "var(--cm-match)",
+      outline: "none",
+    },
+    ".cm-selectionMatch": { backgroundColor: "var(--cm-match)" },
+    ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--cm-cursor)" },
+    // basicSetup also brings the search panel and the completion tooltip,
+    // both of which default to light-only chrome that has to be reclaimed the
+    // same way as the editor's own.
+    ".cm-panels": {
+      backgroundColor: "var(--sl-color-bg-nav)",
+      color: "var(--sl-color-text)",
+    },
+    ".cm-panels.cm-panels-top": { borderBottomColor: "var(--sl-color-hairline)" },
+    ".cm-panels.cm-panels-bottom": { borderTopColor: "var(--sl-color-hairline)" },
+    ".cm-panel input, .cm-panel button": { font: "inherit" },
+    ".cm-tooltip": {
+      backgroundColor: "var(--sl-color-bg-nav)",
+      border: "1px solid var(--sl-color-hairline)",
+      color: "var(--sl-color-text)",
+    },
+    ".cm-tooltip-autocomplete > ul > li[aria-selected]": {
+      backgroundColor: "var(--cm-selection)",
+      color: "var(--sl-color-white)",
+    },
+    ".cm-searchMatch": { backgroundColor: "var(--cm-match)" },
+    ".cm-searchMatch.cm-searchMatch-selected": {
+      backgroundColor: "var(--cm-selection)",
+    },
+  });
+
+  // @lezer/xml tags every token this style needs (see xmlHighlighting in
+  // @lezer/xml): angle brackets and `=` are punctuation, so they recede;
+  // tag names carry the structure and get the strongest colour; attribute
+  // names and their values stay distinct from each other and from the tags.
+  // basicSetup registers CodeMirror's stock highlight style as a *fallback*
+  // only (`syntaxHighlighting(defaultHighlightStyle, { fallback: true })`),
+  // so registering any real one here replaces it outright rather than
+  // layering two sets of colours on the same tokens.
+  const editorHighlight = HighlightStyle.define([
+    { tag: t.tagName, color: "var(--cm-tag)" },
+    { tag: [t.angleBracket, t.definitionOperator], color: "var(--cm-punct)" },
+    { tag: t.attributeName, color: "var(--cm-attr)" },
+    { tag: [t.attributeValue, t.special(t.string)], color: "var(--cm-value)" },
+    { tag: [t.processingInstruction, t.documentMeta, t.character],
+      color: "var(--cm-meta)" },
+    { tag: t.blockComment, color: "var(--cm-comment)", fontStyle: "italic" },
+    { tag: t.content, color: "var(--sl-color-text)" },
+    // Last, so that a mismatched close tag - which @lezer/xml tags as both
+    // tagName and invalid - lands on this rule rather than the tag colour.
+    { tag: t.invalid, color: "var(--cm-invalid)" },
+  ]);
+
+  let renderTimer: ReturnType<typeof setTimeout> | undefined;
+  const scheduleRender = () => {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(renderPreview, 400);
+  };
+
+  const view = new EditorView({
+    doc: templateSource("tutorial1-hello-world.txml"),
+    extensions: [
+      basicSetup,
+      xml(),
+      editorTheme,
+      syntaxHighlighting(editorHighlight),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) scheduleRender();
+      }),
+    ],
+    parent: editorPane,
+  });
+
+  templateSelect.addEventListener("change", () => {
+    view.dispatch({
+      changes: {
+        from: 0,
+        to: view.state.doc.length,
+        insert: templateSource(templateSelect.value),
+      },
+    });
+  });
+
+  function renderPreview() {
+    const source = view.state.doc.toString();
+    try {
+      const laidOut = layout(parse(source));
+      const svgs = laidOut.pages.map((page: { elements: unknown }) =>
+        draw({
+          width: laidOut.width,
+          height: laidOut.height,
+          elements: page.elements,
+        }),
+      );
+      previewPane.innerHTML = svgs.join("");
+      statusEl.textContent = "";
+    } catch (err) {
+      statusEl.textContent = err instanceof Error ? err.message : String(err);
+    }
+  }
+
+  // --- Draggable divider: row split above the breakpoint, column below it. ---
+  let ratio = 0.5;
+  const applyRatio = () => {
+    (editorPane as HTMLElement).style.flexGrow = String(ratio);
+    (previewPane as HTMLElement).style.flexGrow = String(1 - ratio);
+  };
+  applyRatio();
+
+  const isRow = () => matchMedia("(min-width: 769px)").matches;
+  let dragging = false;
+  divider.addEventListener("pointerdown", (e) => {
+    dragging = true;
+    divider.setPointerCapture(e.pointerId);
+  });
+  divider.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const rect = split.getBoundingClientRect();
+    const pos = isRow()
+      ? (e.clientX - rect.left) / rect.width
+      : (e.clientY - rect.top) / rect.height;
+    ratio = Math.min(0.85, Math.max(0.15, pos));
+    applyRatio();
+  });
+  const stopDrag = (e: PointerEvent) => {
+    dragging = false;
+    divider.releasePointerCapture(e.pointerId);
+  };
+  divider.addEventListener("pointerup", stopDrag);
+  divider.addEventListener("pointercancel", stopDrag);
+
+  await ready();
+  renderPreview();
+</script>

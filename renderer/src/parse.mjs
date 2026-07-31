@@ -9,7 +9,7 @@
 // as it has children. That is the shape the subdivision count in
 // reference/rendering/index.md works on.
 
-import { DOMParser } from "@xmldom/xmldom";
+import { DOMParser } from "#dom-parser";
 
 export const NS = "https://thaimusicxml.anan.ovh/ns/0.1";
 

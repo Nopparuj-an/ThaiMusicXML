@@ -11,6 +11,9 @@ import assert from "node:assert/strict";
 import { shares, arrivals, columnX, linkSpan, layout, glyph } from "../src/layout.mjs";
 import { parse } from "../src/parse.mjs";
 import { defaults } from "../src/settings.mjs";
+import { textReady } from "../src/text.mjs";
+
+await textReady();
 
 const near = (actual, expected, note) =>
   assert.ok(

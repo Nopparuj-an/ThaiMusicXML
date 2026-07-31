@@ -3,9 +3,8 @@
 // Deliberately stupid. It receives coordinates and emits shapes, and knows
 // nothing about beats, parts or measures, so a layout bug cannot hide here.
 
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { defaults } from "./settings.mjs";
+import { loadFontFile } from "#font-loader";
 
 const escape = (s) =>
   String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -28,25 +27,49 @@ const escape = (s) =>
 // Thai score's text actually uses - the pitch letters and romanized spellings
 // between them - so those are the two subsets loaded, at the two weights
 // draw() emits: regular for everything, bold for the title.
-function loadFontBase64(file) {
-  const url = import.meta.resolve(`@fontsource/sarabun/files/${file}`);
-  return readFileSync(fileURLToPath(url)).toString("base64");
+//
+// Loading the bytes is the one part that differs between the Node CLI and a
+// browser (see #font-loader); base64-encoding them for an inline @font-face
+// does not. Call drawReady() once before draw() - render.mjs and the
+// playground both do this via ready.mjs.
+function bytesToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
 }
 
-const FONT_FACES = [
+const FONT_FACE_FILES = [
   ["sarabun-thai-400-normal.woff2", 400],
   ["sarabun-latin-400-normal.woff2", 400],
   ["sarabun-thai-700-normal.woff2", 700],
   ["sarabun-latin-700-normal.woff2", 700],
-]
-  .map(
-    ([file, weight]) =>
-      `    @font-face { font-family: "Sarabun"; font-weight: ${weight}; ` +
-      `src: url(data:font/woff2;base64,${loadFontBase64(file)}) format("woff2"); }`,
-  )
-  .join("\n");
+];
+
+let fontFacesCss = null;
+let readyPromise = null;
+
+export function drawReady() {
+  readyPromise ??= (async () => {
+    const rules = await Promise.all(
+      FONT_FACE_FILES.map(async ([file, weight]) => {
+        const bytes = await loadFontFile(file);
+        return (
+          `    @font-face { font-family: "Sarabun"; font-weight: ${weight}; ` +
+          `src: url(data:font/woff2;base64,${bytesToBase64(bytes)}) format("woff2"); }`
+        );
+      }),
+    );
+    fontFacesCss = rules.join("\n");
+  })();
+  return readyPromise;
+}
 
 export function draw(page, options = {}) {
+  if (fontFacesCss === null) throw new Error("draw.mjs: await drawReady() (or ready() from ready.mjs) before draw()");
   const s = { ...defaults, ...options };
 
   const body = page.elements.map((el) => {
@@ -85,7 +108,7 @@ export function draw(page, options = {}) {
     `     viewBox="0 0 ${page.width} ${page.height}" font-family="${s.fontFamily}">`,
     `  <defs>`,
     `    <style>`,
-    FONT_FACES,
+    fontFacesCss,
     `    </style>`,
     `  </defs>`,
     `  <rect width="100%" height="100%" fill="#fff"/>`,
