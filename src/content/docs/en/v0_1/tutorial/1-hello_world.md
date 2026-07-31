@@ -3,7 +3,7 @@ title: Hello World
 description: Your first ThaiMusicXML file
 ---
 
-This example shows a simple score for one instrument: a Ranat Ek (ระนาดเอก) playing the first line of a song.
+This example shows a simple score for one instrument: a Ranat Ek (ระนาดเอก) playing the first two lines of Lao Duang Duen.
 
 ![Example Song](../../../../../assets/docs/v0_1/tutorial/1-hello_world/image.png)
 
@@ -49,6 +49,32 @@ This example shows a simple score for one instrument: a Ranat Ek (ระนา�
         </measure>
         <measure number="8">
           <note pitch="ซ"/><note pitch="ม"/><rest/><note pitch="ซ"/>
+        </measure>
+      </line>
+      <line number="2">
+        <measure number="1">
+          <rest/><rest/><rest/><note pitch="ล"/>
+        </measure>
+        <measure number="2">
+          <note pitch="ซ"/><note pitch="ซ"/><note pitch="ซ"/><note pitch="ซ"/>
+        </measure>
+        <measure number="3">
+          <rest/><note pitch="ม"/><note pitch="ซ"/><note pitch="ม"/>
+        </measure>
+        <measure number="4">
+          <note pitch="ซ"/><note pitch="ล"/><note pitch="ดํ"/><note pitch="ล"/>
+        </measure>
+        <measure number="5">
+          <rest/><rest/><note pitch="ซ"/><note pitch="ล"/>
+        </measure>
+        <measure number="6">
+          <note pitch="ดํ"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/>
+        </measure>
+        <measure number="7">
+          <note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ม"/>
+        </measure>
+        <measure number="8">
+          <note pitch="ร"/><note pitch="ด"/><rest/><note pitch="ร"/>
         </measure>
       </line>
     </section-ref>

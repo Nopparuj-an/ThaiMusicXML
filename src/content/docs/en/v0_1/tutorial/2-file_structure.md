@@ -31,6 +31,7 @@ The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument 
   <ensemble>
     <part id="P1">
       <instrument-name>Ranat Ek</instrument-name>
+      <instrument-short-name>R.Ek</instrument-short-name>
     </part>
     <part id="P2" type="unpitched">
       <instrument-name>Ching</instrument-name>

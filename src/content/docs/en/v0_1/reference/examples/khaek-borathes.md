@@ -14,10 +14,10 @@ description: A three-instrument score for แขกบรเทศ ชั้น�
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
   <header>
     <title>แขกบรเทศ ชั้นเดียว</title>
+    <composer>ไม่ปรากฏนามผู้แต่งสำหรับชั้นเดียว</composer>
   </header>
   <structure>
     <annotation>หน้าทับปรบไก่</annotation>
-    <composer>ไม่ปรากฏนามผู้แต่งสำหรับชั้นเดียว</composer>
     <direction>
       <nathap value="ปรบไก่" />
       <chan value="1" />
@@ -34,12 +34,15 @@ description: A three-instrument score for แขกบรเทศ ชั้น�
   <ensemble>
     <part id="P1">
       <instrument-name>ระนาดเอก</instrument-name>
+      <instrument-short-name>รน.เอก</instrument-short-name>
     </part>
     <part id="P2" stack="khong" row="1">
       <instrument-name>ฆ้องวงใหญ่ R</instrument-name>
+      <instrument-short-name>ฆญ.ขวา</instrument-short-name>
     </part>
     <part id="P3" stack="khong" row="2">
       <instrument-name>ฆ้องวงใหญ่ L</instrument-name>
+      <instrument-short-name>ฆญ.ซ้าย</instrument-short-name>
     </part>
   </ensemble>
   <part-data part="P1">
