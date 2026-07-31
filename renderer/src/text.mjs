@@ -1,14 +1,44 @@
-// Estimating how wide a string sets, and breaking it to fit a measure.
+// Measuring how wide a string sets, and breaking it to fit a measure.
 //
 // SVG text does not wrap, so the renderer has to do it, and doing it needs
-// widths. There is no font here to ask for metrics, so these are estimates
-// keyed to the type size. They only have to be close enough: an annotation that
-// wraps a word earlier than it had to is a blemish, one that runs off the page
-// is not readable at all.
+// widths. `charWidth` reads them from the actual Sarabun font Sarabun's own
+// package ships (`@fontsource/sarabun`), the same face `draw.mjs` names in
+// `font-family`, so a width is what that font really sets rather than a guess
+// at it. A character neither of its two subsets covers - some other script, an
+// emoji - falls back to the old estimate, which only has to be close enough
+// not to run text off the page.
 
-// Marks sitting above or below a letter: สระ, วรรณยุกต์, พินทุ, ทัณฑฆาต. They
-// take no width of their own, so a string full of them is far narrower than its
-// length suggests.
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import opentype from "opentype.js";
+
+// Fontsource splits one family into per-script subsets. A Thai score's text is
+// Thai plus occasional Latin (romanized pitches, an English title), so those
+// are the two subsets worth loading; nothing else in the family's range comes
+// up in practice.
+function loadFont(file) {
+  const url = import.meta.resolve(`@fontsource/sarabun/files/${file}`);
+  const buffer = readFileSync(fileURLToPath(url));
+  return opentype.parse(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength));
+}
+
+const thaiFont = loadFont("sarabun-thai-400-normal.woff");
+const latinFont = loadFont("sarabun-latin-400-normal.woff");
+
+// Advance width as a fraction of one em, or null if neither subset maps the
+// character (glyph index 0 is .notdef, not a real zero-width glyph).
+function realWidth(ch) {
+  const glyph = thaiFont.charToGlyph(ch);
+  if (glyph.index !== 0) return glyph.advanceWidth / thaiFont.unitsPerEm;
+  const latinGlyph = latinFont.charToGlyph(ch);
+  if (latinGlyph.index !== 0) return latinGlyph.advanceWidth / latinFont.unitsPerEm;
+  return null;
+}
+
+// Marks sitting above or below a letter: สระ, วรรณยุกต์, พินทุ, ทัณฑฆาต. Sarabun
+// itself gives every one of these zero advance width - checked directly
+// against the font - so this is a fast path and a safety net for a mark
+// outside the font's own combining range, not a correction to real metrics.
 const COMBINING = /[ัิ-ฺ็-๎]/;
 
 const THAI = /[฀-๿]/;
@@ -17,6 +47,11 @@ const WIDE = /[mwMW@]/;
 
 export function charWidth(ch, size) {
   if (COMBINING.test(ch)) return 0;
+
+  const real = realWidth(ch);
+  if (real !== null) return real * size;
+
+  // Neither Sarabun subset covers this character. Estimate rather than fail.
   if (ch === " ") return size * 0.26;
   if (THAI.test(ch)) return size * 0.54;
   if (NARROW.test(ch)) return size * 0.3;

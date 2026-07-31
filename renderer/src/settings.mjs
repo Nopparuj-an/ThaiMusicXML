@@ -148,8 +148,8 @@ export const defaults = {
   // past its own row's ruling into the gap above. All OPEN, and judged
   // against a printed score the way the link curve was: this is a first
   // pass, not a settled convention.
-  bowTop: 1.1,
-  bowRise: 0.75,
+  bowTop: 1.05,
+  bowRise: 0.5,
   bowStroke: 0.8,
 
   // Cued passages. A parenthesis span prints its brackets at pitchSize; no
