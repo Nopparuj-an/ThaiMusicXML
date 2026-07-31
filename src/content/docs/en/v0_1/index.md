@@ -15,3 +15,7 @@ This format models Thai musical concepts: 7-tone scales, 8-measure grid systems,
 ## About this project
 
 Please visit [about](/en/about/) page for more information.
+
+## Try it now
+
+You can try ThaiMusicXML in [Playground](/en/playground/).
