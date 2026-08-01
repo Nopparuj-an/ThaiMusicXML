@@ -27,3 +27,13 @@ description: ตัวอย่างสำหรับ ThaiMusicXML
 - แอตทริบิวต์ `stack` และ `row` ของ `<part>` ที่เชื่อมฆ้องวงใหญ่ R และ L เป็นสองแถวของเครื่องดนตรีเดียว
 - โน้ตยาวที่เขียนโดยไม่มีตัวปรับ octave ของไทยเลยสักตัว
 - [`<rest>`](/th/v0_1/reference/elements/rest/) โดยไม่มี [`<direction>`](/th/v0_1/reference/elements/direction/) เลย
+
+## [ชื่นชุมนุม - กลุ่มดนตรี](/th/v0_1/reference/examples/chuen-chumnum/)
+
+โน้ตเครื่องดนตรีเดียว (ซออู้) ที่รวมเพลงสองชั้นสั้นสองเพลงไว้ในไฟล์เดียว ครอบคลุม:
+
+- [`<direction>`](/th/v0_1/reference/elements/direction/) ที่ตั้งเฉพาะ [`<chan>`](/th/v0_1/reference/elements/chan/) โดยไม่มี [`<bpm>`](/th/v0_1/reference/elements/bpm/)
+- สองเพลงในไฟล์เดียวเป็น [`<section>`](/th/v0_1/reference/elements/section/) สองส่วน โดย `name` ของแต่ละส่วนใช้ภายในไฟล์เท่านั้น ส่วนหัวข้อที่พิมพ์บนโน้ตมาจาก [`<annotation>`](/th/v0_1/reference/elements/annotation/) แบบกึ่งกลางใน `<structure>` แทน
+- [`<br>`](/th/v0_1/reference/elements/br/) เว้นที่ว่างก่อนหัวข้อแต่ละอัน
+- ระดับเสียง [`<note>`](/th/v0_1/reference/elements/note/) ที่ใช้ตัวปรับ octave เฉพาะนิคหิต ไม่มีพินทุ
+- ช่วง [`<bow>`](/th/v0_1/reference/elements/bow/) ที่กำกับการสีต่อเนื่องหนึ่งจังหวะคันชัก รวมถึงช่วงที่มีโน้ตเดียวและช่วงที่ข้ามเส้นห้อง

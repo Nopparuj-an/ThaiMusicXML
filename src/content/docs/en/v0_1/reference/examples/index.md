@@ -27,3 +27,13 @@ A two-row ฆ้องวงใหญ่ transcription of the หน้าพา
 - `<part>`'s `stack` and `row` attributes joining ฆ้องวงใหญ่ R and L as the two rows of one instrument
 - A long score written entirely without Thai octave modifiers
 - [`<rest>`](/en/v0_1/reference/elements/rest/) with no [`<direction>`](/en/v0_1/reference/elements/direction/) set at all
+
+## [Chuen Chumnum - Klum Dontri](/en/v0_1/reference/examples/chuen-chumnum/)
+
+A single-part ซออู้ score holding two short สองชั้น pieces, covering:
+
+- [`<direction>`](/en/v0_1/reference/elements/direction/) setting only [`<chan>`](/en/v0_1/reference/elements/chan/), with no [`<bpm>`](/en/v0_1/reference/elements/bpm/)
+- Two pieces in one file as two [`<section>`](/en/v0_1/reference/elements/section/)s, each `name` staying internal to the file while the printed heading comes from a center-aligned [`<annotation>`](/en/v0_1/reference/elements/annotation/) in `<structure>`
+- [`<br>`](/en/v0_1/reference/elements/br/) opening space before each heading
+- [`<note>`](/en/v0_1/reference/elements/note/) pitches using only the nikhahit octave modifier, with no pinthu
+- [`<bow>`](/en/v0_1/reference/elements/bow/) spans marking continuous bow strokes, including a single-note span and one crossing a measure boundary
