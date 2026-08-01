@@ -38,4 +38,6 @@ If you contribute to the specification, write parsers or renderers, or maintain 
 
 ### Maintainers
 
-- [Nopparuj Ananvoranich](https://github.com/Nopparuj-an)
+| Maintainer            | Profile                                  | Affiliation |
+| --------------------- | ---------------------------------------- | ----------- |
+| Nopparuj Ananvoranich | [GitHub](https://github.com/Nopparuj-an) | Independent |
