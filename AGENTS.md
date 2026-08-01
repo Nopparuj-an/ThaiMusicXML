@@ -1,7 +1,7 @@
 # ThaiMusicXML
 
-Unless specified otherwise, do everything in English version first.
-This includes plan, commit message, issue description, and PR description.
+When editing docs content, update the English and Thai pages.
+Although confirm English version with the user first before writing Thai.
 
 ## Development
 
@@ -27,7 +27,7 @@ This includes plan, commit message, issue description, and PR description.
 
 ## Writing and translations
 
-- Utilize `humanizer` (~/.agents/skills/humanizer) for natural writing.
+- Utilize `humanizer` (~/.agents/skills/humanizer) for natural writing, on both the English and the Thai text.
 - Refer to ราชบัณฑิตยสภา spelling for Thai words.
 
 # Astro

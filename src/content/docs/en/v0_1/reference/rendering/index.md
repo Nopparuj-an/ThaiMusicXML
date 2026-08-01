@@ -17,6 +17,7 @@ None of these lives in the document. There is nowhere in a ThaiMusicXML file to 
 | --- | --- | --- |
 | Which pitch spelling appears | Whichever of the three the file is written in | [Inside a measure](#inside-a-measure) |
 | Case of romanized pitch letters | Uppercase | [Inside a measure](#inside-a-measure) |
+| Octave mark shape and size | A small dot, drawn independent of the typeface | [Octave marks](#octave-marks) |
 | How thoroughly rests print | A hyphen for every rest in every notated part, blank in a lyric row | [Inside a measure](#inside-a-measure) |
 | Lyric row type size | Smaller than the notated rows | [Lyric rows](#lyric-rows) |
 | Instrument-name labels | Top-right corner on a solo score; a deduplicated label column on an ensemble score | [Instrument names](#instrument-names) |
@@ -31,7 +32,7 @@ None of these lives in the document. There is nowhere in a ThaiMusicXML file to 
 
 Set a Thai score in **Sarabun**, published under the SIL Open Font License.
 
-What decides this is the octave marks. นิคหิต and พินทุ are combining characters, and in a Thai score they are the whole of the octave notation, so a face that sets them loosely or collides them with the base letter is not merely ugly: it makes the note ambiguous. Sarabun positions both cleanly at the sizes a pitch letter is set at, and its range of weights covers the size and emphasis steps the [title band](#the-title-band) and [score layout](#score-layout) ask for. The OFL also keeps embedding the face in an exported PDF straightforward.
+The octave marks are not what decides this: [Octave marks](#octave-marks) below are drawn as their own shape rather than set as diacritics in the font, so no face's own combining-character metrics are load-bearing here. What does decide it is the base letters themselves. Sarabun reads clearly at the sizes a pitch letter is set at, and its range of weights covers the size and emphasis steps the [title band](#the-title-band) and [score layout](#score-layout) ask for. The OFL also keeps embedding the face in an exported PDF straightforward.
 
 Noto Sans Thai, also under the OFL, is an equally sound choice and is worth having as the fallback in a font stack. TH Sarabun New is the familiar face from Thai official documents and reads correctly, but it ships few styles and carries the GPL with a font exception rather than the OFL, which is more to reason about when a tool embeds it in files it hands to users.
 
@@ -77,7 +78,7 @@ The two parts meet on the beat's arrival and nowhere else inside it. That is cor
 
 Within a group's share, the symbols sit closer together than adjacent beats do, so the group reads as one fast gesture rather than as separate beats. The extra whitespace falls to the left of the group, ahead of its first symbol, since its last symbol is pinned to the beat.
 
-A `<note>` with a `pitch` renders as its pitch letter carrying its octave mark: นิคหิต above the letter for `octave="1"`, พินทุ below it for `octave="-1"`, and no mark for `octave="0"`.
+A `<note>` with a `pitch` renders as its pitch letter carrying its octave mark. See [Octave marks](#octave-marks) below.
 
 Which of the three spellings appears is the file's decision rather than the renderer's. A score written in Thai script displays in Thai script, one written in numerals displays in numerals. The spellings are interchangeable and a renderer knows how to convert between them, but an author who wrote a teaching edition in numerals chose that, and re-spelling it on the way to the page would overrule them. This is why [`<note>`](/en/v0_1/reference/elements/note/) asks a generator to settle on one spelling per file. A renderer may offer to display a score in a spelling other than the one it is written in; the file keeps its own either way.
 
@@ -88,6 +89,12 @@ A `<note>` in an unpitched part renders its `sound` string verbatim, whatever th
 A `<rest>` renders as a hyphen.
 
 How thoroughly rests are printed is a house style choice, and printed scores differ. Some print a hyphen for every rest in every part. Others print them only in the part carrying the melody in that measure, leaving the following part's rests as blank space. Both are conventional and a renderer may offer either. The markup does not change either way: a `<rest>` records that no attack happens on that beat, not how the page shows it.
+
+### Octave marks
+
+An octave mark is a small dot beside the pitch letter: above for `octave="1"` (or a `pitch` spelled with นิคหิต), below for `octave="-1"` (or พินทุ), and no mark at all for `octave="0"`.
+
+The dot is drawn as its own shape, not set as นิคหิต or พินทุ in the font. A Thai music sheet marks octave with a plain dot, not with either of those two characters: นิคหิต and พินทุ are combining characters with their own shape and meaning in running Thai text, and printing them literally where the sheet only means "up one octave" or "down one octave" does not match that convention. A file may still spell the octave with the literal modifier character (`pitch="ดํ"`, `pitch="ทฺ"`), documented at [Thai octave modifiers](/en/v0_1/reference/elements/note/#thai-octave-modifiers). That spelling renders identically to the equivalent `octave` attribute: only the source syntax differs, not the mark on the page.
 
 ## Lyric rows
 

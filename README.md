@@ -11,7 +11,7 @@ ThaiMusicXML is a lightweight XML schema for Thai traditional music. It models T
 Western music theory does not map directly to Thai music. ThaiMusicXML models:
 
 - **7-Tone System**: Represented via solfège (ด, ร, ม, ฟ, ซ, ล, ท) or digits (1-7)
-- **Octave Markers**: Represented via explicit attributes (low, middle, high) or native dot symbols
+- **Octave Markers**: Represented via an `octave` integer attribute, or natively within `pitch` using นิคหิต/พินทุ. Either way renders as a small dot above or below the note
 
 ## Development
 

@@ -98,6 +98,13 @@ export function draw(page, options = {}) {
         ` Q ${round(el.cx)} ${round(el.cy)} ${round(el.x2)} ${round(el.y2)}"/>`
       );
 
+    // The octave mark: a small dot drawn as its own shape, not set as a
+    // diacritic in the font. See "Octave marks" in reference/rendering.
+    if (el.kind === "dot") {
+      const fill = el.dim ? ` fill="${s.dimColor}"` : "";
+      return `  <circle cx="${round(el.x)}" cy="${round(el.y)}" r="${round(el.r)}"${fill}/>`;
+    }
+
     const weight = el.weight ? ` font-weight="${el.weight}"` : "";
     const fill = el.dim ? ` fill="${s.dimColor}"` : "";
     return (
@@ -122,7 +129,7 @@ export function draw(page, options = {}) {
     ...body.filter((l) => l.includes("<path")),
     `  </g>`,
     `  <g fill="#000" stroke="none">`,
-    ...body.filter((l) => l.includes("<text")),
+    ...body.filter((l) => l.includes("<text") || l.includes("<circle")),
     `  </g>`,
     `</svg>`,
   ].join("\n");

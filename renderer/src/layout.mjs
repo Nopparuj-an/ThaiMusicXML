@@ -14,8 +14,12 @@
 import { defaults } from "./settings.mjs";
 import { wrapText } from "./text.mjs";
 
-const NIKHAHIT = "ํ"; // octave="1", set above the letter
-const PINTHU = "ฺ"; // octave="-1", set below it
+// The Thai octave modifiers a pitch may spell directly (see note.md's Pitch
+// format). Neither is drawn as its own diacritic - glyph() strips whichever
+// is present and turns it into a drawn dot instead. See "Octave marks" in
+// reference/rendering.
+const NIKHAHIT = "ํ"; // raise one octave
+const PINTHU = "ฺ"; // lower one octave
 
 // The five ชั้น levels <chan>'s Values table names, for a generated heading.
 const CHAN_NAMES = { "0.5": "ครึ่งชั้น", 1: "ชั้นเดียว", 2: "สองชั้น", 3: "สามชั้น", 4: "สี่ชั้น" };
@@ -124,26 +128,45 @@ export function columnX(column, total, cellLeft, cellWidth, spread) {
 
 const THAI = /[฀-๿]/;
 
-/** The text a single slot puts on the page. */
+/**
+ * The text and octave-dot a single slot puts on the page.
+ *
+ * @returns {{text: string, dot: "above"|"below"|null}}
+ */
 export function glyph(slotValue, settings) {
   if (slotValue.kind === "rest")
-    return settings.printRests === "none" ? "" : settings.restGlyph;
+    return { text: settings.printRests === "none" ? "" : settings.restGlyph, dot: null };
 
   // "A <note> in an unpitched part renders its sound string verbatim."
-  if (slotValue.sound !== null) return slotValue.sound;
+  if (slotValue.sound !== null) return { text: slotValue.sound, dot: null };
 
   let pitch = slotValue.pitch ?? "";
+  let dot = null;
+
+  // A pitch may already spell its octave with a literal modifier character
+  // (pitch="ดํ"), which wins over the octave attribute - "when pitch carries
+  // a Thai octave modifier, that modifier determines the octave" (note.md
+  // Conformance). Either way the modifier is not printed as itself: it is
+  // stripped from the text and turned into a drawn dot instead.
+  if (pitch.includes(NIKHAHIT)) {
+    dot = "above";
+    pitch = pitch.replace(NIKHAHIT, "");
+  } else if (pitch.includes(PINTHU)) {
+    dot = "below";
+    pitch = pitch.replace(PINTHU, "");
+  } else if (slotValue.octave >= 1) {
+    // Outside -1..1 there is no Thai spelling to add, so the mark clamps to
+    // whichever side it is on rather than growing an extra symbol - the
+    // author's call, favoring a plain, readable page over flagging the
+    // display as capped. See "Octaves beyond the Thai spellings".
+    dot = "above";
+  } else if (slotValue.octave <= -1) {
+    dot = "below";
+  }
+
   if (!THAI.test(pitch) && settings.pitchCase === "upper") pitch = pitch.toUpperCase();
 
-  // An octave attribute adds the mark the spelling does not already carry.
-  // Outside -1..1 there is no Thai spelling to add, so the mark clamps to
-  // whichever side it is on rather than growing an extra symbol - the
-  // author's call, favoring a plain, readable page over flagging the
-  // display as capped. See "Octaves beyond the Thai spellings".
-  if (slotValue.octave >= 1) pitch += NIKHAHIT;
-  else if (slotValue.octave <= -1) pitch += PINTHU;
-
-  return pitch;
+  return { text: pitch, dot };
 }
 
 // ---------------------------------------------------------------------------
@@ -727,7 +750,7 @@ export function layout(score, options = {}) {
           beat.slots.forEach((slotValue, slotIndex) => {
             const symbolX = x(row.columns[beatIndex][slotIndex]);
             if (notePos) notePos.set(posKey(row.part.id, { lineIndex, measureIndex: m, beatIndex, slotIndex }), symbolX);
-            const text = glyph(slotValue, s);
+            const { text, dot } = glyph(slotValue, s);
             if (!text) return;
             const dim = dimmed?.(row.part.id, { lineIndex, measureIndex: m, beatIndex, slotIndex });
             push({
@@ -740,6 +763,20 @@ export function layout(score, options = {}) {
               role: "symbol",
               ...(dim ? { dim: true } : {}),
             });
+            // The octave mark: a small dot above or below the letter, drawn
+            // rather than set as a diacritic in the font - see "Octave
+            // marks" in reference/rendering.
+            if (dot) {
+              const gap = (dot === "above" ? s.octaveDotGapAbove : s.octaveDotGapBelow) * s.pitchSize;
+              push({
+                kind: "dot",
+                x: symbolX,
+                y: row.baseline + (dot === "above" ? -gap : gap),
+                r: s.octaveDotRadius * s.pitchSize,
+                role: "octave-dot",
+                ...(dim ? { dim: true } : {}),
+              });
+            }
           });
         });
       }

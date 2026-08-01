@@ -37,6 +37,11 @@
         <measure number="2">
           <note pitch="ด" octave="2" /><note pitch="ร" octave="3" /><note pitch="ม" octave="-3" /><note pitch="ฟ" />
         </measure>
+        <!-- Same octaves, spelled with the literal modifier in pitch instead
+             of the octave attribute - both paths must draw the same dot. -->
+        <measure number="3">
+          <note pitch="ดฺ" /><note pitch="ด" /><note pitch="ดํ" /><note pitch="ทฺ" />
+        </measure>
       </line>
     </section-ref>
     <section-ref section="s2">

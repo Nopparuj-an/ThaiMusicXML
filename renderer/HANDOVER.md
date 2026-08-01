@@ -6,7 +6,8 @@ session that added pagination and the rest of the features below, and again at
 the end of the session that closed the remaining gaps: the one real bug left
 (octaves outside the Thai spellings), the two opt-in settings the spec named
 but nothing implemented, and unit test coverage for everything Session 2 had
-only verified by eyeballing a render.
+only verified by eyeballing a render; updated again at the end of the session
+that replaced the literal นิคหิต/พินทุ octave-mark glyph with a drawn dot.
 
 ## Progress log
 
@@ -32,6 +33,13 @@ only verified by eyeballing a render.
   lines silently failed to draw at all; and the bow curve reworked from a
   separate tip-direction tick to the arc's own facing, with its amplitude
   fixed twice more after the author looked at renders of that too.
+- Session 4: octave marks no longer render as the literal นิคหิต/พินทุ
+  character set by the font. `glyph()` returns `{ text, dot }` and `layout()`
+  draws the mark as its own small circle primitive instead of folding it
+  into the pitch text — accurate to how a Thai sheet actually marks octave,
+  which is a plain dot rather than either of those two orthographic
+  diacritics. Rendering-only: the schema, `pitch` grammar, and `octave`
+  attribute are unchanged.
 
 ## Working practice
 
@@ -236,6 +244,37 @@ runs).
      considered exception to that sentence, not an oversight, and
      `rendering/index.md` is worth revisiting to say so explicitly if this
      holds up — it currently still reads as a hard "must not".
+- **An octave mark is a drawn dot, not the literal นิคหิต/พินทุ character**
+  (Session 4). It used to be rendered by appending the actual combining
+  character to the pitch text and letting the embedded Sarabun font glyph-
+  render it — accurate to the file's spelling, but not to how a Thai music
+  sheet actually marks octave: those two characters are real orthographic
+  diacritics with their own shape and meaning in running Thai text, not a
+  music notation convention, and the author's call was that using them as
+  the printed mark was a font-rendering shortcut rather than the accurate
+  page.
+
+  `glyph()` (`layout.mjs`) now returns `{ text, dot }` instead of a plain
+  string. `dot` is `"above"`, `"below"`, or `null`; `layout()` pushes a
+  separate `kind: "dot"` primitive — a small circle, positioned like any
+  other primitive rather than measured through font metrics — instead of
+  folding the mark into the text run. `draw.mjs` emits it as `<circle>`,
+  filed alongside `<text>` in the same fill-only SVG group so `dim` behaves
+  identically for both.
+
+  This is rendering-only: the schema, `pitch`-value grammar, and `octave`
+  attribute are untouched, and `pitch="ดํ"` is still exactly as valid as
+  `pitch="ด" octave="1"` — `glyph()` now has to detect and strip an embedded
+  modifier from `pitch` text itself (it previously only ever consulted
+  `octave`, so a `pitch="ดํ"` note with no `octave` attribute worked only by
+  accident, passing the raw embedded character straight through unstripped).
+  Where both are present, the embedded modifier wins, per note.md's
+  Conformance rule.
+
+  The dot's size and offset from the baseline (`octaveDotRadius`,
+  `octaveDotGapAbove`, `octaveDotGapBelow` in `settings.mjs`) are a first
+  pass, not a settled convention, the same as `linkTop`/`bowRise` — worth
+  checking against a printed page rather than derived from anything.
 - **`generateHeadings` and `showHeaderExtras`** (both `settings.mjs`, both
   `false`) implement the two rows the settings table always documented but
   that had no code path at all: "a renderer may offer to generate a heading

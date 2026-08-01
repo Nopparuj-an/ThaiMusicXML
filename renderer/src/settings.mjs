@@ -39,8 +39,19 @@ export const defaults = {
   pitchSize: 12,
 
   // Tall enough for the single-row link arc to sit under the notes without
-  // meeting the rule below, allowing for พินทุ hanging under a letter.
+  // meeting the rule below, allowing room for an octave dot hanging under a
+  // letter.
   rowHeight: 22,
+
+  // The octave mark: a small dot above or below the letter, drawn as its own
+  // shape rather than set as a diacritic in the font - see "Octave marks" in
+  // reference/rendering. All OPEN, multiples of pitchSize so retuning
+  // pitchSize carries the dot with it. octaveDotGapAbove clears the tallest
+  // Thai letter's cap height; octaveDotGapBelow only needs to clear the
+  // baseline, since a base note letter has no descender.
+  octaveDotRadius: 0.08,
+  octaveDotGapAbove: 0.8,
+  octaveDotGapBelow: 0.2,
 
   // How much of the cell the run of symbols spans, the rest falling as equal
   // margins either side. OPEN. At 1 the columns divide the whole cell and the
@@ -61,7 +72,8 @@ export const defaults = {
   //
   // How far above the baseline a curve attaches. Both kinds share it, so an
   // arc and a connector leaving the same row start at the same height. It has
-  // to clear the tallest thing over a letter, which is นิคหิต.
+  // to clear the tallest thing over a letter, which is an octave dot
+  // (octaveDotGapAbove + octaveDotRadius).
   linkTop: 0.85,
 
   // How far the connector steps off the first note's centre, so it starts at

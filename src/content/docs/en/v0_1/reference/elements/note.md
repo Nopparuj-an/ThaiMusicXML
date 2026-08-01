@@ -90,7 +90,7 @@ For percussion and other non-pitched instruments, `<part type="unpitched">` note
 
 ## Rendering
 
-A note displays in the spelling the file is written in, and an unpitched note's `sound` displays verbatim. See [Inside a measure](/en/v0_1/reference/rendering/#inside-a-measure) and [Octaves beyond the Thai spellings](/en/v0_1/reference/rendering/#octaves-beyond-the-thai-spellings).
+A note displays in the spelling the file is written in, and an unpitched note's `sound` displays verbatim. A Thai octave modifier, whether written literally in `pitch` or implied by `octave`, displays as a small dot rather than as the literal นิคหิต/พินทุ shape. See [Inside a measure](/en/v0_1/reference/rendering/#inside-a-measure), [Octave marks](/en/v0_1/reference/rendering/#octave-marks), and [Octaves beyond the Thai spellings](/en/v0_1/reference/rendering/#octaves-beyond-the-thai-spellings).
 
 ## Conformance
 

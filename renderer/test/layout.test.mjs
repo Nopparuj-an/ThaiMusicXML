@@ -135,20 +135,65 @@ test("a beat no part subdivides still counts as one", () => {
 // clamps to whichever side it is on: octave 2 reads the same as octave 1.
 // The author's call, over a distinguishing mark that made the page harder to
 // read - see HANDOVER.md.
+//
+// The mark itself is not drawn as the literal diacritic: glyph() strips
+// whichever modifier is present (embedded in pitch, or implied by octave)
+// and reports a plain "above"/"below" side instead, which layout() turns
+// into a drawn dot. See "Octave marks" in reference/rendering.
 
-const noteSlot = (octave) => ({ kind: "note", pitch: "ด", sound: null, octave });
+const noteSlot = (octave, pitch = "ด") => ({ kind: "note", pitch, sound: null, octave });
 
-test("an octave of -1, 0, or 1 gets the plain Thai mark", () => {
-  assert.equal(glyph(noteSlot(0), defaults), "ด");
-  assert.equal(glyph(noteSlot(1), defaults), "ดํ");
-  assert.equal(glyph(noteSlot(-1), defaults), "ดฺ");
+test("an octave of -1, 0, or 1 gets a dot on the matching side, with the mark stripped from the text", () => {
+  assert.deepEqual(glyph(noteSlot(0), defaults), { text: "ด", dot: null });
+  assert.deepEqual(glyph(noteSlot(1), defaults), { text: "ด", dot: "above" });
+  assert.deepEqual(glyph(noteSlot(-1), defaults), { text: "ด", dot: "below" });
 });
 
-test("an octave beyond -1..1 clamps to the same mark as the nearest exact octave", () => {
-  assert.equal(glyph(noteSlot(2), defaults), glyph(noteSlot(1), defaults));
-  assert.equal(glyph(noteSlot(5), defaults), glyph(noteSlot(1), defaults));
-  assert.equal(glyph(noteSlot(-2), defaults), glyph(noteSlot(-1), defaults));
-  assert.equal(glyph(noteSlot(-5), defaults), glyph(noteSlot(-1), defaults));
+test("an octave beyond -1..1 clamps to the same side as the nearest exact octave", () => {
+  assert.deepEqual(glyph(noteSlot(2), defaults), glyph(noteSlot(1), defaults));
+  assert.deepEqual(glyph(noteSlot(5), defaults), glyph(noteSlot(1), defaults));
+  assert.deepEqual(glyph(noteSlot(-2), defaults), glyph(noteSlot(-1), defaults));
+  assert.deepEqual(glyph(noteSlot(-5), defaults), glyph(noteSlot(-1), defaults));
+});
+
+test("a pitch spelled with the literal nikhahit/pinthu modifier gets the same dot, with no octave attribute needed", () => {
+  assert.deepEqual(glyph(noteSlot(null, "ดํ"), defaults), { text: "ด", dot: "above" });
+  assert.deepEqual(glyph(noteSlot(null, "ทฺ"), defaults), { text: "ท", dot: "below" });
+});
+
+test("a modifier embedded in pitch wins over a conflicting octave attribute", () => {
+  // note.md's Conformance: "When pitch carries a Thai octave modifier, that
+  // modifier determines the octave. An octave attribute on the same <note>
+  // is ignored." Validators should warn on this combination, but a renderer
+  // still has to pick one, and the modifier wins.
+  assert.deepEqual(glyph(noteSlot(-1, "ดํ"), defaults), { text: "ด", dot: "above" });
+});
+
+test("an octave mark renders as a drawn dot primitive, not text", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1">
+        <note pitch="ด" octave="1"/><note pitch="ด" octave="-1"/><note pitch="ด"/>
+      </measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const dots = pages[0].elements.filter((el) => el.kind === "dot");
+  const symbols = pages[0].elements.filter((el) => el.role === "symbol");
+
+  assert.equal(dots.length, 2, "one dot for the raised note and one for the lowered note, none for the plain one");
+  assert.ok(symbols.every((el) => el.text === "ด"), "the mark never ends up in the text itself");
+
+  const [raised, lowered] = dots;
+  assert.ok(raised.y < symbols[0].y, "the octave-1 dot sits above its letter's baseline");
+  assert.ok(lowered.y > symbols[1].y, "the octave -1 dot sits below its letter's baseline");
+  assert.equal(raised.x, symbols[0].x, "the dot centers on its letter");
 });
 
 // Link curves.
