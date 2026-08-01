@@ -913,11 +913,24 @@ export function layout(score, options = {}) {
   // The exact amplitude is a first pass rather than a settled convention:
   // see HANDOVER.md.
   const drawBowSpan = (part, span, notePos, rowGeom) => {
-    const firstX = notePos.get(posKey(part.id, span.first));
-    const lastX = notePos.get(posKey(part.id, span.last));
+    let firstX = notePos.get(posKey(part.id, span.first));
+    let lastX = notePos.get(posKey(part.id, span.last));
     const firstGeom = rowGeom.get(`${part.id}:${span.first.lineIndex}`);
     const lastGeom = rowGeom.get(`${part.id}:${span.last.lineIndex}`);
     if (firstX === undefined || lastX === undefined || !firstGeom || !lastGeom) return;
+
+    // A span that opens and closes around a single note - a bow direction
+    // marked on one note rather than a passage - has span.first and
+    // span.last resolve to that same note, so firstX and lastX land on the
+    // same point. Left alone, the arc below collapses to a zero-width path
+    // (a spike, not a curve). Spread it symmetrically around the note by a
+    // fixed minimum width instead, so a one-note bow still reads as a small
+    // arc rather than a dot.
+    if (posKey(part.id, span.first) === posKey(part.id, span.last)) {
+      const half = (s.bowMinSpan * s.pitchSize) / 2;
+      firstX -= half;
+      lastX += half;
+    }
 
     const facesUp = span.direction === "in";
     const magnitude = s.bowRise * s.pitchSize;

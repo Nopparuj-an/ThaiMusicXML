@@ -167,6 +167,11 @@ export const defaults = {
   bowRise: 0.5,
   bowStroke: 0.8,
 
+  // A bow marked on a single note has nothing to span - its start and stop
+  // resolve to the same note - so this is the width the arc spreads to
+  // instead of collapsing to a point, x pitchSize, centered on the note.
+  bowMinSpan: 1,
+
   // Cued passages. A parenthesis span prints its brackets at pitchSize; no
   // width setting needed since the glyphs come from the font. Dimming is the
   // renderer's own default here, overridden per span by `dim`, per "Cued
