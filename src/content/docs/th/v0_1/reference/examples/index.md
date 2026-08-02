@@ -37,3 +37,12 @@ description: ตัวอย่างสำหรับ ThaiMusicXML
 - [`<br>`](/th/v0_1/reference/elements/br/) เว้นที่ว่างก่อนหัวข้อแต่ละอัน
 - ระดับเสียง [`<note>`](/th/v0_1/reference/elements/note/) ที่ใช้ตัวปรับ octave เฉพาะนิคหิต ไม่มีพินทุ
 - ช่วง [`<bow>`](/th/v0_1/reference/elements/bow/) ที่กำกับการสีต่อเนื่องหนึ่งจังหวะคันชัก รวมถึงช่วงที่มีโน้ตเดียวและช่วงที่ข้ามเส้นห้อง
+
+## [โหมโรงจอมสุรางค์](/th/v0_1/reference/examples/chomsurang/)
+
+โน้ตทำนองเดียวสำหรับเพลงโหมโรง โหมโรงจอมสุรางค์ ครอบคลุม:
+
+- [`<repeat times="2">`](/th/v0_1/reference/elements/repeat/) ที่ครอบ section พร้อม [`<ending pass="2">`](/th/v0_1/reference/elements/ending/) แทนที่เฉพาะบรรทัดสุดท้าย
+- ช่วง [`<parenthesis>`](/th/v0_1/reference/elements/parenthesis/) แบบ `dim="true"` กำกับช่วงที่คร่อมด้วยวงเล็บในต้นฉบับให้เป็นคิว ไม่ใช่ตัวที่เล่นจริง
+- [`<group>`](/th/v0_1/reference/elements/group/) ที่แบ่งจังหวะเป็นสองส่วนในห้องหนึ่ง และแบ่งเป็นสามส่วนในอีกห้องหนึ่ง
+- [`<instrument-name>`](/th/v0_1/reference/elements/instrument-name/) ที่เว้นว่างไว้ สำหรับแนวที่ต้นฉบับไม่ได้ระบุเครื่องดนตรี

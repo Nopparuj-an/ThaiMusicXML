@@ -37,3 +37,12 @@ A single-part ซออู้ score holding two short สองชั้น piec
 - [`<br>`](/en/v0_1/reference/elements/br/) opening space before each heading
 - [`<note>`](/en/v0_1/reference/elements/note/) pitches using only the nikhahit octave modifier, with no pinthu
 - [`<bow>`](/en/v0_1/reference/elements/bow/) spans marking continuous bow strokes, including a single-note span and one crossing a measure boundary
+
+## [Homrong Chom Surang](/en/v0_1/reference/examples/chomsurang/)
+
+A single-line score for the โหมโรง piece โหมโรงจอมสุรางค์, covering:
+
+- [`<repeat times="2">`](/en/v0_1/reference/elements/repeat/) wrapping a section, with [`<ending pass="2">`](/en/v0_1/reference/elements/ending/) substituting just its last line
+- [`<parenthesis>`](/en/v0_1/reference/elements/parenthesis/) spans with `dim="true"`, marking bracketed passages from the source as cued rather than played
+- [`<group>`](/en/v0_1/reference/elements/group/) subdividing a beat into two in one measure and into three in another
+- An empty [`<instrument-name>`](/en/v0_1/reference/elements/instrument-name/) for a line the source does not attribute to any instrument
