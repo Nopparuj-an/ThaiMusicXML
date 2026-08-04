@@ -58,7 +58,7 @@ export const defaults = {
   // Thai letter's cap height; octaveDotGapBelow only needs to clear the
   // baseline, since a base note letter has no descender.
   octaveDotRadius: 0.08,
-  octaveDotGapAbove: 0.8,
+  octaveDotGapAbove: 0.85,
   octaveDotGapBelow: 0.2,
 
   // How much of the cell the run of symbols spans, the rest falling as equal
