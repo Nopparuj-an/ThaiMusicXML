@@ -169,6 +169,37 @@ test("a modifier embedded in pitch wins over a conflicting octave attribute", ()
   assert.deepEqual(glyph(noteSlot(-1, "ดํ"), defaults), { text: "ด", dot: "above" });
 });
 
+// Pitch spelling.
+//
+// "source" (the default) leaves a note exactly as written, letter case
+// aside - see "Which pitch spelling appears" in reference/rendering. Setting
+// pitchSpelling re-spells every pitched note into that one spelling
+// regardless of the file's own, per "A renderer may offer to display a score
+// in a spelling other than the one it is written in".
+
+test("pitchSpelling defaults to leaving a note in its own spelling", () => {
+  assert.deepEqual(glyph(noteSlot(0, "ด"), defaults), { text: "ด", dot: null });
+  assert.deepEqual(glyph(noteSlot(0, "D"), defaults), { text: "D", dot: null });
+  assert.deepEqual(glyph(noteSlot(0, "1"), defaults), { text: "1", dot: null });
+});
+
+test("pitchSpelling re-spells a note regardless of which of the three it was written in", () => {
+  for (const pitch of ["ด", "D", "d", "1"]) {
+    assert.deepEqual(glyph(noteSlot(0, pitch), { ...defaults, pitchSpelling: "thai" }), { text: "ด", dot: null });
+    assert.deepEqual(glyph(noteSlot(0, pitch), { ...defaults, pitchSpelling: "letter" }), { text: "D", dot: null });
+    assert.deepEqual(glyph(noteSlot(0, pitch), { ...defaults, pitchSpelling: "number" }), { text: "1", dot: null });
+  }
+});
+
+test("pitchCase still applies to a note re-spelled into letters, same as it does to a note already written as one", () => {
+  const settings = { ...defaults, pitchSpelling: "letter", pitchCase: "upper" };
+  assert.deepEqual(glyph(noteSlot(0, "ท"), settings), glyph(noteSlot(0, "t"), defaults));
+});
+
+test("pitchSpelling re-spelling happens after the octave modifier is stripped to a dot", () => {
+  assert.deepEqual(glyph(noteSlot(null, "ดํ"), { ...defaults, pitchSpelling: "number" }), { text: "1", dot: "above" });
+});
+
 test("an octave mark renders as a drawn dot primitive, not text", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">

@@ -25,6 +25,14 @@ export const defaults = {
   // "Case of romanized pitch letters: uppercase". Thai script is unaffected.
   pitchCase: "upper",
 
+  // "Which pitch spelling appears: whichever of the three the file is
+  // written in" - "source" prints each note's own spelling, unchanged.
+  // "thai", "letter", or "number" re-spell every pitched note into that one
+  // of the three spellings regardless of what the file used, per "A renderer
+  // may offer to display a score in a spelling other than the one it is
+  // written in" (reference/rendering, "Inside a measure").
+  pitchSpelling: "source",
+
   // "Set a Thai score in Sarabun", with Noto Sans Thai as the stated fallback.
   fontFamily: "Sarabun, 'Noto Sans Thai', sans-serif",
 

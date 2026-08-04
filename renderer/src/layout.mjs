@@ -21,6 +21,28 @@ import { wrapText } from "./text.mjs";
 const NIKHAHIT = "ํ"; // raise one octave
 const PINTHU = "ฺ"; // lower one octave
 
+// The seven base notes, in the three interchangeable spellings note.md's
+// Pitch format lists. Order is the scale degree, 1-indexed to match it.
+const BASE_NOTES = [
+  { thai: "ด", letter: "D", number: "1" },
+  { thai: "ร", letter: "R", number: "2" },
+  { thai: "ม", letter: "M", number: "3" },
+  { thai: "ฟ", letter: "F", number: "4" },
+  { thai: "ซ", letter: "S", number: "5" },
+  { thai: "ล", letter: "L", number: "6" },
+  { thai: "ท", letter: "T", number: "7" },
+];
+
+// Any of the three spellings, either letter case, to its scale degree.
+const DEGREE_BY_SPELLING = new Map(
+  BASE_NOTES.flatMap(({ thai, letter, number }, i) => [
+    [thai, i],
+    [letter, i],
+    [letter.toLowerCase(), i],
+    [number, i],
+  ]),
+);
+
 // The five ชั้น levels <chan>'s Values table names, for a generated heading.
 const CHAN_NAMES = { "0.5": "ครึ่งชั้น", 1: "ชั้นเดียว", 2: "สองชั้น", 3: "สามชั้น", 4: "สี่ชั้น" };
 
@@ -162,6 +184,13 @@ export function glyph(slotValue, settings) {
     dot = "above";
   } else if (slotValue.octave <= -1) {
     dot = "below";
+  }
+
+  // Re-spell into settings.pitchSpelling's target spelling. "source" is the
+  // default and leaves pitch exactly as the file wrote it.
+  if (settings.pitchSpelling !== "source") {
+    const degree = DEGREE_BY_SPELLING.get(pitch);
+    if (degree !== undefined) pitch = BASE_NOTES[degree][settings.pitchSpelling];
   }
 
   if (!THAI.test(pitch) && settings.pitchCase === "upper") pitch = pitch.toUpperCase();
