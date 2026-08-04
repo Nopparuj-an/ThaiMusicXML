@@ -815,6 +815,29 @@ test("a label reprints on the first line of a fresh page even where the lineup h
   assert.equal(byRole(pages[1], "label").length, 2, "and both reprint on the fresh page, same lineup or not");
 });
 
+test("showLabels: false hides a solo score's top-right instrument name too, not just an ensemble's label column", () => {
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble><part id="P1"><instrument-name>หนึ่ง</instrument-name></part></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+
+  const shown = layout(parse(doc));
+  assert.equal(byRole(shown.pages[0], "instrument-name").length, 1, "prints by default, same as before");
+
+  const hidden = layout(parse(doc), { showLabels: false });
+  assert.equal(byRole(hidden.pages[0], "instrument-name").length, 0, "showLabels: false suppresses it");
+
+  const forced = layout(parse(doc), { showLabels: true });
+  assert.equal(byRole(forced.pages[0], "instrument-name").length, 1, "showLabels: true still shows it");
+});
+
 // Generated headings and header extras: both off by default, opt-in only.
 
 test("generateHeadings is off by default, so a bare section prints no heading at all", () => {

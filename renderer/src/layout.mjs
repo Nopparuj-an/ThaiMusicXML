@@ -289,7 +289,7 @@ export function layout(score, options = {}) {
     anchor: "middle",
     role: "title",
   });
-  if (solo && score.parts[0].name) {
+  if (solo && score.parts[0].name && s.showLabels !== false) {
     push({
       kind: "text",
       x: right,
