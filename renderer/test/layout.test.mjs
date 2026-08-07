@@ -445,6 +445,60 @@ test("an ending prints its own heading and grid below the section, without repea
   assert.ok(endingNoteY > mainNoteY, "the ending's grid sits below the section's own grid");
 });
 
+test("two parts sharing the same ending print its heading once and rule one combined grid, not one per part", () => {
+  // Regression: the endings loop used to run once per part, each iteration
+  // printing that part's own copy of the heading and drawing its own
+  // detached grid - so two parts with the same ending looked like two
+  // separate little sections stacked underneath each other.
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure>
+    <repeat times="2">
+      <section id="s1" name="s1"/>
+    </repeat>
+  </structure>
+  <ensemble>
+    <part id="P1"/>
+    <part id="P2"/>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      <ending pass="2">
+        <annotation>ลง</annotation>
+        <line number="1"><measure number="1"><note pitch="ล"/></measure></line>
+      </ending>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ร"/></measure></line>
+      <ending pass="2">
+        <annotation>ลง</annotation>
+        <line number="1"><measure number="1"><note pitch="ซ"/></measure></line>
+      </ending>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const texts = textsOn(pages[0]);
+
+  assert.equal(texts.filter((t) => t === "ลง").length, 1, "the shared heading prints once, not once per part");
+
+  const endingNotes = byRole(pages[0], "symbol").filter((el) => el.text === "ล" || el.text === "ซ");
+  assert.equal(endingNotes.length, 2, "both parts' replacement notes still print");
+  // Two un-stacked parts on one combined grid sit exactly one rowHeight apart
+  // (gap.instrument is 0 for a two-instrument ensemble at the default
+  // gapScale). Stacked as two separate detached grids instead, they would be
+  // a heading's worth of annotation plus a section-sized gap apart.
+  near(
+    Math.abs(endingNotes[1].y - endingNotes[0].y),
+    defaults.rowHeight,
+    "both parts' ending rows sit one rowHeight apart on a single combined grid",
+  );
+});
+
 // Bow and parenthesis spans.
 
 test("a bow span crossing a line resolves to the notes at its true start and stop, not the markers' neighbours", () => {
@@ -885,6 +939,34 @@ test("a generated heading combines the ชั้น in force with the section's 
   assert.ok(texts.includes("สามชั้น ท่อน 1"), "s1's empty gap gets a generated heading naming the ชั้น in force");
   assert.ok(texts.includes("เขียนเอง"), "s2's authored annotation still prints");
   assert.ok(!texts.includes("สามชั้น ท่อน 2"), "s2 already has a heading, so nothing is generated for it");
+});
+
+test("an unrelated annotation across a <direction> does not count as a section's heading", () => {
+  // Regression: hasHeading() used to walk straight through a <direction> -
+  // which prints nothing of its own - looking further back for the nearest
+  // annotation, so an unrelated one further up the header (a hand-pattern
+  // name, here) could be mistaken for this section's heading and suppress
+  // the generated one, even with an empty gap directly ahead of the section.
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure>
+    <annotation>หน้าทับปรบไก่</annotation>
+    <direction><chan value="1"/></direction>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc), { generateHeadings: true });
+  const texts = textsOn(pages[0]);
+
+  assert.ok(texts.includes("หน้าทับปรบไก่"), "the unrelated annotation still prints where it was written");
+  assert.ok(texts.includes("ชั้นเดียว ท่อน 1"), "s1 still gets its own generated heading");
 });
 
 test("showHeaderExtras is off by default, and prints tuning, bpm, and license but never nathap when on", () => {

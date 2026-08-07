@@ -410,19 +410,26 @@ export function layout(score, options = {}) {
 
   // "A renderer may offer to generate a heading from name and the ชั้น in
   // force for a score whose annotations are sparse" - off by default, and
-  // only where the gap ahead of a section is genuinely empty. Any authored
-  // annotation there, found by walking back to the previous section or the
-  // start of the document, already serves as that section's heading, so
-  // "keep it off by default, or a score with headings already annotated
-  // ends up with two" is applied gap by gap rather than to the whole score
-  // at once.
+  // only where the gap ahead of a section is genuinely empty. An authored
+  // annotation counts as already serving that section's heading only where
+  // it is the thing immediately ahead of the section - skipping back over a
+  // <br> (a blank line inside the same heading block) but stopping, unheaded,
+  // at anything else. A <direction> does not print, but it is not a blank
+  // line either: walking straight through it used to let some earlier,
+  // unrelated annotation (a hand-pattern name in the title band, say) count
+  // as the heading for a section several items later, suppressing the
+  // generated one for the wrong reason. "keep it off by default, or a score
+  // with headings already annotated ends up with two" is applied gap by gap
+  // rather than to the whole score at once.
   const structure = (() => {
     if (!s.generateHeadings) return score.structure;
 
     const hasHeading = (index) => {
       for (let j = index - 1; j >= 0; j--) {
-        if (score.structure[j].kind === "annotation") return true;
-        if (score.structure[j].kind === "section") return false;
+        const kind = score.structure[j].kind;
+        if (kind === "annotation") return true;
+        if (kind === "br") continue;
+        return false;
       }
       return false;
     };
@@ -1087,47 +1094,85 @@ export function layout(score, options = {}) {
 
     // An ending renders below its section, detached from the line(s) it
     // replaces: its own annotation as a heading, then its replacement lines
-    // as their own grid. `ownAnnotations: false` is passed explicitly rather
-    // than relying on `lineIndex === 0`, since `lineIndex` here is the
-    // ending's own real line index - needed so notePos/rowGeom keys line up
-    // with the lineIndex resolveSpans() recorded for this ending's spans -
-    // and that is genuinely 0 for an ending's first line. Conflating the two
-    // used to mean a span opening and closing entirely inside one ending's
-    // own lines silently failed to draw at all, since rowGeom was only ever
-    // keyed under the pinned constant.
-    for (const p of parts) {
-      const endings = score.music[p.id][section.id].endings;
-      endings.forEach((ending, endingIndex) => {
-        if (ending.lines.length === 0) return;
+    // as their own grid. Each part writes its own <ending> (its own
+    // annotation, its own replacement lines), but an ending is one event for
+    // the ensemble, not one per part - pairing them up by position in
+    // document order (endingIndex) and drawing one combined heading and one
+    // combined grid, the same way the section's regular lines already treat
+    // every part's line at a given lineIndex as one grid line. Left one loop
+    // per part, this used to print the heading annotation once per part
+    // (identical text duplicated down the page) and rule each part's
+    // replacement as its own separate little section instead of one shared
+    // grid.
+    //
+    // `ownAnnotations: false` is passed explicitly rather than relying on
+    // `lineIndex === 0`, since `lineIndex` here is the ending's own real line
+    // index - needed so notePos/rowGeom keys line up with the lineIndex
+    // resolveSpans() recorded for this ending's spans - and that is
+    // genuinely 0 for an ending's first line. Conflating the two used to mean
+    // a span opening and closing entirely inside one ending's own lines
+    // silently failed to draw at all, since rowGeom was only ever keyed under
+    // the pinned constant.
+    const endingCount = Math.max(0, ...parts.map((p) => score.music[p.id][section.id].endings.length));
+    for (let endingIndex = 0; endingIndex < endingCount; endingIndex++) {
+      const entries = parts
+        .map((p) => ({ part: p, ending: score.music[p.id][section.id].endings[endingIndex] }))
+        .filter((e) => e.ending && e.ending.lines.length > 0);
+      if (entries.length === 0) continue;
 
-        pending = endingIndex === 0 ? gap.section : gap.line;
-        ending.annotations.forEach((note, i) => {
-          const extra =
-            i === 0 ? measureLine([{ part: p, line: ending.lines[0] }], section, 0, { ownAnnotations: false }) : 0;
-          annotationRow(note, { heading: i === 0, extra });
+      pending = endingIndex === 0 ? gap.section : gap.line;
+
+      // Parts sharing an ending often write the exact same annotation (a
+      // heading like "ลง" repeated in every part's own <ending>, since each
+      // part's arranger typed it separately) - print each distinct block of
+      // annotation lines once, in the order its part first contributes it,
+      // rather than once per part.
+      const seenAnnotations = new Set();
+      const annotationGroups = [];
+      for (const entry of entries) {
+        const key = JSON.stringify(entry.ending.annotations);
+        if (seenAnnotations.has(key)) continue;
+        seenAnnotations.add(key);
+        annotationGroups.push(entry.ending.annotations);
+      }
+
+      const firstRows = entries.map((e) => ({ part: e.part, line: e.ending.lines[0] }));
+      let firstNote = true;
+      for (const notes of annotationGroups) {
+        notes.forEach((note) => {
+          const extra = firstNote ? measureLine(firstRows, section, 0, { ownAnnotations: false }) : 0;
+          annotationRow(note, { heading: firstNote, extra });
+          firstNote = false;
         });
+      }
 
-        const isEndingDimmed = (partId, pos) =>
-          ending.parenSpans.some(
-            (sp) => (sp.dim ?? s.dimParenthesisDefault) && comparePos(sp.first, pos) <= 0 && comparePos(pos, sp.last) <= 0,
-          );
+      const endingByPart = new Map(entries.map((e) => [e.part.id, e.ending]));
+      const isEndingDimmed = (partId, pos) =>
+        (endingByPart.get(partId)?.parenSpans ?? []).some(
+          (sp) => (sp.dim ?? s.dimParenthesisDefault) && comparePos(sp.first, pos) <= 0 && comparePos(pos, sp.last) <= 0,
+        );
 
-        const endingNotePos = new Map();
-        const endingRowGeom = new Map();
-        ending.lines.forEach((line, li) => {
-          renderGridLine([{ part: p, line }], section, li, {
-            firstOfGroup: li === 0,
-            labels: false,
-            ownAnnotations: false,
-            notePos: endingNotePos,
-            rowGeom: endingRowGeom,
-            dimmed: isEndingDimmed,
-          });
+      const lineCount = Math.max(...entries.map((e) => e.ending.lines.length));
+      const endingNotePos = new Map();
+      const endingRowGeom = new Map();
+      for (let li = 0; li < lineCount; li++) {
+        const rows = entries
+          .map((e) => ({ part: e.part, line: e.ending.lines[li] }))
+          .filter((r) => r.line);
+        renderGridLine(rows, section, li, {
+          firstOfGroup: li === 0,
+          labels: false,
+          ownAnnotations: false,
+          notePos: endingNotePos,
+          rowGeom: endingRowGeom,
+          dimmed: isEndingDimmed,
         });
+      }
 
-        for (const span of ending.bowSpans) drawBowSpan(p, span, endingNotePos, endingRowGeom);
-        for (const span of ending.parenSpans) drawParenSpan(p, span, endingNotePos, endingRowGeom);
-      });
+      for (const entry of entries) {
+        for (const span of entry.ending.bowSpans) drawBowSpan(entry.part, span, endingNotePos, endingRowGeom);
+        for (const span of entry.ending.parenSpans) drawParenSpan(entry.part, span, endingNotePos, endingRowGeom);
+      }
     }
 
     pending = gap.section;
