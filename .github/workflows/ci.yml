@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -19,9 +22,10 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      # xmllint validates the corpus against the RELAX NG schema.
-      - name: Install xmllint
-        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+      # xmllint validates the corpus against the RELAX NG schema; trang
+      # regenerates the XSD used for Monaco's schema-aware completion.
+      - name: Install xmllint and trang
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils trang
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -31,6 +35,18 @@ jobs:
 
       - name: Check conformance corpus
         run: pnpm run check:corpus
+
+      # Regenerates the XSD on every run, both to catch a schema that trang
+      # can no longer convert and to keep the committed file in sync.
+      - name: Generate XSD from RELAX NG schema
+        run: trang -O xsd public/schema/thaimusicxml-0.1.rng public/schema/thaimusicxml-0.1.xsd
+
+      - name: Commit regenerated XSD
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: regenerate XSD from RNG schema [skip ci]"
+          file_pattern: public/schema/thaimusicxml-0.1.xsd
 
       # - name: Build
       #   run: pnpm run build
