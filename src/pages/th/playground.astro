@@ -42,6 +42,20 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
         >
       </select>
 
+      <button type="button" class="toolbar-button" id="import-button"
+        >นำเข้า</button
+      >
+      <input
+        type="file"
+        id="import-file-input"
+        accept=".txml,text/xml,application/xml"
+        hidden
+      />
+      <button type="button" class="toolbar-button" id="save-button"
+        >บันทึก</button
+      >
+      <span class="file-status" id="file-status"></span>
+
       <details class="toolbar-settings">
         <summary>ตั้งค่า</summary>
         <div class="settings-panel">
@@ -329,6 +343,28 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     color: var(--sl-color-text-accent);
   }
 
+  .toolbar-button {
+    font: inherit;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.25rem;
+    background: transparent;
+    color: var(--sl-color-text);
+    cursor: pointer;
+  }
+
+  .toolbar-button:hover {
+    border-color: var(--sl-color-text-accent);
+    color: var(--sl-color-text-accent);
+  }
+
+  /* The dot mirrors the unsaved-buffer indicator most code editors use, so
+     it reads at a glance without needing to parse the label text. */
+  .file-status {
+    font-size: 0.85rem;
+    color: var(--sl-color-gray-3, #888);
+  }
+
   .split {
     display: flex;
     flex-direction: row;
@@ -459,6 +495,14 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   const exportPdfButton = document.getElementById(
     "export-pdf",
   ) as HTMLButtonElement;
+  const importButton = document.getElementById(
+    "import-button",
+  ) as HTMLButtonElement;
+  const importFileInput = document.getElementById(
+    "import-file-input",
+  ) as HTMLInputElement;
+  const saveButton = document.getElementById("save-button") as HTMLButtonElement;
+  const fileStatusEl = document.getElementById("file-status")!;
 
   // --- Rendering settings panel ---
   //
@@ -1209,6 +1253,51 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     scheduleRender();
   });
 
+  // --- File lifecycle: dirty tracking, import, save ---
+  //
+  // `fileHandle` is a live FileSystemFileHandle where the File System Access
+  // API is available (Chromium browsers) and the current buffer came from
+  // Import or a prior Save - it is what lets Save write straight back to
+  // that file with no download prompt and no second copy on disk. It is
+  // null after loading a template (nothing on disk to write back to yet) and
+  // on any browser without the API, where every Save is necessarily a fresh
+  // download instead.
+  let fileHandle: any = null;
+  let dirty = false;
+
+  const updateFileStatus = () => {
+    const name = fileHandle?.name;
+    fileStatusEl.textContent = name
+      ? `${dirty ? "● " : ""}${name}`
+      : dirty
+        ? "● มีการแก้ไขที่ยังไม่ได้บันทึก"
+        : "";
+  };
+  const markDirty = () => {
+    dirty = true;
+    updateFileStatus();
+  };
+  const markClean = () => {
+    dirty = false;
+    updateFileStatus();
+  };
+
+  // A close/reload with unsaved changes gets the browser's own confirmation
+  // prompt - `dirty` is exactly "the buffer differs from what Save last
+  // wrote (or what Import/a template last loaded)", so this fires only when
+  // there is genuinely something Save would still have to do.
+  window.addEventListener("beforeunload", (e) => {
+    if (!dirty) return;
+    e.preventDefault();
+    e.returnValue = "";
+  });
+
+  const loadIntoEditor = (text: string) => {
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: text },
+    });
+  };
+
   const view = new EditorView({
     doc: templateSource("example-khaek-borathes.txml"),
     extensions: [
@@ -1217,20 +1306,107 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
       editorTheme,
       syntaxHighlighting(editorHighlight),
       EditorView.updateListener.of((update) => {
-        if (update.docChanged) scheduleRender();
+        if (update.docChanged) {
+          scheduleRender();
+          markDirty();
+        }
       }),
     ],
     parent: editorPane,
   });
 
   templateSelect.addEventListener("change", () => {
-    view.dispatch({
-      changes: {
-        from: 0,
-        to: view.state.doc.length,
-        insert: templateSource(templateSelect.value),
-      },
+    loadIntoEditor(templateSource(templateSelect.value));
+    // A template is a fresh start, not an edit to whatever file was open -
+    // nothing on disk to fall out of sync with yet.
+    fileHandle = null;
+    markClean();
+  });
+
+  // queryPermission()/requestPermission() are asked for at save time, not
+  // right after Import: asking only when a write is actually about to
+  // happen is the documented File System Access pattern, and it means a
+  // read-only visit (import, look, never save) never prompts at all.
+  const canWrite = async (handle: any): Promise<boolean> => {
+    const opts = { mode: "readwrite" };
+    if ((await handle.queryPermission(opts)) === "granted") return true;
+    return (await handle.requestPermission(opts)) === "granted";
+  };
+
+  const saveAs = async (content: string) => {
+    const handle = await (window as any).showSaveFilePicker({
+      suggestedName: `${baseNameFor(content)}.txml`,
+      types: [
+        { description: "ThaiMusicXML", accept: { "application/xml": [".txml"] } },
+      ],
     });
+    const writable = await handle.createWritable();
+    await writable.write(content);
+    await writable.close();
+    fileHandle = handle;
+  };
+
+  saveButton.addEventListener("click", async () => {
+    const content = view.state.doc.toString();
+    try {
+      if (fileHandle) {
+        if (!(await canWrite(fileHandle))) {
+          statusEl.textContent = "ไม่ได้รับสิทธิ์เขียนไฟล์นี้";
+          return;
+        }
+        const writable = await fileHandle.createWritable();
+        await writable.write(content);
+        await writable.close();
+      } else if ("showSaveFilePicker" in window) {
+        await saveAs(content);
+      } else {
+        // No File System Access API at all (Firefox, Safari): the best this
+        // platform can do is a plain download, same mechanism as Export >
+        // TXML - there is no way to avoid a second copy on disk here.
+        const blob = new Blob([content], { type: "application/xml;charset=utf-8" });
+        triggerDownload(blob, `${exportBaseName()}.txml`);
+      }
+      statusEl.textContent = "";
+      markClean();
+    } catch (err) {
+      // The user closing the save picker without choosing anything is not a
+      // failure worth reporting.
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      statusEl.textContent = err instanceof Error ? err.message : String(err);
+    }
+  });
+
+  importButton.addEventListener("click", async () => {
+    if (!("showOpenFilePicker" in window)) {
+      importFileInput.click();
+      return;
+    }
+    try {
+      const [handle] = await (window as any).showOpenFilePicker({
+        types: [
+          { description: "ThaiMusicXML", accept: { "application/xml": [".txml"] } },
+        ],
+      });
+      const text = await (await handle.getFile()).text();
+      loadIntoEditor(text);
+      fileHandle = handle;
+      markClean();
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      statusEl.textContent = err instanceof Error ? err.message : String(err);
+    }
+  });
+
+  // The <input type="file"> fallback for browsers with no File System
+  // Access API: it can read the picked file but hands back no writable
+  // handle, so Save after this always falls through to a plain download.
+  importFileInput.addEventListener("change", async () => {
+    const file = importFileInput.files?.[0];
+    importFileInput.value = "";
+    if (!file) return;
+    loadIntoEditor(await file.text());
+    fileHandle = null;
+    markClean();
   });
 
   // --- Export: TXML, SVG, PNG, PDF ---
@@ -1262,9 +1438,13 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   // platform's filesystem accepts, since a title is free text and Thai
   // scores' titles are not filename-shaped by nature. Falls back to a plain
   // name where the title is empty or entirely made of such characters.
-  const exportBaseName = (): string => {
+  // `baseNameFor` takes the source directly, for Save (which should reflect
+  // whatever the editor holds right now, not the last successful render);
+  // `exportBaseName` is that applied to Export's own "last good render"
+  // source.
+  const baseNameFor = (source: string): string => {
     try {
-      const title = parse(lastSource)?.title;
+      const title = parse(source)?.title;
       const safe = String(title ?? "")
         .replace(/[/\\:*?"<>|]/g, " ")
         .trim();
@@ -1273,6 +1453,7 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
       return "score";
     }
   };
+  const exportBaseName = (): string => baseNameFor(lastSource);
 
   const triggerDownload = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
