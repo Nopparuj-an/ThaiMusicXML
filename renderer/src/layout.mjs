@@ -43,9 +43,6 @@ const DEGREE_BY_SPELLING = new Map(
   ]),
 );
 
-// The five ชั้น levels <chan>'s Values table names, for a generated heading.
-const CHAN_NAMES = { "0.5": "ครึ่งชั้น", 1: "ชั้นเดียว", 2: "สองชั้น", 3: "สามชั้น", 4: "สี่ชั้น" };
-
 // Lexicographic order over a note's position indices - line, then measure,
 // beat, slot - matching the document order resolveSpans() walks a part's
 // lines in. Used to test whether a position falls inside a resolved span.
@@ -413,44 +410,17 @@ export function layout(score, options = {}) {
     y += height;
   };
 
-  // "A renderer may offer to generate a heading from name and the ชั้น in
-  // force for a score whose annotations are sparse" - off by default, and
-  // only where the gap ahead of a section is genuinely empty. An authored
-  // annotation counts as already serving that section's heading only where
-  // it is the thing immediately ahead of the section - skipping back over a
-  // <br> (a blank line inside the same heading block) but stopping, unheaded,
-  // at anything else. A <direction> does not print, but it is not a blank
-  // line either: walking straight through it used to let some earlier,
-  // unrelated annotation (a hand-pattern name in the title band, say) count
-  // as the heading for a section several items later, suppressing the
-  // generated one for the wrong reason. "keep it off by default, or a score
-  // with headings already annotated ends up with two" is applied gap by gap
-  // rather than to the whole score at once.
+  // "A renderer may offer to print name as a heading for a score whose
+  // annotations are sparse" - off by default, since there is no way to tell
+  // an authored heading from an unrelated annotation, so turning this on
+  // for a score that already writes its own headings prints both.
   const structure = (() => {
-    if (!s.generateHeadings) return score.structure;
-
-    const hasHeading = (index) => {
-      for (let j = index - 1; j >= 0; j--) {
-        const kind = score.structure[j].kind;
-        if (kind === "annotation") return true;
-        if (kind === "br") continue;
-        return false;
-      }
-      return false;
-    };
+    if (!s.generateSectionName) return score.structure;
 
     const out = [];
-    let chan = null;
-    score.structure.forEach((item, index) => {
-      if (item.kind === "direction" && item.chan) chan = item.chan;
-      if (item.kind === "section" && item.name && !hasHeading(index)) {
-        const chanName = CHAN_NAMES[chan];
-        out.push({
-          kind: "annotation",
-          left: chanName ? `${chanName} ${item.name}` : item.name,
-          center: null,
-          right: null,
-        });
+    score.structure.forEach((item) => {
+      if (item.kind === "section" && item.name) {
+        out.push({ kind: "annotation", left: item.name, center: null, right: null });
       }
       out.push(item);
     });

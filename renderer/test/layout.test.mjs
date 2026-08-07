@@ -931,12 +931,11 @@ test("showLabels: false hides a solo score's top-right instrument name too, not 
 
 // Generated headings and header extras: both off by default, opt-in only.
 
-test("generateHeadings is off by default, so a bare section prints no heading at all", () => {
+test("generateSectionName is off by default, so a bare section prints no heading at all", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
 <thai-score xmlns="${NS}" version="0.1">
   <header><title>ทดสอบ</title></header>
   <structure>
-    <direction><chan value="3"/></direction>
     <section id="s1" name="ท่อน 1"/>
   </structure>
   <ensemble><part id="P1"/></ensemble>
@@ -950,12 +949,11 @@ test("generateHeadings is off by default, so a bare section prints no heading at
   assert.ok(!textsOn(pages[0]).some((t) => t.includes("ท่อน 1")), "nothing generates the heading unasked");
 });
 
-test("a generated heading combines the ชั้น in force with the section's name, but only where nothing was already written", () => {
+test("generateSectionName prints a section's plain name for every named section, even one that already has an authored annotation", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
 <thai-score xmlns="${NS}" version="0.1">
   <header><title>ทดสอบ</title></header>
   <structure>
-    <direction><chan value="3"/></direction>
     <section id="s1" name="ท่อน 1"/>
     <annotation>เขียนเอง</annotation>
     <section id="s2" name="ท่อน 2"/>
@@ -970,26 +968,24 @@ test("a generated heading combines the ชั้น in force with the section's 
     </section-ref>
   </part-data>
 </thai-score>`;
-  const { pages } = layout(parse(doc), { generateHeadings: true });
+  const { pages } = layout(parse(doc), { generateSectionName: true });
   const texts = textsOn(pages[0]);
 
-  assert.ok(texts.includes("สามชั้น ท่อน 1"), "s1's empty gap gets a generated heading naming the ชั้น in force");
+  assert.ok(texts.includes("ท่อน 1"), "s1's empty gap gets its plain name printed, with no ชั้น prefix");
   assert.ok(texts.includes("เขียนเอง"), "s2's authored annotation still prints");
-  assert.ok(!texts.includes("สามชั้น ท่อน 2"), "s2 already has a heading, so nothing is generated for it");
+  assert.ok(texts.includes("ท่อน 2"), "s2 gets its own name printed too - there is no detection of an existing heading");
 });
 
-test("an unrelated annotation across a <direction> does not count as a section's heading", () => {
-  // Regression: hasHeading() used to walk straight through a <direction> -
-  // which prints nothing of its own - looking further back for the nearest
-  // annotation, so an unrelated one further up the header (a hand-pattern
-  // name, here) could be mistaken for this section's heading and suppress
-  // the generated one, even with an empty gap directly ahead of the section.
+test("an unrelated annotation sitting directly before a section does not suppress that section's generated name", () => {
+  // Regression: hasHeading() used to treat any annotation immediately ahead
+  // of a section as though it were that section's own heading, suppressing
+  // the generated name even when the annotation was unrelated. Detection is
+  // gone now, so the name always prints alongside whatever else is there.
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
 <thai-score xmlns="${NS}" version="0.1">
   <header><title>ทดสอบ</title></header>
   <structure>
     <annotation>หน้าทับปรบไก่</annotation>
-    <direction><chan value="1"/></direction>
     <section id="s1" name="ท่อน 1"/>
   </structure>
   <ensemble><part id="P1"/></ensemble>
@@ -999,11 +995,11 @@ test("an unrelated annotation across a <direction> does not count as a section's
     </section-ref>
   </part-data>
 </thai-score>`;
-  const { pages } = layout(parse(doc), { generateHeadings: true });
+  const { pages } = layout(parse(doc), { generateSectionName: true });
   const texts = textsOn(pages[0]);
 
   assert.ok(texts.includes("หน้าทับปรบไก่"), "the unrelated annotation still prints where it was written");
-  assert.ok(texts.includes("ชั้นเดียว ท่อน 1"), "s1 still gets its own generated heading");
+  assert.ok(texts.includes("ท่อน 1"), "s1 still gets its own generated name");
 });
 
 test("showHeaderExtras is off by default, and prints tuning, bpm, and license but never nathap when on", () => {

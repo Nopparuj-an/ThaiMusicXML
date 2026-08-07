@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Session 3 test fixture: octaves beyond the Thai spellings, and the two
      opt-in settings nothing implemented before this session
-     (generateHeadings, showHeaderExtras). Rendered once with defaults and
+     (generateSectionName, showHeaderExtras). Rendered once with defaults and
      once with both settings on, for inspection. Not linked from any doc
      page, the same way khaek-borathes-test.txml is not. -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">

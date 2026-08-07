@@ -21,7 +21,7 @@ None of these lives in the document. There is nowhere in a ThaiMusicXML file to 
 | How thoroughly rests print | A hyphen for every rest in every notated part, blank in a lyric row | [Inside a measure](#inside-a-measure) |
 | Lyric row type size | Smaller than the notated rows | [Lyric rows](#lyric-rows) |
 | Instrument-name labels | Top-right corner on a solo score; a deduplicated label column on an ensemble score | [Instrument names](#instrument-names) |
-| Headings generated from `name` and ชั้น | Off | [Section headings](#section-headings) |
+| `name` printed as a section heading | Off | [Section headings](#section-headings) |
 | `<tuning>`, `<license>`, and `<bpm>` on the page | Off | [The title band](#the-title-band) |
 | Numerals in labels the renderer writes itself | Arabic | [Section headings](#section-headings) |
 | Dimming and muting a cued passage | The renderer's own preference, overridden per span by `dim` and `mute` | [Cued passages](#cued-passages) |
@@ -154,7 +154,7 @@ A [`<section>`](/en/v0_1/reference/elements/section/) does not print a heading o
 
 The heading a reader sees comes from an [`<annotation>`](/en/v0_1/reference/elements/annotation/) the arranger put in `<structure>` before the section. `สามชั้น ท่อน ๑` is typed, not assembled from `name` and `<chan>`. Leaving it to the arranger keeps the wording theirs: which sections get a heading at all, whether the ชั้น is named, and how, are editorial decisions that vary between scores.
 
-A renderer may offer to generate a heading from `name` and the ชั้น in force for a score whose annotations are sparse. Keep it off by default, or a score with headings already annotated ends up with two.
+A renderer may offer to print `name` itself as a heading for a score whose annotations are sparse. Keep it off by default: the renderer has no way to tell an authored heading from an unrelated annotation, so turning this on for a score that already writes its own headings prints both.
 
 Numerals follow from the same split. Almost everything printed is text the arranger typed, reproduced as written, which is why `ท่อน ๑` keeps its Thai numeral without any rule about it. The only number a renderer generates on its own is the [repeat bracket](#repeat-brackets) count, and that defaults to Arabic.
 

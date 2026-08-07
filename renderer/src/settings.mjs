@@ -146,11 +146,11 @@ export const defaults = {
   titleGap: 26,
   bandGap: 18,
 
-  // "A renderer may offer to generate a heading from name and the ชั้น in
-  // force... Keep it off by default, or a score with headings already
-  // annotated ends up with two." Off, so a score that already writes its own
-  // headings never gets a second one.
-  generateHeadings: false,
+  // "A renderer may offer to print name as a heading for a score whose
+  // annotations are sparse." Off by default: it prints unconditionally, with
+  // no way to tell an authored heading from an unrelated annotation, so a
+  // score that already writes its own headings would get doubled text.
+  generateSectionName: false,
 
   // "A renderer may offer to show them, but no printed convention places
   // them" - <tuning> and <license> from <header>, and <bpm> from whichever
