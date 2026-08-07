@@ -5,13 +5,15 @@ description: The RELAX NG schema for ThaiMusicXML v0.1 and the conformance corpu
 
 import CorpusTable from "@/components/CorpusTable.astro";
 
-Two artifacts ship alongside this specification: a schema a validator can read, and a corpus of files to check an implementation against.
+Three artifacts ship alongside this specification: a schema a validator can read, the same schema in a second format, and a corpus of files to check an implementation against.
 
 <a href="/schema/thaimusicxml-0.1.rng"><code>/schema/thaimusicxml-0.1.rng</code></a> is the schema. It is RELAX NG in XML syntax, so `xmllint` and anything else built on libxml2 reads it without conversion:
 
 ```sh
 xmllint --noout --relaxng thaimusicxml-0.1.rng score.txml
 ```
+
+<a href="/schema/thaimusicxml-0.1.xsd"><code>/schema/thaimusicxml-0.1.xsd</code></a> is the same schema translated to W3C XML Schema, for tools that read XSD and not RELAX NG. It's generated from the `.rng` file by [Trang](https://relaxng.org/jclark/trang.html) on every push; the RELAX NG file is the one actually hand-edited, so treat the XSD as downstream of it.
 
 The corpus lives under `/corpus/`, split into files that must be accepted and files that must be rejected. Both are plain static files. Download them, point your own validator at them, and see whether it agrees.
 

@@ -120,18 +120,10 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   /* <StarlightPage> always renders its content through <MarkdownContent>
      (Page.astro), even for a fully custom page like this one - there is no
      opt-out. That wraps everything in .sl-markdown-content, whose prose
-     spacing rules reach straight into CodeMirror's own internal DOM: every
-     .cm-line and .cm-gutterElement is a plain <div>, so each one picks up a
-     stray margin-top from markdown.css's lobotomized-owl "* + *" selector.
+     spacing rules would otherwise reach into the editor's own internal DOM.
      Starlight's own escape hatch for embedded UI is the .not-content class
      on the wrapper (every one of those rules excludes ":where(.not-content
-     *)"), which is what the root carries - see the markup above.
-
-     Do NOT "fix" this instead with a blanket `margin-top: 0 !important`
-     under this root: CodeMirror positions the first gutter element of the
-     rendered viewport with an inline margin-top (GutterElement.update in
-     @codemirror/view), so an !important reset wins over it and the line
-     numbers slide out of sync with their lines on every scroll. */
+     *)"), which is what the root carries - see the markup above. */
 
   /* The side-by-side split has to collapse on the pane's own width, not the
      viewport's: Starlight drops its 18rem sidebar somewhere around 800px, so
@@ -150,50 +142,9 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     container-name: playground;
   }
 
-  /* The editor's palette. Starlight's own --sl-color-{green,purple,...} hues
-     are tuned as prose accents - 82% saturation against a page that shows one
-     at a time - and a whole screen of markup painted in them reads as neon.
-     These are the same family (hue 224 greys, matched to the site chrome) at
-     saturations that stay legible for a solid wall of text. Every syntax
-     colour clears 4.5:1 against its own background, and stays above 4:1 over
-     the active-line tint; the line numbers sit a little under that on
-     purpose, so they stay secondary to the code they label.
-
-     Dark is the default set and [data-theme='light'] overrides it, mirroring
-     how Starlight's own props.css is layered, so the editor follows the site's
-     theme toggle with no JS and no flash on load. Every value is consumed
-     through var() by EditorView.theme and HighlightStyle down in the script. */
-  .playground-root {
-    --cm-punct: hsl(224, 12%, 65%);
-    --cm-tag: hsl(205, 70%, 72%);
-    --cm-attr: hsl(280, 55%, 80%);
-    --cm-value: hsl(140, 45%, 70%);
-    --cm-comment: hsl(224, 10%, 60%);
-    --cm-meta: hsl(38, 70%, 70%);
-    --cm-invalid: hsl(355, 75%, 72%);
-
-    --cm-gutter-text: hsl(224, 10%, 55%);
-    --cm-active-line: hsl(224, 14%, 21%);
-    --cm-selection: hsl(224, 40%, 36%);
-    --cm-match: hsl(224, 20%, 32%);
-    --cm-cursor: hsl(205, 85%, 72%);
-  }
-
-  :global([data-theme="light"]) .playground-root {
-    --cm-punct: hsl(224, 10%, 38%);
-    --cm-tag: hsl(211, 70%, 34%);
-    --cm-attr: hsl(283, 45%, 40%);
-    --cm-value: hsl(152, 62%, 25%);
-    --cm-comment: hsl(224, 9%, 40%);
-    --cm-meta: hsl(28, 70%, 32%);
-    --cm-invalid: hsl(355, 72%, 40%);
-
-    --cm-gutter-text: hsl(224, 8%, 50%);
-    --cm-active-line: hsl(224, 25%, 93%);
-    --cm-selection: hsl(224, 70%, 85%);
-    --cm-match: hsl(224, 45%, 84%);
-    --cm-cursor: hsl(211, 80%, 42%);
-  }
+  /* The editor's syntax palette lives in src/playground/monaco-theme.ts, not
+     here - Monaco's theme API takes concrete colors, not CSS custom
+     properties, so there is nothing for var() to consume on this side. */
 
   .intro {
     margin: 0;
@@ -378,8 +329,12 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     overflow: auto;
   }
 
-  .editor-pane :global(.cm-editor) {
-    height: 100%;
+  /* Monaco sizes itself from the container's own box (automaticLayout: true
+     in the script re-measures it on every resize) rather than needing a CSS
+     rule the way CodeMirror did - it just must not get a second scrollbar
+     from the .pane rule above fighting its own internal one. */
+  .editor-pane {
+    overflow: hidden;
   }
 
   .preview-pane {
@@ -439,15 +394,38 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 </style>
 
 <script>
-  import { EditorView, basicSetup } from "codemirror";
-  import { xml } from "@codemirror/lang-xml";
-  import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
-  import { tags as t } from "@lezer/highlight";
+  // editor.api.js alone only defines the API surface (editor.create,
+  // languages.register*) - the built-in features that surface (suggest
+  // widget, hover widget, find, bracket matching...) are separate modules
+  // registered as a side effect of importing editor.all.js, which
+  // edcore.main.js re-exports editor.api.js's namespace alongside.
+  import * as monaco from "monaco-editor/esm/vs/editor/edcore.main.js";
+  import "monaco-editor/esm/vs/basic-languages/xml/xml.contribution.js";
+  import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+  import { buildSchemaModel } from "../../playground/xsd-schema";
+  import {
+    registerXmlCompletion,
+    registerXmlHover,
+  } from "../../playground/monaco-xml-schema";
+  import { initMonacoTheme } from "../../playground/monaco-theme";
+  import schemaSource from "../../playground/thaimusicxml-0.1.xsd?raw";
   import { parse } from "../../../renderer/src/parse.mjs";
   import { layout } from "../../../renderer/src/layout.mjs";
   import { draw } from "../../../renderer/src/draw.mjs";
   import { ready } from "../../../renderer/src/ready.mjs";
   import { defaults } from "../../../renderer/src/settings.mjs";
+
+  // The XML language has no dedicated language-service worker (no json/ts-
+  // style smarts to load) - this is only for the generic editor worker Monaco
+  // itself uses for things like diffing, so one getWorker covering every
+  // label is enough.
+  (self as any).MonacoEnvironment = {
+    getWorker: () => new EditorWorker(),
+  };
+
+  const schema = buildSchemaModel(schemaSource, "thai-score");
+  registerXmlCompletion(monaco, schema);
+  registerXmlHover(monaco, schema);
 
   // Only the examples the docs themselves link to (see renderer/HANDOVER.md)
   // - the "-test.txml" fixtures are internal stress tests, not something to
@@ -1110,107 +1088,6 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     grid.appendChild(el);
   }
 
-  // Two bugs in one theme: the site's own `body { line-height: 1.75 }`
-  // (reset.css, meant for prose) inherits into .cm-content and stretches
-  // every code line; and CodeMirror's default chrome is a plain light theme
-  // with no idea the site has a dark mode, so `html { color-scheme: dark }`
-  // (also reset.css) makes the browser's own dark-mode heuristics repaint
-  // whatever CodeMirror left unstyled, clashing with syntax colors picked for
-  // a white background. Both the chrome below and the highlight style after it
-  // are painted from CSS custom properties (--sl-* where a site token is the
-  // right answer, --cm-* from this page's own palette otherwise), so one theme
-  // object covers light and dark and the toggle costs no JS - see the palette
-  // block in this page's <style>.
-  const editorTheme = EditorView.theme({
-    "&": {
-      height: "100%",
-      fontSize: "13px",
-      backgroundColor: "var(--sl-color-bg-nav)",
-      color: "var(--sl-color-text)",
-    },
-    ".cm-scroller": { fontFamily: "var(--__sl-font-mono, monospace)" },
-    ".cm-content": {
-      lineHeight: "1.4",
-      caretColor: "var(--cm-cursor)",
-    },
-    ".cm-gutters": {
-      backgroundColor: "var(--sl-color-bg-nav)",
-      color: "var(--cm-gutter-text)",
-      border: "none",
-    },
-    ".cm-gutterElement": { lineHeight: "1.4" },
-    // Code folding is not something this playground needs, and its chevron
-    // column only adds noise next to the line numbers.
-    ".cm-foldGutter": { display: "none" },
-    ".cm-activeLine": { backgroundColor: "var(--cm-active-line)" },
-    ".cm-activeLineGutter": {
-      backgroundColor: "var(--cm-active-line)",
-      color: "var(--sl-color-text)",
-    },
-    // The selection has to stay visible *on top of* the active-line tint, so
-    // these two can't be the same token the way they were.
-    ".cm-selectionBackground, &.cm-focused .cm-selectionBackground": {
-      backgroundColor: "var(--cm-selection)",
-    },
-    "&.cm-focused .cm-matchingBracket, .cm-matchingBracket": {
-      backgroundColor: "var(--cm-match)",
-      outline: "none",
-    },
-    ".cm-selectionMatch": { backgroundColor: "var(--cm-match)" },
-    ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--cm-cursor)" },
-    // basicSetup also brings the search panel and the completion tooltip,
-    // both of which default to light-only chrome that has to be reclaimed the
-    // same way as the editor's own.
-    ".cm-panels": {
-      backgroundColor: "var(--sl-color-bg-nav)",
-      color: "var(--sl-color-text)",
-    },
-    ".cm-panels.cm-panels-top": {
-      borderBottomColor: "var(--sl-color-hairline)",
-    },
-    ".cm-panels.cm-panels-bottom": {
-      borderTopColor: "var(--sl-color-hairline)",
-    },
-    ".cm-panel input, .cm-panel button": { font: "inherit" },
-    ".cm-tooltip": {
-      backgroundColor: "var(--sl-color-bg-nav)",
-      border: "1px solid var(--sl-color-hairline)",
-      color: "var(--sl-color-text)",
-    },
-    ".cm-tooltip-autocomplete > ul > li[aria-selected]": {
-      backgroundColor: "var(--cm-selection)",
-      color: "var(--sl-color-white)",
-    },
-    ".cm-searchMatch": { backgroundColor: "var(--cm-match)" },
-    ".cm-searchMatch.cm-searchMatch-selected": {
-      backgroundColor: "var(--cm-selection)",
-    },
-  });
-
-  // @lezer/xml tags every token this style needs (see xmlHighlighting in
-  // @lezer/xml): angle brackets and `=` are punctuation, so they recede;
-  // tag names carry the structure and get the strongest colour; attribute
-  // names and their values stay distinct from each other and from the tags.
-  // basicSetup registers CodeMirror's stock highlight style as a *fallback*
-  // only (`syntaxHighlighting(defaultHighlightStyle, { fallback: true })`),
-  // so registering any real one here replaces it outright rather than
-  // layering two sets of colours on the same tokens.
-  const editorHighlight = HighlightStyle.define([
-    { tag: t.tagName, color: "var(--cm-tag)" },
-    { tag: [t.angleBracket, t.definitionOperator], color: "var(--cm-punct)" },
-    { tag: t.attributeName, color: "var(--cm-attr)" },
-    { tag: [t.attributeValue, t.special(t.string)], color: "var(--cm-value)" },
-    {
-      tag: [t.processingInstruction, t.documentMeta, t.character],
-      color: "var(--cm-meta)",
-    },
-    { tag: t.blockComment, color: "var(--cm-comment)", fontStyle: "italic" },
-    { tag: t.content, color: "var(--sl-color-text)" },
-    // Last, so that a mismatched close tag - which @lezer/xml tags as both
-    // tagName and invalid - lands on this rule rather than the tag colour.
-    { tag: t.invalid, color: "var(--cm-invalid)" },
-  ]);
-
   let renderTimer: ReturnType<typeof setTimeout> | undefined;
   const scheduleRender = () => {
     clearTimeout(renderTimer);
@@ -1284,26 +1161,39 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   });
 
   const loadIntoEditor = (text: string) => {
-    view.dispatch({
-      changes: { from: 0, to: view.state.doc.length, insert: text },
-    });
+    const model = editor.getModel()!;
+    editor.executeEdits("load-template", [
+      { range: model.getFullModelRange(), text },
+    ]);
   };
 
-  const view = new EditorView({
-    doc: templateSource("example-khaek-borathes.txml"),
-    extensions: [
-      basicSetup,
-      xml(),
-      editorTheme,
-      syntaxHighlighting(editorHighlight),
-      EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
-          scheduleRender();
-          markDirty();
-        }
-      }),
-    ],
-    parent: editorPane,
+  const monoFont =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--__sl-font-mono")
+      .trim() || "monospace";
+
+  const editor = monaco.editor.create(editorPane, {
+    value: templateSource("example-khaek-borathes.txml"),
+    language: "xml",
+    automaticLayout: true,
+    minimap: { enabled: false },
+    // Code folding is not something this playground needs, and its chevron
+    // column only adds noise next to the line numbers.
+    folding: false,
+    fontSize: 13,
+    fontFamily: monoFont,
+    scrollBeyondLastLine: false,
+    // The suggest/hover widgets default to clipping at the editor's own
+    // box - this pane's overflow: hidden (see the stylesheet) would clip
+    // them the moment a suggestion list runs past the visible bottom edge,
+    // so they attach to the document instead.
+    fixedOverflowWidgets: true,
+  });
+  initMonacoTheme(monaco);
+
+  editor.onDidChangeModelContent(() => {
+    scheduleRender();
+    markDirty();
   });
 
   templateSelect.addEventListener("change", () => {
@@ -1338,7 +1228,7 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   };
 
   saveButton.addEventListener("click", async () => {
-    const content = view.state.doc.toString();
+    const content = editor.getValue();
     try {
       if (fileHandle) {
         if (!(await canWrite(fileHandle))) {
@@ -1550,7 +1440,7 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   });
 
   function renderPreview() {
-    const source = view.state.doc.toString();
+    const source = editor.getValue();
     const options = buildOptions(overrides);
     try {
       const laidOut = layout(parse(source), options);
