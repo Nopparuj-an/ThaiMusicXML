@@ -10,8 +10,18 @@
 // not a value derived from anything.
 
 export const defaults = {
-  // A4 portrait in points. OPEN.
-  page: { width: 595.28, height: 841.89, margin: 42 },
+  // A4 portrait in points. OPEN. marginSide is the left and right margin
+  // alike (the grid always centers between them); marginTop and marginBottom
+  // are independent of it and of each other, since a running header or a
+  // deep footer may call for more room on one edge than the sides need.
+  //
+  // `infinite`: skip pagination altogether. Every page break in "Score
+  // layout" exists to fit a fixed sheet of paper; a renderer with no such
+  // sheet - a web preview, an arbitrarily tall export - has no reason to
+  // insert one. `height` above is then a starting value only: the actual
+  // page comes back however tall the content needs, still `width` wide with
+  // the same margins on every edge, so no measure ever moves for it.
+  page: { width: 595.28, height: 841.89, marginSide: 42, marginTop: 42, marginBottom: 42, infinite: false },
 
   // Fixed by "The measure grid": the cell width is the usable width divided by
   // eight whatever a line actually holds.

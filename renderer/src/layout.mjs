@@ -224,8 +224,8 @@ export function layout(score, options = {}) {
   // out and may be several lines, and pages, behind by then.
   const pushTo = (pageIndex, el) => pages[pageIndex].push(el);
 
-  const left = s.page.margin;
-  const right = s.page.width - s.page.margin;
+  const left = s.page.marginSide;
+  const right = s.page.width - s.page.marginSide;
   const cellWidth = (right - left) / s.measuresPerRow;
 
   // A part is drawn only where it actually has music, so a part that omits a
@@ -269,7 +269,7 @@ export function layout(score, options = {}) {
   });
   for (const name of ["row", "instrument"]) gap[name] ??= 0;
 
-  let y = s.page.margin + s.titleSize;
+  let y = s.page.marginTop + s.titleSize;
 
   // --- Title band ---------------------------------------------------------
   // The title centers at the top. On a solo score the instrument name prints
@@ -328,8 +328,13 @@ export function layout(score, options = {}) {
   // guard is what stops a block taller than a whole page from looping forever:
   // once a break has already put it at the top of a fresh page, it is placed
   // there even if it still overflows, because there is nowhere else to put it.
-  const pageTop = s.page.margin;
-  const pageBottom = s.page.height - s.page.margin;
+  //
+  // `page.infinite` drops the bottom edge entirely rather than raising it: a
+  // pageBottom of Infinity means `ensureRoom`'s comparison never holds, so
+  // newPage() is never called and everything lands on the one page, however
+  // tall that ends up being - read off `y` once the score is done, below.
+  const pageTop = s.page.marginTop;
+  const pageBottom = s.page.infinite ? Infinity : s.page.height - s.page.marginBottom;
   const newPage = () => {
     page += 1;
     pages.push([]);
@@ -1180,7 +1185,12 @@ export function layout(score, options = {}) {
 
   return {
     width: s.page.width,
-    height: s.page.height,
+    // In infinite mode there is exactly one page (pageBottom is Infinity, so
+    // newPage() is never reached) and its height is read off wherever the
+    // content actually finished, plus the same bottom margin every other
+    // edge gets - not the fixed `s.page.height`, which was never more than a
+    // starting value once pagination itself is off.
+    height: s.page.infinite ? y + s.page.marginBottom : s.page.height,
     cellWidth,
     pages: pages.map((elements) => ({ elements })),
   };

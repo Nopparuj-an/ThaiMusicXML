@@ -320,7 +320,7 @@ const score = (structureXml) => `<?xml version="1.0" encoding="UTF-8"?>
   </part-data>
 </thai-score>`;
 
-const tinyPage = { page: { width: 595.28, height: 110, margin: 20 } };
+const tinyPage = { page: { width: 595.28, height: 110, marginSide: 20, marginTop: 20, marginBottom: 20 } };
 
 const textsOn = (page) =>
   page.elements.filter((el) => el.kind === "text").map((el) => el.text);
@@ -329,6 +329,25 @@ test("a score that fits on one page produces one page", () => {
   const doc = score('<section id="s1" name="s1"/>');
   const { pages } = layout(parse(doc), tinyPage);
   assert.equal(pages.length, 1);
+});
+
+test("page.infinite skips pagination: content that would overflow a fixed page stays on one, sized to fit it", () => {
+  const doc = score('<section id="s1" name="s1"/><section id="s2" name="s2"/>');
+  const infinitePage = { page: { ...tinyPage.page, infinite: true } };
+
+  const paginated = layout(parse(doc), tinyPage);
+  assert.equal(paginated.pages.length, 2, "sanity check: this content does overflow the fixed tiny page");
+
+  const { pages, height } = layout(parse(doc), infinitePage);
+  assert.equal(pages.length, 1, "infinite mode never breaks to a second page");
+  assert.ok(textsOn(pages[0]).includes("ร"), "section 2's note still prints, on the same page");
+  assert.ok(
+    height > infinitePage.page.height,
+    "the returned height grows past the nominal starting value to fit the content",
+  );
+
+  const bottom = Math.max(...pages[0].elements.map((el) => (el.kind === "line" ? Math.max(el.y1, el.y2) : el.y)));
+  near(height, bottom + infinitePage.page.marginBottom, "the page ends exactly one bottom margin past the content");
 });
 
 test("a line too tall for what remains moves whole to the next page", () => {
@@ -340,11 +359,29 @@ test("a line too tall for what remains moves whole to the next page", () => {
   assert.ok(textsOn(pages[1]).includes("ร"), "it is on page 2 instead");
 
   // Nothing on the first page was cut by the bottom margin.
-  const bottom = tinyPage.page.height - tinyPage.page.margin;
+  const bottom = tinyPage.page.height - tinyPage.page.marginBottom;
   for (const el of pages[0].elements) {
     const y = el.kind === "line" ? Math.max(el.y1, el.y2) : el.y;
     assert.ok(y <= bottom + 1e-9, `an element at y=${y} sits past the bottom margin`);
   }
+});
+
+test("side, top, and bottom margins are independent of one another", () => {
+  const doc = score('<section id="s1" name="s1"/>');
+
+  const base = layout(parse(doc), { page: { ...defaults.page, marginSide: 40, marginTop: 40, marginBottom: 40 } });
+  const wideSide = layout(parse(doc), { page: { ...defaults.page, marginSide: 80, marginTop: 40, marginBottom: 40 } });
+  const tallTop = layout(parse(doc), { page: { ...defaults.page, marginSide: 40, marginTop: 90, marginBottom: 40 } });
+
+  const gridLeft = (laidOut) =>
+    Math.min(...laidOut.pages[0].elements.filter((el) => el.kind === "line").map((el) => Math.min(el.x1, el.x2)));
+  const titleY = (laidOut) => laidOut.pages[0].elements.find((el) => el.role === "title").y;
+
+  assert.ok(gridLeft(wideSide) > gridLeft(base), "widening the side margin alone pushes the grid in");
+  assert.equal(titleY(wideSide), titleY(base), "...without moving the title, which only the top margin controls");
+
+  assert.ok(titleY(tallTop) > titleY(base), "raising the top margin alone pushes the title down");
+  assert.equal(gridLeft(tallTop), gridLeft(base), "...without moving the grid left edge, which the side margin controls");
 });
 
 test("a heading annotation moves with the grid it introduces", () => {
@@ -397,7 +434,7 @@ test("a line-repeat brackets its range and labels it, unless times is 1", () => 
 
   assert.deepEqual(labels.sort(), ["3 ครั้ง", "ซ้ำ"], "times=1 draws no bracket at all");
 
-  const gridRight = defaults.page.margin + (defaults.page.width - 2 * defaults.page.margin) / 8;
+  const gridRight = defaults.page.marginSide + (defaults.page.width - 2 * defaults.page.marginSide) / 8;
   for (const el of byRole(pages[0], "repeat-label")) {
     assert.ok(el.x > gridRight, "the bracket sits right of the grid, not inside it");
   }
@@ -791,7 +828,7 @@ test("a lyric measure not matching the beat count centers as one group, and a ly
 
   assert.deepEqual(syllables.map((s) => s.text), ["x", "z"], "the rest contributes no hyphen, just a gap");
 
-  const left = defaults.page.margin;
+  const left = defaults.page.marginSide;
   const cellWidth = (defaults.page.width - 2 * left) / 8;
   const expectedFirst = columnX(1, 3, left, cellWidth, defaults.spread);
   const expectedLast = columnX(3, 3, left, cellWidth, defaults.spread);
@@ -862,7 +899,7 @@ test("a label reprints on the first line of a fresh page even where the lineup h
     </section-ref>
   </part-data>
 </thai-score>`;
-  const { pages } = layout(parse(doc), { page: { width: 595.28, height: 170, margin: 20 } });
+  const { pages } = layout(parse(doc), { page: { width: 595.28, height: 170, marginSide: 20, marginTop: 20, marginBottom: 20 } });
 
   assert.equal(pages.length, 2, "the two-row second line forced a page break");
   assert.equal(byRole(pages[0], "label").length, 2, "both labels print on the first page");
