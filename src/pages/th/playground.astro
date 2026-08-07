@@ -10,7 +10,13 @@
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 ---
 
-<StarlightPage frontmatter={{ title: "สนามทดลอง", tableOfContents: false }}>
+<StarlightPage
+  frontmatter={{
+    title: "สนามทดลอง",
+    tableOfContents: false,
+    template: "splash",
+  }}
+>
   <div class="playground-root not-content">
     <p class="intro">
       แก้ไข ThaiMusicXML ทางด้านซ้าย แล้วดูโน้ตที่แสดงผลทางด้านขวา
@@ -534,7 +540,13 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
       label: "สีหรี่",
       encode: (value) =>
         typeof value === "string" && value.length === 4
-          ? value[0] + value[1] + value[1] + value[2] + value[2] + value[3] + value[3]
+          ? value[0] +
+            value[1] +
+            value[1] +
+            value[2] +
+            value[2] +
+            value[3] +
+            value[3]
           : String(value),
     },
     {
@@ -838,7 +850,9 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   ];
 
   function getPath(obj: any, path: string): unknown {
-    return path.split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
+    return path
+      .split(".")
+      .reduce((o, k) => (o == null ? undefined : o[k]), obj);
   }
 
   function setPath(obj: any, path: string, value: unknown): void {
@@ -869,7 +883,8 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 
   function loadOverrides(): Record<string, unknown> {
     const overrides: Record<string, unknown> = {};
-    for (const field of FIELDS) overrides[field.path] = getPath(defaults, field.path);
+    for (const field of FIELDS)
+      overrides[field.path] = getPath(defaults, field.path);
 
     let saved: unknown;
     try {
@@ -882,7 +897,9 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
       for (const field of FIELDS) {
         const value = (saved as Record<string, unknown>)[field.path];
         if (value === undefined) continue;
-        const ok = field.validate ? field.validate(value) : defaultValidate(field, value);
+        const ok = field.validate
+          ? field.validate(value)
+          : defaultValidate(field, value);
         if (ok) overrides[field.path] = value;
       }
     }
@@ -898,23 +915,33 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     }
   }
 
-  function buildOptions(overrides: Record<string, unknown>): Record<string, unknown> {
+  function buildOptions(
+    overrides: Record<string, unknown>,
+  ): Record<string, unknown> {
     // defaults is plain JSON-safe data, so a round-trip is a safe deep clone
     // - layout()/draw() each shallow-merge {...defaults, ...options}, so a
     // partial `page` object or `gapScale` array here would blank out
     // whichever sibling fields the user didn't just touch.
     const options = JSON.parse(JSON.stringify(defaults));
-    for (const field of FIELDS) setPath(options, field.path, overrides[field.path]);
+    for (const field of FIELDS)
+      setPath(options, field.path, overrides[field.path]);
     return options;
   }
 
   const overrides = loadOverrides();
-  const controlsByPath = new Map<string, HTMLInputElement | HTMLSelectElement>();
+  const controlsByPath = new Map<
+    string,
+    HTMLInputElement | HTMLSelectElement
+  >();
 
   // Appends a label and its control as two direct children of `grid` - not
   // wrapped in a row div - since .settings-grid's two-column template lays
   // out its direct children in label/control pairs, one pair per grid row.
-  function buildFieldRow(grid: HTMLElement, field: FieldDef, onChange: () => void): void {
+  function buildFieldRow(
+    grid: HTMLElement,
+    field: FieldDef,
+    onChange: () => void,
+  ): void {
     const id = `setting-${field.path.replace(/\./g, "-")}`;
 
     const label = document.createElement("label");
@@ -936,7 +963,9 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
       }
       select.value = field.encode ? field.encode(current) : String(current);
       select.addEventListener("change", () => {
-        overrides[field.path] = field.decode ? field.decode(select.value) : select.value;
+        overrides[field.path] = field.decode
+          ? field.decode(select.value)
+          : select.value;
         onChange();
       });
       el = select;

@@ -6,7 +6,13 @@
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 ---
 
-<StarlightPage frontmatter={{ title: "Playground", tableOfContents: false }}>
+<StarlightPage
+  frontmatter={{
+    title: "Playground",
+    tableOfContents: false,
+    template: "splash",
+  }}
+>
   <div class="playground-root not-content">
     <p class="intro">
       Edit the ThaiMusicXML on the left and the score updates on the right. Pick
