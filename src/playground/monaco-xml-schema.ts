@@ -109,6 +109,26 @@ export function registerXmlCompletion(
       );
 
       if (ctx.kind === "element") {
+        // The "<" that triggered this completion auto-closed into "<>"
+        // (see xml.js's autoClosingPairs), leaving a "|>" at the cursor.
+        // Our own snippet supplies its own ">", so widen the range to
+        // consume that already-there one instead of leaving it dangling.
+        const nextChar = model.getValueInRange({
+          startLineNumber: position.lineNumber,
+          startColumn: position.column,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column + 1,
+        });
+        const elementRange =
+          nextChar === ">"
+            ? new monaco.Range(
+                range.startLineNumber,
+                range.startColumn,
+                position.lineNumber,
+                position.column + 1,
+              )
+            : range;
+
         const names = ctx.parent
           ? (schema.elements.get(ctx.parent)?.children ?? [])
           : [schema.rootElement];
@@ -124,7 +144,7 @@ export function registerXmlCompletion(
               insertTextRules:
                 monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               documentation: def?.doc,
-              range,
+              range: elementRange,
             };
           }),
         };

@@ -479,7 +479,9 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   const importFileInput = document.getElementById(
     "import-file-input",
   ) as HTMLInputElement;
-  const saveButton = document.getElementById("save-button") as HTMLButtonElement;
+  const saveButton = document.getElementById(
+    "save-button",
+  ) as HTMLButtonElement;
   const fileStatusEl = document.getElementById("file-status")!;
 
   // --- Rendering settings panel ---
@@ -1188,7 +1190,7 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     minimap: { enabled: false },
     // Code folding is not something this playground needs, and its chevron
     // column only adds noise next to the line numbers.
-    folding: false,
+    folding: true,
     fontSize: 13,
     fontFamily: monoFont,
     scrollBeyondLastLine: false,
@@ -1227,7 +1229,10 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     const handle = await (window as any).showSaveFilePicker({
       suggestedName: `${baseNameFor(content)}.txml`,
       types: [
-        { description: "ThaiMusicXML", accept: { "application/xml": [".txml"] } },
+        {
+          description: "ThaiMusicXML",
+          accept: { "application/xml": [".txml"] },
+        },
       ],
     });
     const writable = await handle.createWritable();
@@ -1253,7 +1258,9 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
         // No File System Access API at all (Firefox, Safari): the best this
         // platform can do is a plain download, same mechanism as Export >
         // TXML - there is no way to avoid a second copy on disk here.
-        const blob = new Blob([content], { type: "application/xml;charset=utf-8" });
+        const blob = new Blob([content], {
+          type: "application/xml;charset=utf-8",
+        });
         triggerDownload(blob, `${exportBaseName()}.txml`);
       }
       statusEl.textContent = "";
@@ -1274,7 +1281,10 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     try {
       const [handle] = await (window as any).showOpenFilePicker({
         types: [
-          { description: "ThaiMusicXML", accept: { "application/xml": [".txml"] } },
+          {
+            description: "ThaiMusicXML",
+            accept: { "application/xml": [".txml"] },
+          },
         ],
       });
       const text = await (await handle.getFile()).text();
@@ -1361,11 +1371,17 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   // correctly-sized document (draw() embeds the font itself), and a reader
   // opening "score.svg" for a one-page score should not have to guess
   // whether a second page exists.
-  const pageFilename = (base: string, ext: string, index: number, total: number) =>
-    total > 1 ? `${base}-p${index + 1}.${ext}` : `${base}.${ext}`;
+  const pageFilename = (
+    base: string,
+    ext: string,
+    index: number,
+    total: number,
+  ) => (total > 1 ? `${base}-p${index + 1}.${ext}` : `${base}.${ext}`);
 
   exportTxmlButton.addEventListener("click", () => {
-    const blob = new Blob([lastSource], { type: "application/xml;charset=utf-8" });
+    const blob = new Blob([lastSource], {
+      type: "application/xml;charset=utf-8",
+    });
     triggerDownload(blob, `${exportBaseName()}.txml`);
   });
 
@@ -1382,9 +1398,16 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   // something a browser already knows how to do. `scale` renders at 2x the
   // page's own point size, since a viewer or printer treating those points
   // as CSS pixels 1:1 would otherwise get a noticeably soft image.
-  const svgToPngBlob = (svg: string, width: number, height: number, scale = 2): Promise<Blob> =>
+  const svgToPngBlob = (
+    svg: string,
+    width: number,
+    height: number,
+    scale = 2,
+  ): Promise<Blob> =>
     new Promise((resolve, reject) => {
-      const svgUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+      const svgUrl = URL.createObjectURL(
+        new Blob([svg], { type: "image/svg+xml;charset=utf-8" }),
+      );
       const img = new Image();
       img.onload = () => {
         URL.revokeObjectURL(svgUrl);
@@ -1394,7 +1417,11 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("canvas 2D context unavailable"));
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("PNG export failed"))), "image/png");
+        canvas.toBlob(
+          (blob) =>
+            blob ? resolve(blob) : reject(new Error("PNG export failed")),
+          "image/png",
+        );
       };
       img.onerror = () => {
         URL.revokeObjectURL(svgUrl);
@@ -1429,7 +1456,8 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   exportPdfButton.addEventListener("click", () => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      statusEl.textContent = "เปิดหน้าต่างพิมพ์ไม่ได้ - โปรดตรวจสอบตัวบล็อกป๊อปอัปของเบราว์เซอร์";
+      statusEl.textContent =
+        "เปิดหน้าต่างพิมพ์ไม่ได้ - โปรดตรวจสอบตัวบล็อกป๊อปอัปของเบราว์เซอร์";
       return;
     }
     const title = exportBaseName();
