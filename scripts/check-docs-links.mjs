@@ -74,13 +74,23 @@ for (const file of files) {
 }
 
 // Astro pages outside the content collection (e.g. the Playground) are
-// routes too, just with no headings to check anchors against.
+// routes too, just with no headings to check anchors against. A [lang]
+// segment is Astro's dynamic-route syntax (getStaticPaths emits one page
+// per locale) rather than a literal path piece, so it expands to each
+// locale instead of being registered as its own broken-looking slug.
+const LOCALES = ["en", "th"];
+
 if (existsSync(PAGES)) {
   for (const file of walk(PAGES, /\.astro$/)) {
     const rel = relative(PAGES, file).split(sep).join("/");
-    const slug = "/" + rel.replace(/\.astro$/, "").replace(/(^|\/)index$/, "");
-    if (!pages.has(slug.replace(/\/$/, ""))) {
-      pages.set(slug.replace(/\/$/, ""), new Set());
+    const rawSlug =
+      "/" + rel.replace(/\.astro$/, "").replace(/(^|\/)index$/, "");
+    const slugs = rawSlug.includes("[lang]")
+      ? LOCALES.map((locale) => rawSlug.replace("[lang]", locale))
+      : [rawSlug];
+    for (const slug of slugs) {
+      const key = slug.replace(/\/$/, "");
+      if (!pages.has(key)) pages.set(key, new Set());
     }
   }
 }

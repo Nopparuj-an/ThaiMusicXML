@@ -1,0 +1,2031 @@
+---
+// A live editor + renderer preview: type ThaiMusicXML, see the score it draws.
+// The renderer itself runs entirely client-side (see renderer/src/#font-loader
+// and #dom-parser in package.json's "imports" for the Node/browser split), so
+// this page needs no server and works the same offline as it does deployed.
+//
+// One route generates both /en/playground and /th/playground (Starlight
+// infers locale from the URL, not from file location - see Page.astro's
+// `lang={starlightRoute.entryMeta.lang}`), so English and Thai text live
+// side by side as t({ en, th }) pairs at each call site instead of drifting
+// apart in two near-duplicate files.
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "en" } }, { params: { lang: "th" } }];
+}
+
+type Lang = "en" | "th";
+const { lang } = Astro.params as { lang: Lang };
+
+function t(strings: Record<Lang, string>): string {
+  return strings[lang];
+}
+
+const templates: { value: string; label: Record<Lang, string> }[] = [
+  {
+    value: "example-khaek-borathes.txml",
+    label: { en: "Example: แขกบรเทศ", th: "ตัวอย่าง: แขกบรเทศ" },
+  },
+  {
+    value: "example-sathukan.txml",
+    label: { en: "Example: สาธุการ", th: "ตัวอย่าง: สาธุการ" },
+  },
+  {
+    value: "example-chuen-chumnum.txml",
+    label: {
+      en: "Example: ชื่นชุมนุม-กลุ่มดนตรี",
+      th: "ตัวอย่าง: ชื่นชุมนุม-กลุ่มดนตรี",
+    },
+  },
+  {
+    value: "example-chomsurang.txml",
+    label: {
+      en: "Example: โหมโรงจอมสุรางค์",
+      th: "ตัวอย่าง: โหมโรงจอมสุรางค์",
+    },
+  },
+  {
+    value: "tutorial1-hello-world.txml",
+    label: { en: "Tutorial 1: Hello world", th: "บทช่วยสอน 1: Hello World" },
+  },
+  {
+    value: "tutorial2-file-structure.txml",
+    label: {
+      en: "Tutorial 2: File structure",
+      th: "บทช่วยสอน 2: โครงสร้างไฟล์",
+    },
+  },
+];
+---
+
+<StarlightPage
+  frontmatter={{
+    title: t({ en: "Playground", th: "สนามทดลอง" }),
+    tableOfContents: false,
+    template: "splash",
+    prev: false,
+    next: false,
+  }}
+>
+  <div class="playground-root not-content">
+    <div class="page-bar">
+      <h1>{t({ en: "Playground", th: "สนามทดลอง" })}</h1>
+      <p class="caption">
+        {
+          t({
+            en: "Try ThaiMusicXML. Pick an example to edit or write your own.",
+            th: "ลองใช้ ThaiMusicXML เลือกตัวอย่างเพื่อแก้ไขหรือเขียนเอง",
+          })
+        }
+      </p>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <select
+          id="template-select"
+          aria-label={t({ en: "Template", th: "แม่แบบ" })}
+        >
+          {
+            templates.map((tpl) => (
+              <option value={tpl.value}>{tpl.label[lang]}</option>
+            ))
+          }
+        </select>
+
+        <button type="button" class="toolbar-button" id="import-button">
+          {t({ en: "Import", th: "นำเข้า" })}
+        </button>
+        <input
+          type="file"
+          id="import-file-input"
+          accept=".txml,text/xml,application/xml"
+          hidden
+        />
+        <button type="button" class="toolbar-button" id="save-button">
+          {t({ en: "Save", th: "บันทึก" })}
+        </button>
+        <button type="button" class="toolbar-button" id="save-as-button">
+          {t({ en: "Save As", th: "บันทึกเป็น" })}
+        </button>
+        <span class="file-status" id="file-status"></span>
+        <!-- </div>
+
+      <div class="toolbar-right"> -->
+        <details class="toolbar-export" id="export-details">
+          <summary>{t({ en: "Export", th: "ส่งออก" })} ▾</summary>
+          <div class="export-panel">
+            <button type="button" id="export-svg">SVG</button>
+            <button type="button" id="export-png">PNG</button>
+            <button type="button" id="export-pdf">
+              {t({ en: "PDF (print)", th: "PDF (พิมพ์)" })}
+            </button>
+          </div>
+        </details>
+
+        <button
+          type="button"
+          class="toolbar-button"
+          id="settings-toggle"
+          aria-expanded="false"
+        >
+          {t({ en: "Settings", th: "ตั้งค่า" })}
+        </button>
+      </div>
+    </div>
+
+    <div class="split" id="split">
+      <div class="pane editor-pane" id="editor-pane">
+        <div class="settings-overlay" id="settings-overlay" hidden>
+          <div class="settings-header">
+            <button
+              type="button"
+              class="settings-close"
+              id="settings-close"
+              aria-label={t({ en: "Close settings", th: "ปิดหน้าตั้งค่า" })}
+            >
+              ✕
+            </button>
+          </div>
+          <div class="settings-scroll">
+            <div class="settings-body">
+              <nav
+                class="settings-nav"
+                id="settings-nav"
+                aria-label={t({
+                  en: "Settings categories",
+                  th: "หมวดตั้งค่า",
+                })}
+              >
+              </nav>
+              <div class="settings-panel">
+                <button
+                  type="button"
+                  class="settings-reset"
+                  id="settings-reset"
+                >
+                  {t({ en: "Reset to defaults", th: "คืนค่าเริ่มต้น" })}
+                </button>
+                <div class="settings-grid" id="settings-fields"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="divider"
+        id="divider"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label={t({
+          en: "Resize editor and preview",
+          th: "ปรับขนาดช่องแก้ไขและตัวอย่าง",
+        })}
+      >
+      </div>
+      <div class="pane preview-pane" id="preview-pane"></div>
+    </div>
+
+    <p class="status" id="status" role="status"></p>
+  </div>
+</StarlightPage>
+
+<style>
+  /* Neither the <h1> title block nor the Previous/Next footer is
+     toggleable via frontmatter (see @astrojs/starlight/components/
+     PageTitle.astro and Footer.astro - both render unconditionally in
+     the no-hero branch), so they're hidden here: only the site's own
+     fixed top nav bar should remain above this page's own compact bar. */
+  :global(main:has(.playground-root) .content-panel:first-child) {
+    display: none;
+  }
+  :global(main:has(.playground-root) footer) {
+    display: none;
+  }
+  :global(main:has(.playground-root) .content-panel:last-child) {
+    padding: 0;
+  }
+  :global(main:has(.playground-root)) {
+    padding: 0;
+  }
+
+  /* .sl-container's width cap and centering come from ContentPanel.astro,
+     which this page's markup never touches directly - :has() from <main>
+     is what reaches it. */
+  :global(main:has(.playground-root) .sl-container) {
+    max-width: none;
+  }
+
+  /* <StarlightPage> always renders content through <MarkdownContent>,
+     wrapping it in .sl-markdown-content - the .not-content class on the
+     root (Starlight's own escape hatch) keeps that prose spacing out of
+     this page's own layout. */
+
+  /* Fixed to the viewport below the site's fixed-position header, rather
+     than flowing with the page, so editor/preview read like a desktop
+     app pane instead of a docs page with a tool bolted on.
+     --sl-nav-height already tracks the header's own responsive height
+     (3.5rem under 50rem, 4rem above - see @astrojs/starlight/style/
+     props.css), so this stays in sync with it for free. min-height is
+     the fallback for a viewport too short to fit everything below the
+     header: past that point this box grows past the available space and
+     the page scrolls normally, same as without any of this sizing. */
+  .playground-root {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--sl-nav-height));
+    min-height: 26rem;
+    container-type: inline-size;
+    container-name: playground;
+  }
+
+  .page-bar {
+    flex: none;
+    padding: 0.4rem 1rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .page-bar h1 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .page-bar .caption {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  .toolbar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .toolbar-left,
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .toolbar select {
+    font: inherit;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .toolbar-button {
+    font: inherit;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.25rem;
+    background: transparent;
+    color: var(--sl-color-text);
+    cursor: pointer;
+  }
+
+  .toolbar-button:hover {
+    border-color: var(--sl-color-text-accent);
+    color: var(--sl-color-text-accent);
+  }
+
+  .toolbar-button[aria-expanded="true"] {
+    border-color: var(--sl-color-text-accent);
+    color: var(--sl-color-text-accent);
+  }
+
+  .file-status {
+    font-size: 0.85rem;
+    color: var(--sl-color-gray-3, #888);
+  }
+
+  /* Export used to be a <details> that pushed the toolbar row taller when
+     opened; the panel floats over the page instead, so opening it never
+     shifts the toolbar or the panes below it. */
+  .toolbar-export {
+    position: relative;
+  }
+
+  .toolbar-export summary {
+    cursor: pointer;
+    font: inherit;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.25rem;
+    list-style: none;
+  }
+
+  .toolbar-export summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .toolbar-export summary:hover {
+    border-color: var(--sl-color-text-accent);
+  }
+
+  .export-panel {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    min-width: 10rem;
+    background: var(--sl-color-bg);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .export-panel button {
+    font: inherit;
+    text-align: left;
+    padding: 0.35rem 0.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: var(--sl-color-text);
+    cursor: pointer;
+  }
+
+  .export-panel button:hover:not(:disabled) {
+    background: var(--sl-color-gray-6, rgba(128, 128, 128, 0.15));
+    color: var(--sl-color-text-accent);
+  }
+
+  .export-panel button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .split {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .pane {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  /* Anchors the settings overlay (position: absolute; inset: 0 below) to
+     this pane's own box, and keeps Monaco - which sizes itself from the
+     container via automaticLayout - from growing a second scrollbar
+     alongside its own internal one. */
+  .editor-pane {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .preview-pane {
+    background: #fff;
+    padding: 0.75rem;
+  }
+
+  .preview-pane :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: 0.75rem;
+  }
+
+  .divider {
+    flex: none;
+    width: 6px;
+    background: var(--sl-color-hairline);
+    cursor: col-resize;
+    touch-action: none;
+  }
+
+  .divider:hover,
+  .divider:active {
+    background: var(--sl-color-text-accent);
+  }
+
+  /* 880px is two 437px panes - see the editor's 13px monospace font and
+     the example files' line lengths for where that number comes from. */
+  @container playground (max-width: 880px) {
+    .split {
+      flex-direction: column;
+    }
+
+    .divider {
+      width: auto;
+      height: 6px;
+      cursor: row-resize;
+    }
+  }
+
+  .status {
+    flex: none;
+    margin: 0;
+    min-height: 1.5em;
+    padding: 0 1rem;
+    color: var(--sl-color-red, #c53030);
+    white-space: pre-wrap;
+    font-family: var(--__sl-font-mono, monospace);
+    font-size: 0.85rem;
+  }
+
+  /* --- Settings overlay --- */
+
+  /* The [hidden] exception matters: author CSS always beats the UA
+     stylesheet's `[hidden] { display: none }`, so an unconditional
+     `display: flex` here would render the overlay open even while the
+     `hidden` attribute is set. */
+  .settings-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: var(--sl-color-bg);
+    display: none;
+  }
+
+  .settings-overlay:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Sits outside .settings-scroll (below) rather than sticky/floated
+     inside it, so the close button never has to compete with a scrolling
+     context to stay put - it simply isn't part of it. */
+  .settings-header {
+    flex: none;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem 0.5rem 0;
+  }
+
+  .settings-close {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 1px solid var(--sl-color-hairline);
+    background: var(--sl-color-bg);
+    color: var(--sl-color-text);
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+
+  .settings-close:hover {
+    border-color: var(--sl-color-text-accent);
+    color: var(--sl-color-text-accent);
+  }
+
+  .settings-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    container-type: inline-size;
+    container-name: settingspane;
+  }
+
+  .settings-body {
+    padding: 0.5rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  /* renderNav() builds this subtree entirely with document.createElement -
+     Astro's scoped CSS only ever reaches elements present in this
+     component's own server-rendered markup (it compiles a rule into
+     `.selector[data-astro-cid-x]`, an attribute JS-created elements never
+     get), so every rule touching content built at runtime has to opt out
+     of scoping explicitly via :global(). Same reasoning for the
+     .settings-grid rules further below. */
+  :global(.settings-nav-tier) {
+    margin: 0.5rem 0 0.125rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--sl-color-gray-3);
+  }
+
+  :global(.settings-nav-tier:first-child) {
+    margin-top: 0;
+  }
+
+  .settings-nav :global(button) {
+    font: inherit;
+    text-align: left;
+    padding: 0.3rem 0.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: var(--sl-color-text);
+    cursor: pointer;
+  }
+
+  .settings-nav :global(button:hover) {
+    background: var(--sl-color-gray-6, rgba(128, 128, 128, 0.15));
+  }
+
+  .settings-nav :global(button[aria-current="true"]) {
+    background: var(--sl-color-gray-6, rgba(128, 128, 128, 0.15));
+    color: var(--sl-color-text-accent);
+    font-weight: 600;
+  }
+
+  .settings-reset {
+    align-self: flex-start;
+    font: inherit;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.25rem;
+    background: transparent;
+    color: var(--sl-color-text);
+    cursor: pointer;
+  }
+
+  .settings-reset:hover {
+    border-color: var(--sl-color-text-accent);
+    color: var(--sl-color-text-accent);
+  }
+
+  .settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  /* A capped label width rather than max-content: this panel lives inside
+     the editor pane now, not the full page, so a long label like "Page
+     height (pt, starting value if infinite)" has roughly half the room it
+     used to - letting it wrap onto a second line keeps it from pushing the
+     control column off the pane's own edge. The control column has its
+     own floor for the opposite reason: a bare `1fr` track shrinks to a
+     number input's tiny intrinsic min-content (it has room for the spinner
+     and little else) whenever the row is tight, which left values like
+     "595.28" rendered in a sliver too narrow to show any digits. */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: minmax(8rem, 13rem) minmax(6rem, 1fr);
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+
+  /* Sized to the editor pane's own width (a container distinct from
+     .playground-root above), since the pane is roughly half the split's
+     width in row mode - a query against the whole page would switch
+     layouts long before this pane is actually wide enough for them. The
+     multi-column thresholds sit well above the nav's own 640px breakpoint:
+     two label+control pairs need real headroom before they stop
+     fighting each other for space (see the floors above). */
+  @container settingspane (min-width: 640px) {
+    .settings-body {
+      flex-direction: row;
+    }
+
+    .settings-nav {
+      flex: none;
+      width: 12rem;
+    }
+
+    .settings-panel {
+      flex: 1 1 auto;
+    }
+  }
+
+  @container settingspane (min-width: 900px) {
+    .settings-grid {
+      grid-template-columns: repeat(2, minmax(8rem, 13rem) minmax(6rem, 1fr));
+      column-gap: 1.5rem;
+    }
+  }
+
+  @container settingspane (min-width: 1300px) {
+    .settings-grid {
+      grid-template-columns: repeat(3, minmax(8rem, 13rem) minmax(6rem, 1fr));
+    }
+  }
+
+  .settings-grid :global(select),
+  .settings-grid :global(input[type="number"]),
+  .settings-grid :global(input[type="text"]) {
+    font: inherit;
+    padding: 0.25rem 0.5rem;
+    width: 100%;
+    max-width: 12rem;
+  }
+
+  .settings-grid :global(input[type="checkbox"]) {
+    justify-self: start;
+  }
+
+  .settings-grid :global(input[type="color"]) {
+    padding: 0;
+    width: 3rem;
+    height: 1.75rem;
+  }
+</style>
+
+<script>
+  // editor.api.js alone only defines the API surface (editor.create,
+  // languages.register*) - the built-in features that surface (suggest
+  // widget, hover widget, find, bracket matching...) are separate modules
+  // registered as a side effect of importing editor.all.js, which
+  // edcore.main.js re-exports editor.api.js's namespace alongside.
+  // @ts-expect-error monaco-editor ships no .d.ts for this path
+  import * as monaco from "monaco-editor/esm/vs/editor/edcore.main.js";
+  import "monaco-editor/esm/vs/basic-languages/xml/xml.contribution.js";
+  import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+  import { buildSchemaModel } from "../../playground/xsd-schema";
+  import {
+    registerXmlCompletion,
+    registerXmlHover,
+  } from "../../playground/monaco-xml-schema";
+  import { initMonacoTheme } from "../../playground/monaco-theme";
+  import schemaSource from "../../playground/thaimusicxml-0.1.xsd?raw";
+  import { parse } from "../../../renderer/src/parse.mjs";
+  import { layout } from "../../../renderer/src/layout.mjs";
+  import { draw } from "../../../renderer/src/draw.mjs";
+  import { ready } from "../../../renderer/src/ready.mjs";
+  import { defaults } from "../../../renderer/src/settings.mjs";
+
+  type Lang = "en" | "th";
+  // Starlight sets <html lang> per URL locale (see Page.astro), so this
+  // reads the same source of truth the server already resolved rather
+  // than threading a prop through define:vars.
+  const lang: Lang = document.documentElement.lang === "th" ? "th" : "en";
+  function t(strings: Record<Lang, string>): string {
+    return strings[lang];
+  }
+
+  // The XML language has no dedicated language-service worker (no json/ts-
+  // style smarts to load) - this is only for the generic editor worker Monaco
+  // itself uses for things like diffing, so one getWorker covering every
+  // label is enough.
+  (self as any).MonacoEnvironment = {
+    getWorker: () => new EditorWorker(),
+  };
+
+  const schema = buildSchemaModel(schemaSource, "thai-score");
+  registerXmlCompletion(monaco, schema);
+  registerXmlHover(monaco, schema);
+
+  // Only the examples the docs themselves link to (see renderer/HANDOVER.md)
+  // - the "-test.txml" fixtures are internal stress tests, not something to
+  // hand a first-time visitor.
+  const templates = import.meta.glob("../../../renderer/examples/*.txml", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  });
+  const templateSource = (file: string) => {
+    const entry = Object.entries(templates).find(([path]) =>
+      path.endsWith(`/${file}`),
+    );
+    if (!entry) throw new Error(`playground: no renderer/examples/${file}`);
+    return String(entry[1]);
+  };
+
+  const editorPane = document.getElementById("editor-pane")!;
+  const previewPane = document.getElementById("preview-pane")!;
+  const statusEl = document.getElementById("status")!;
+  const templateSelect = document.getElementById(
+    "template-select",
+  ) as HTMLSelectElement;
+  const split = document.getElementById("split")!;
+  const divider = document.getElementById("divider")!;
+  const exportDetails = document.getElementById(
+    "export-details",
+  ) as HTMLDetailsElement;
+  const exportPanel = exportDetails.querySelector(
+    ".export-panel",
+  ) as HTMLElement;
+  const settingsToggleButton = document.getElementById(
+    "settings-toggle",
+  ) as HTMLButtonElement;
+  const settingsOverlay = document.getElementById("settings-overlay")!;
+  const settingsCloseButton = document.getElementById(
+    "settings-close",
+  ) as HTMLButtonElement;
+  const settingsNav = document.getElementById("settings-nav")!;
+  const settingsFieldsGrid = document.getElementById("settings-fields")!;
+  const settingsResetButton = document.getElementById(
+    "settings-reset",
+  ) as HTMLButtonElement;
+  const exportSvgButton = document.getElementById(
+    "export-svg",
+  ) as HTMLButtonElement;
+  const exportPngButton = document.getElementById(
+    "export-png",
+  ) as HTMLButtonElement;
+  const exportPdfButton = document.getElementById(
+    "export-pdf",
+  ) as HTMLButtonElement;
+  const importButton = document.getElementById(
+    "import-button",
+  ) as HTMLButtonElement;
+  const importFileInput = document.getElementById(
+    "import-file-input",
+  ) as HTMLInputElement;
+  const saveButton = document.getElementById(
+    "save-button",
+  ) as HTMLButtonElement;
+  const saveAsButton = document.getElementById(
+    "save-as-button",
+  ) as HTMLButtonElement;
+  const fileStatusEl = document.getElementById("file-status")!;
+
+  // --- Rendering settings panel ---
+  //
+  // renderer/src/settings.mjs's `defaults` is the single source of truth for
+  // every value below - a field never hard-codes its own default, it reads
+  // one out of `defaults` via `path`. Two keys are deliberately not exposed
+  // here: `measuresPerRow` (its own comment says "Fixed by 'The measure
+  // grid'" - normative, not a style choice) and `fontFamily` (draw.mjs
+  // embeds actual Sarabun font bytes via @font-face regardless of this
+  // string, so a control for it would just mislead).
+
+  type Tier = "common" | "details" | "advanced";
+  type FieldType = "checkbox" | "number" | "text" | "color" | "select";
+
+  interface FieldOption {
+    value: string;
+    label: Record<Lang, string>;
+  }
+
+  interface FieldDef {
+    path: string;
+    tier: Tier;
+    group: string;
+    type: FieldType;
+    label: Record<Lang, string>;
+    min?: number;
+    max?: number;
+    step?: number;
+    options?: FieldOption[];
+    decode?: (raw: string) => unknown;
+    encode?: (value: unknown) => string;
+    validate?: (value: unknown) => boolean;
+  }
+
+  interface GroupDef {
+    key: string;
+    tier: Tier;
+    label: Record<Lang, string>;
+  }
+
+  const TIERS: Tier[] = ["common", "details", "advanced"];
+
+  const TIER_LABELS: Record<Tier, Record<Lang, string>> = {
+    common: { en: "Recommended", th: "แนะนำ" },
+    details: { en: "More options", th: "ตัวเลือกเพิ่มเติม" },
+    advanced: { en: "Advanced", th: "ขั้นสูง" },
+  };
+
+  const GROUPS: GroupDef[] = [
+    {
+      key: "notation",
+      tier: "common",
+      label: { en: "Notation", th: "สัญกรณ์" },
+    },
+    {
+      key: "textSizes",
+      tier: "details",
+      label: { en: "Text sizes", th: "ขนาดตัวอักษร" },
+    },
+    {
+      key: "headerLabels",
+      tier: "details",
+      label: { en: "Header & labels", th: "ส่วนหัวและป้ายชื่อ" },
+    },
+    {
+      key: "restsCueing",
+      tier: "details",
+      label: { en: "Rests & cueing", th: "ตัวหยุดและการอ้างอิง" },
+    },
+    { key: "page", tier: "advanced", label: { en: "Page", th: "หน้ากระดาษ" } },
+    {
+      key: "octaveDots",
+      tier: "advanced",
+      label: { en: "Octave dots", th: "จุด Octave" },
+    },
+    {
+      key: "rowSymbolSpacing",
+      tier: "advanced",
+      label: { en: "Row & symbol spacing", th: "ระยะห่างแถวและสัญลักษณ์" },
+    },
+    { key: "links", tier: "advanced", label: { en: "Links", th: "เส้นโยง" } },
+    {
+      key: "bowCurves",
+      tier: "advanced",
+      label: { en: "Bow curves", th: "เส้นคันชัก" },
+    },
+    {
+      key: "repeatBrackets",
+      tier: "advanced",
+      label: { en: "Repeat brackets", th: "วงเล็บซ้ำ" },
+    },
+    {
+      key: "textBandSpacing",
+      tier: "advanced",
+      label: { en: "Text & band spacing", th: "ระยะห่างข้อความและแถบ" },
+    },
+  ];
+
+  const FIELDS: FieldDef[] = [
+    // --- Recommended > Notation ---
+    {
+      path: "pitchSpelling",
+      tier: "common",
+      group: "notation",
+      type: "select",
+      label: { en: "Pitch spelling", th: "การสะกดระดับเสียง" },
+      options: [
+        { value: "source", label: { en: "As written", th: "ตามที่เขียนไว้" } },
+        { value: "thai", label: { en: "Thai", th: "ไทย" } },
+        { value: "letter", label: { en: "Letter", th: "อักษรโรมัน" } },
+        { value: "number", label: { en: "Number", th: "ตัวเลข" } },
+      ],
+    },
+    {
+      // layout.mjs only ever branches on pitchCase === "upper" - there is no
+      // implemented "force lowercase" - so this is a checkbox rather than a
+      // select offering a choice the renderer doesn't actually have.
+      path: "pitchCase",
+      tier: "common",
+      group: "notation",
+      type: "checkbox",
+      label: {
+        en: "Force uppercase pitch letters",
+        th: "บังคับอักษรโรมันเป็นตัวพิมพ์ใหญ่",
+      },
+      decode: (raw) => (raw === "true" ? "upper" : "source"),
+      encode: (value) => String(value === "upper"),
+    },
+    {
+      path: "printRests",
+      tier: "common",
+      group: "notation",
+      type: "select",
+      label: { en: "Rests", th: "ตัวหยุด" },
+      options: [
+        {
+          value: "all",
+          label: { en: "Print every rest", th: "พิมพ์ตัวหยุดทุกตัว" },
+        },
+        { value: "none", label: { en: "Hide rests", th: "ซ่อนตัวหยุด" } },
+      ],
+    },
+    {
+      path: "generateHeadings",
+      tier: "common",
+      group: "notation",
+      type: "checkbox",
+      label: {
+        en: "Generate section headings",
+        th: "สร้างหัวเรื่องท่อนอัตโนมัติ",
+      },
+    },
+
+    // --- More options > Text sizes ---
+    {
+      path: "titleSize",
+      tier: "details",
+      group: "textSizes",
+      type: "number",
+      label: { en: "Title size", th: "ขนาดชื่อเรื่อง" },
+      min: 1,
+      step: 1,
+    },
+    {
+      path: "instrumentNameSize",
+      tier: "details",
+      group: "textSizes",
+      type: "number",
+      label: { en: "Instrument name size", th: "ขนาดชื่อเครื่องดนตรี" },
+      min: 1,
+      step: 1,
+    },
+    {
+      path: "creditSize",
+      tier: "details",
+      group: "textSizes",
+      type: "number",
+      label: { en: "Credit size", th: "ขนาดเครดิต" },
+      min: 1,
+      step: 1,
+    },
+    {
+      path: "pitchSize",
+      tier: "details",
+      group: "textSizes",
+      type: "number",
+      label: { en: "Pitch size", th: "ขนาดตัวโน้ต" },
+      min: 1,
+      step: 1,
+    },
+    {
+      path: "lyricSize",
+      tier: "details",
+      group: "textSizes",
+      type: "number",
+      label: { en: "Lyric size", th: "ขนาดเนื้อเพลง" },
+      min: 1,
+      step: 1,
+    },
+    {
+      path: "annotationSize",
+      tier: "details",
+      group: "textSizes",
+      type: "number",
+      label: { en: "Annotation size", th: "ขนาดหมายเหตุประกอบ" },
+      min: 1,
+      step: 1,
+    },
+
+    // --- More options > Header & labels ---
+    {
+      path: "showHeaderExtras",
+      tier: "details",
+      group: "headerLabels",
+      type: "checkbox",
+      label: {
+        en: "Show tuning, license, BPM",
+        th: "แสดงการตั้งเสียง ใบอนุญาต และ BPM",
+      },
+    },
+    {
+      path: "headerExtraSize",
+      tier: "details",
+      group: "headerLabels",
+      type: "number",
+      label: { en: "Header extras size", th: "ขนาดข้อมูลเสริมส่วนหัว" },
+      min: 1,
+      step: 1,
+    },
+    {
+      path: "showLabels",
+      tier: "details",
+      group: "headerLabels",
+      type: "select",
+      label: { en: "Instrument-name labels", th: "ป้ายชื่อเครื่องดนตรี" },
+      options: [
+        {
+          value: "auto",
+          label: { en: "Auto (ensemble only)", th: "อัตโนมัติ (เฉพาะวงรวม)" },
+        },
+        { value: "true", label: { en: "Always show", th: "แสดงเสมอ" } },
+        { value: "false", label: { en: "Always hide", th: "ซ่อนเสมอ" } },
+      ],
+      decode: (raw) => (raw === "auto" ? null : raw === "true"),
+      encode: (value) => (value === null ? "auto" : String(value)),
+      validate: (value) => value === null || typeof value === "boolean",
+    },
+    {
+      path: "labelSize",
+      tier: "details",
+      group: "headerLabels",
+      type: "number",
+      label: { en: "Label size", th: "ขนาดป้ายชื่อ" },
+      min: 1,
+      step: 1,
+    },
+
+    // --- More options > Rests & cueing ---
+    {
+      path: "restGlyph",
+      tier: "details",
+      group: "restsCueing",
+      type: "text",
+      label: { en: "Rest glyph", th: "สัญลักษณ์ตัวหยุด" },
+    },
+    {
+      path: "dimParenthesisDefault",
+      tier: "details",
+      group: "restsCueing",
+      type: "checkbox",
+      label: {
+        en: "Dim cued passages by default",
+        th: "หรี่ช่วงที่อ้างอิงเป็นค่าเริ่มต้น",
+      },
+    },
+    {
+      // The default "#999" is 3-digit shorthand; <input type="color"> needs
+      // 6-digit. Expand it for display only - the stored/default value stays
+      // "#999", which is equally valid CSS/SVG.
+      path: "dimColor",
+      tier: "details",
+      group: "restsCueing",
+      type: "color",
+      label: { en: "Dim color", th: "สีหรี่" },
+      encode: (value) =>
+        typeof value === "string" && value.length === 4
+          ? value[0] +
+            value[1] +
+            value[1] +
+            value[2] +
+            value[2] +
+            value[3] +
+            value[3]
+          : String(value),
+    },
+
+    // --- Advanced > Page ---
+    {
+      path: "page.width",
+      tier: "advanced",
+      group: "page",
+      type: "number",
+      label: { en: "Page width (pt)", th: "ความกว้างหน้ากระดาษ (pt)" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "page.height",
+      tier: "advanced",
+      group: "page",
+      type: "number",
+      label: {
+        en: "Page height (pt, starting value if infinite)",
+        th: "ความสูงหน้ากระดาษ (pt, ค่าเริ่มต้นหากไม่จำกัดความยาว)",
+      },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "page.infinite",
+      tier: "advanced",
+      group: "page",
+      type: "checkbox",
+      label: {
+        en: "Infinite length (no pagination)",
+        th: "ความยาวไม่จำกัด (ไม่แบ่งหน้า)",
+      },
+    },
+    {
+      path: "page.marginSide",
+      tier: "advanced",
+      group: "page",
+      type: "number",
+      label: { en: "Side margin (pt)", th: "ขอบกระดาษด้านข้าง (pt)" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "page.marginTop",
+      tier: "advanced",
+      group: "page",
+      type: "number",
+      label: { en: "Top margin (pt)", th: "ขอบกระดาษด้านบน (pt)" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "page.marginBottom",
+      tier: "advanced",
+      group: "page",
+      type: "number",
+      label: { en: "Bottom margin (pt)", th: "ขอบกระดาษด้านล่าง (pt)" },
+      min: 0,
+      step: 1,
+    },
+
+    // --- Advanced > Octave dots ---
+    {
+      path: "octaveDotRadius",
+      tier: "advanced",
+      group: "octaveDots",
+      type: "number",
+      label: { en: "Octave dot radius", th: "รัศมีจุด octave" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "octaveDotGapAbove",
+      tier: "advanced",
+      group: "octaveDots",
+      type: "number",
+      label: { en: "Octave dot gap above", th: "ระยะห่างจุด octave ด้านบน" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "octaveDotGapBelow",
+      tier: "advanced",
+      group: "octaveDots",
+      type: "number",
+      label: { en: "Octave dot gap below", th: "ระยะห่างจุด octave ด้านล่าง" },
+      min: 0,
+      step: 0.01,
+    },
+
+    // --- Advanced > Row & symbol spacing ---
+    {
+      path: "rowHeight",
+      tier: "advanced",
+      group: "rowSymbolSpacing",
+      type: "number",
+      label: { en: "Row height", th: "ความสูงแถว" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "spread",
+      tier: "advanced",
+      group: "rowSymbolSpacing",
+      type: "number",
+      label: { en: "Symbol spread", th: "ระยะกระจายสัญลักษณ์" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "groupTightness",
+      tier: "advanced",
+      group: "rowSymbolSpacing",
+      type: "number",
+      label: { en: "Group tightness", th: "ความชิดของกลุ่ม" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "minSymbolAdvance",
+      tier: "advanced",
+      group: "rowSymbolSpacing",
+      type: "number",
+      label: {
+        en: "Minimum symbol advance",
+        th: "ระยะห่างต่ำสุดระหว่างสัญลักษณ์",
+      },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "gapScale.0",
+      tier: "advanced",
+      group: "rowSymbolSpacing",
+      type: "number",
+      label: { en: "Row gap", th: "ช่องว่างระหว่างแถว" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "gapScale.1",
+      tier: "advanced",
+      group: "rowSymbolSpacing",
+      type: "number",
+      label: { en: "Instrument gap", th: "ช่องว่างระหว่างเครื่องดนตรี" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "gapScale.2",
+      tier: "advanced",
+      group: "rowSymbolSpacing",
+      type: "number",
+      label: { en: "Line gap", th: "ช่องว่างระหว่างบรรทัด" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "gapScale.3",
+      tier: "advanced",
+      group: "rowSymbolSpacing",
+      type: "number",
+      label: { en: "Section gap", th: "ช่องว่างระหว่างท่อน" },
+      min: 0,
+      step: 1,
+    },
+
+    // --- Advanced > Links ---
+    {
+      path: "linkTop",
+      tier: "advanced",
+      group: "links",
+      type: "number",
+      label: { en: "Link curve height", th: "ความสูงเส้นโยง" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "linkSideStep",
+      tier: "advanced",
+      group: "links",
+      type: "number",
+      label: { en: "Link side step", th: "ระยะเยื้องเส้นโยง" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "linkRise",
+      tier: "advanced",
+      group: "links",
+      type: "number",
+      label: { en: "Link rise", th: "ความโค้งเส้นโยง" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "linkStroke",
+      tier: "advanced",
+      group: "links",
+      type: "number",
+      label: { en: "Link stroke width", th: "ความหนาเส้นโยง" },
+      min: 0,
+      step: 0.1,
+    },
+
+    // --- Advanced > Bow curves ---
+    {
+      path: "bowTop",
+      tier: "advanced",
+      group: "bowCurves",
+      type: "number",
+      label: { en: "Bow curve height", th: "ความสูงเส้นโค้งคันชัก" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "bowRise",
+      tier: "advanced",
+      group: "bowCurves",
+      type: "number",
+      label: { en: "Bow rise", th: "ความโค้งคันชัก" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "bowStroke",
+      tier: "advanced",
+      group: "bowCurves",
+      type: "number",
+      label: { en: "Bow stroke width", th: "ความหนาเส้นคันชัก" },
+      min: 0,
+      step: 0.1,
+    },
+    {
+      path: "bowMinSpan",
+      tier: "advanced",
+      group: "bowCurves",
+      type: "number",
+      label: { en: "Bow minimum span", th: "ระยะขั้นต่ำคันชัก" },
+      min: 0,
+      step: 0.1,
+    },
+
+    // --- Advanced > Repeat brackets ---
+    {
+      path: "repeatBracketGap",
+      tier: "advanced",
+      group: "repeatBrackets",
+      type: "number",
+      label: { en: "Repeat bracket gap", th: "ช่องว่างวงเล็บซ้ำ" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "repeatBracketDepth",
+      tier: "advanced",
+      group: "repeatBrackets",
+      type: "number",
+      label: { en: "Repeat bracket depth", th: "ความลึกวงเล็บซ้ำ" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "repeatBracketStroke",
+      tier: "advanced",
+      group: "repeatBrackets",
+      type: "number",
+      label: {
+        en: "Repeat bracket stroke width",
+        th: "ความหนาเส้นวงเล็บซ้ำ",
+      },
+      min: 0,
+      step: 0.1,
+    },
+    {
+      path: "repeatLabelSize",
+      tier: "advanced",
+      group: "repeatBrackets",
+      type: "number",
+      label: { en: "Repeat label size", th: "ขนาดป้ายซ้ำ" },
+      min: 1,
+      step: 1,
+    },
+
+    // --- Advanced > Text & band spacing ---
+    {
+      path: "annotationGap",
+      tier: "advanced",
+      group: "textBandSpacing",
+      type: "number",
+      label: { en: "Annotation gap", th: "ช่องว่างหมายเหตุประกอบ" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "annotationLeading",
+      tier: "advanced",
+      group: "textBandSpacing",
+      type: "number",
+      label: { en: "Annotation leading", th: "ระยะบรรทัดหมายเหตุประกอบ" },
+      min: 0,
+      step: 0.01,
+    },
+    {
+      path: "titleGap",
+      tier: "advanced",
+      group: "textBandSpacing",
+      type: "number",
+      label: { en: "Title gap", th: "ช่องว่างใต้ชื่อเรื่อง" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "bandGap",
+      tier: "advanced",
+      group: "textBandSpacing",
+      type: "number",
+      label: { en: "Band gap", th: "ช่องว่างแถบหัวเรื่อง" },
+      min: 0,
+      step: 1,
+    },
+    {
+      path: "labelGap",
+      tier: "advanced",
+      group: "textBandSpacing",
+      type: "number",
+      label: { en: "Label gap", th: "ช่องว่างป้ายชื่อ" },
+      min: 0,
+      step: 0.01,
+    },
+  ];
+
+  function getPath(obj: any, path: string): unknown {
+    return path
+      .split(".")
+      .reduce((o, k) => (o == null ? undefined : o[k]), obj);
+  }
+
+  function setPath(obj: any, path: string, value: unknown): void {
+    const keys = path.split(".");
+    const last = keys.pop()!;
+    keys.reduce((o, k) => o[k], obj)[last] = value;
+  }
+
+  function defaultValidate(field: FieldDef, value: unknown): boolean {
+    switch (field.type) {
+      case "checkbox":
+        return typeof value === "boolean";
+      case "number":
+        return typeof value === "number" && Number.isFinite(value);
+      case "text":
+        return typeof value === "string";
+      case "color":
+        return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
+      case "select":
+        // A select with no decode() stores one of its own option values
+        // directly. One that decodes (e.g. showLabels) supplies its own
+        // field.validate instead of relying on this default.
+        return field.options!.some((opt) => opt.value === value);
+    }
+  }
+
+  const STORAGE_KEY = "thaimusicxml-playground-settings";
+
+  function loadOverrides(): Record<string, unknown> {
+    const overrides: Record<string, unknown> = {};
+    for (const field of FIELDS)
+      overrides[field.path] = getPath(defaults, field.path);
+
+    let saved: unknown;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) saved = JSON.parse(raw);
+    } catch {
+      saved = undefined;
+    }
+    if (saved && typeof saved === "object") {
+      for (const field of FIELDS) {
+        const value = (saved as Record<string, unknown>)[field.path];
+        if (value === undefined) continue;
+        const ok = field.validate
+          ? field.validate(value)
+          : defaultValidate(field, value);
+        if (ok) overrides[field.path] = value;
+      }
+    }
+    return overrides;
+  }
+
+  function saveOverrides(overrides: Record<string, unknown>): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+    } catch {
+      // Storage full or unavailable (private browsing) - settings just
+      // won't persist; nothing else on the page depends on it.
+    }
+  }
+
+  function buildOptions(
+    overrides: Record<string, unknown>,
+  ): Record<string, unknown> {
+    // defaults is plain JSON-safe data, so a round-trip is a safe deep clone
+    // - layout()/draw() each shallow-merge {...defaults, ...options}, so a
+    // partial `page` object or `gapScale` array here would blank out
+    // whichever sibling fields the user didn't just touch.
+    const options = JSON.parse(JSON.stringify(defaults));
+    for (const field of FIELDS)
+      setPath(options, field.path, overrides[field.path]);
+    return options;
+  }
+
+  const overrides = loadOverrides();
+
+  // Appends a label and its control as two direct children of `grid` - not
+  // wrapped in a row div - since .settings-grid's two-column template lays
+  // out its direct children in label/control pairs, one pair per grid row.
+  function buildFieldRow(
+    grid: HTMLElement,
+    field: FieldDef,
+    onChange: () => void,
+  ): void {
+    const id = `setting-${field.path.replace(/\./g, "-")}`;
+
+    const label = document.createElement("label");
+    label.htmlFor = id;
+    label.textContent = field.label[lang];
+    grid.appendChild(label);
+
+    const current = overrides[field.path];
+    let el: HTMLInputElement | HTMLSelectElement;
+
+    if (field.type === "select") {
+      const select = document.createElement("select");
+      select.id = id;
+      for (const opt of field.options!) {
+        const o = document.createElement("option");
+        o.value = opt.value;
+        o.textContent = opt.label[lang];
+        select.appendChild(o);
+      }
+      select.value = field.encode ? field.encode(current) : String(current);
+      select.addEventListener("change", () => {
+        overrides[field.path] = field.decode
+          ? field.decode(select.value)
+          : select.value;
+        onChange();
+      });
+      el = select;
+    } else {
+      const input = document.createElement("input");
+      input.id = id;
+      input.type = field.type;
+      if (field.type === "number") {
+        if (field.min !== undefined) input.min = String(field.min);
+        if (field.max !== undefined) input.max = String(field.max);
+        if (field.step !== undefined) input.step = String(field.step);
+      }
+      if (field.type === "checkbox") {
+        input.checked = Boolean(current);
+      } else {
+        input.value = field.encode ? field.encode(current) : String(current);
+      }
+      const eventName = field.type === "checkbox" ? "change" : "input";
+      input.addEventListener(eventName, () => {
+        overrides[field.path] =
+          field.type === "checkbox"
+            ? input.checked
+            : field.type === "number"
+              ? Number(input.value)
+              : input.value;
+        onChange();
+      });
+      el = input;
+    }
+
+    grid.appendChild(el);
+  }
+
+  let renderTimer: ReturnType<typeof setTimeout> | undefined;
+  const scheduleRender = () => {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(renderPreview, 400);
+  };
+
+  const onSettingChange = () => {
+    saveOverrides(overrides);
+    scheduleRender();
+  };
+
+  // --- Settings overlay: two-level category nav + a single field grid for
+  // whichever category is currently selected, instead of one long scrolling
+  // list of every field at once. ---
+  let activeGroupKey = "notation";
+
+  function renderFields(): void {
+    settingsFieldsGrid.innerHTML = "";
+    for (const field of FIELDS.filter((f) => f.group === activeGroupKey))
+      buildFieldRow(settingsFieldsGrid, field, onSettingChange);
+  }
+
+  function updateNavActiveState(): void {
+    for (const button of settingsNav.querySelectorAll("button"))
+      button.setAttribute(
+        "aria-current",
+        String((button as HTMLElement).dataset.group === activeGroupKey),
+      );
+  }
+
+  function selectGroup(key: string): void {
+    activeGroupKey = key;
+    renderFields();
+    updateNavActiveState();
+  }
+
+  function renderNav(): void {
+    settingsNav.innerHTML = "";
+    for (const tier of TIERS) {
+      const tierGroups = GROUPS.filter((g) => g.tier === tier);
+      if (tierGroups.length === 0) continue;
+      const heading = document.createElement("div");
+      heading.className = "settings-nav-tier";
+      heading.textContent = TIER_LABELS[tier][lang];
+      settingsNav.appendChild(heading);
+      for (const group of tierGroups) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = group.label[lang];
+        button.dataset.group = group.key;
+        button.addEventListener("click", () => selectGroup(group.key));
+        settingsNav.appendChild(button);
+      }
+    }
+    updateNavActiveState();
+  }
+
+  renderNav();
+  renderFields();
+
+  settingsResetButton.addEventListener("click", () => {
+    localStorage.removeItem(STORAGE_KEY);
+    for (const field of FIELDS)
+      overrides[field.path] = getPath(defaults, field.path);
+    saveOverrides(overrides);
+    renderFields();
+    scheduleRender();
+  });
+
+  function setSettingsOpen(open: boolean): void {
+    settingsOverlay.hidden = !open;
+    settingsToggleButton.setAttribute("aria-expanded", String(open));
+  }
+
+  settingsToggleButton.addEventListener("click", () =>
+    setSettingsOpen(settingsOverlay.hidden),
+  );
+  settingsCloseButton.addEventListener("click", () => setSettingsOpen(false));
+
+  // Native <details> doesn't close itself on an outside click - this menu
+  // should behave like a normal desktop menu bar, so it gets that behavior
+  // explicitly. The second listener closes it after a format is actually
+  // chosen, so picking SVG/PNG/PDF both triggers the download and dismisses
+  // the menu in one click.
+  document.addEventListener("click", (e) => {
+    if (exportDetails.open && !exportDetails.contains(e.target as Node))
+      exportDetails.removeAttribute("open");
+  });
+  exportPanel.addEventListener("click", (e) => {
+    if ((e.target as HTMLElement).tagName === "BUTTON")
+      exportDetails.removeAttribute("open");
+  });
+
+  // --- File lifecycle: dirty tracking, import, save, save as ---
+  //
+  // `fileHandle` is a live FileSystemFileHandle where the File System Access
+  // API is available (Chromium browsers) and the current buffer came from
+  // Import or a prior Save/Save As - it is what lets Save write straight
+  // back to that file with no download prompt and no second copy on disk.
+  // It is null after loading a template (nothing on disk to write back to
+  // yet) and on any browser without the API, where every Save is
+  // necessarily a fresh download instead.
+  let fileHandle: any = null;
+  let dirty = false;
+
+  const updateFileStatus = () => {
+    const name = fileHandle?.name;
+    fileStatusEl.textContent = name
+      ? `${dirty ? "● " : ""}${name}`
+      : dirty
+        ? t({ en: "● unsaved changes", th: "● มีการแก้ไขที่ยังไม่ได้บันทึก" })
+        : "";
+  };
+  const markDirty = () => {
+    dirty = true;
+    updateFileStatus();
+  };
+  const markClean = () => {
+    dirty = false;
+    updateFileStatus();
+  };
+
+  // A close/reload with unsaved changes gets the browser's own confirmation
+  // prompt - `dirty` is exactly "the buffer differs from what Save last
+  // wrote (or what Import/a template last loaded)", so this fires only when
+  // there is genuinely something Save would still have to do.
+  window.addEventListener("beforeunload", (e) => {
+    if (!dirty) return;
+    e.preventDefault();
+    e.returnValue = "";
+  });
+
+  const loadIntoEditor = (text: string) => {
+    const model = editor.getModel()!;
+    editor.executeEdits("load-template", [
+      { range: model.getFullModelRange(), text },
+    ]);
+  };
+
+  const monoFont =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--__sl-font-mono")
+      .trim() || "monospace";
+
+  const editor = monaco.editor.create(editorPane, {
+    value: templateSource("example-khaek-borathes.txml"),
+    language: "xml",
+    automaticLayout: true,
+    minimap: { enabled: false },
+    // Code folding is not something this playground needs, and its chevron
+    // column only adds noise next to the line numbers.
+    folding: true,
+    fontSize: 13,
+    fontFamily: monoFont,
+    scrollBeyondLastLine: false,
+    // The suggest/hover widgets default to clipping at the editor's own
+    // box - this pane's overflow: hidden (see the stylesheet) would clip
+    // them the moment a suggestion list runs past the visible bottom edge,
+    // so they attach to the document instead.
+    fixedOverflowWidgets: true,
+  });
+  initMonacoTheme(monaco);
+
+  editor.onDidChangeModelContent(() => {
+    scheduleRender();
+    markDirty();
+  });
+
+  templateSelect.addEventListener("change", () => {
+    loadIntoEditor(templateSource(templateSelect.value));
+    // A template is a fresh start, not an edit to whatever file was open -
+    // nothing on disk to fall out of sync with yet.
+    fileHandle = null;
+    markClean();
+  });
+
+  // queryPermission()/requestPermission() are asked for at save time, not
+  // right after Import: asking only when a write is actually about to
+  // happen is the documented File System Access pattern, and it means a
+  // read-only visit (import, look, never save) never prompts at all.
+  const canWrite = async (handle: any): Promise<boolean> => {
+    const opts = { mode: "readwrite" };
+    if ((await handle.queryPermission(opts)) === "granted") return true;
+    return (await handle.requestPermission(opts)) === "granted";
+  };
+
+  const saveAs = async (content: string) => {
+    const handle = await (window as any).showSaveFilePicker({
+      suggestedName: `${baseNameFor(content)}.txml`,
+      types: [
+        {
+          description: "ThaiMusicXML",
+          accept: { "application/xml": [".txml"] },
+        },
+      ],
+    });
+    const writable = await handle.createWritable();
+    await writable.write(content);
+    await writable.close();
+    fileHandle = handle;
+  };
+
+  // Save and Save As share this: with no file open yet they behave
+  // identically (both prompt for a new file, or fall back to a plain
+  // download where the File System Access API doesn't exist). Once a file
+  // is open, Save writes straight back to it; Save As (forceNew) always
+  // re-prompts and switches the current target to whatever the user picks,
+  // same as Save As in any desktop editor.
+  const performSave = async (forceNew: boolean): Promise<void> => {
+    const content = editor.getValue();
+    try {
+      if (fileHandle && !forceNew) {
+        if (!(await canWrite(fileHandle))) {
+          statusEl.textContent = t({
+            en: "Write permission for this file was not granted.",
+            th: "ไม่ได้รับสิทธิ์เขียนไฟล์นี้",
+          });
+          return;
+        }
+        const writable = await fileHandle.createWritable();
+        await writable.write(content);
+        await writable.close();
+      } else if ("showSaveFilePicker" in window) {
+        await saveAs(content);
+      } else {
+        // No File System Access API at all (Firefox, Safari): the best this
+        // platform can do is a plain download, same mechanism as Export -
+        // there is no way to avoid a second copy on disk here.
+        const blob = new Blob([content], {
+          type: "application/xml;charset=utf-8",
+        });
+        triggerDownload(blob, `${exportBaseName()}.txml`);
+      }
+      statusEl.textContent = "";
+      markClean();
+    } catch (err) {
+      // The user closing the save picker without choosing anything is not a
+      // failure worth reporting.
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      statusEl.textContent = err instanceof Error ? err.message : String(err);
+    }
+  };
+
+  saveButton.addEventListener("click", () => performSave(false));
+  saveAsButton.addEventListener("click", () => performSave(true));
+
+  importButton.addEventListener("click", async () => {
+    if (!("showOpenFilePicker" in window)) {
+      importFileInput.click();
+      return;
+    }
+    try {
+      const [handle] = await (window as any).showOpenFilePicker({
+        types: [
+          {
+            description: "ThaiMusicXML",
+            accept: { "application/xml": [".txml"] },
+          },
+        ],
+      });
+      const text = await (await handle.getFile()).text();
+      loadIntoEditor(text);
+      fileHandle = handle;
+      markClean();
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      statusEl.textContent = err instanceof Error ? err.message : String(err);
+    }
+  });
+
+  // The <input type="file"> fallback for browsers with no File System
+  // Access API: it can read the picked file but hands back no writable
+  // handle, so Save after this always falls through to a plain download.
+  importFileInput.addEventListener("change", async () => {
+    const file = importFileInput.files?.[0];
+    importFileInput.value = "";
+    if (!file) return;
+    loadIntoEditor(await file.text());
+    fileHandle = null;
+    markClean();
+  });
+
+  // --- Export: SVG, PNG, PDF ---
+  //
+  // Each export button acts on the last successfully rendered score, not on
+  // whatever is in the editor right now: the two agree except while the
+  // editor holds text that fails to parse, and exporting a blank or partial
+  // score then would be worse than exporting the last good one. The buttons
+  // are disabled instead while that gap exists (see the `catch` branch of
+  // renderPreview() below), so "last successful" and "the buttons are even
+  // clickable" stay the same condition.
+  let lastSource = "";
+  let lastWidth = 0;
+  let lastHeight = 0;
+  let lastSvgs: string[] = [];
+
+  const setExportEnabled = (enabled: boolean) => {
+    for (const button of [exportSvgButton, exportPngButton, exportPdfButton])
+      button.disabled = !enabled;
+  };
+  setExportEnabled(false);
+
+  // A source's own <title>, filesystem-safe: strip characters no target
+  // platform's filesystem accepts, since a title is free text and Thai
+  // scores' titles are not filename-shaped by nature. Falls back to a plain
+  // name where the title is empty or entirely made of such characters.
+  const baseNameFor = (source: string): string => {
+    try {
+      const title = parse(source)?.title;
+      const safe = String(title ?? "")
+        .replace(/[/\\:*?"<>|]/g, " ")
+        .trim();
+      return safe || "score";
+    } catch {
+      return "score";
+    }
+  };
+  const exportBaseName = (): string => baseNameFor(lastSource);
+
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  // One file per page for SVG/PNG rather than trying to merge several pages
+  // into a single image: each page is already its own self-contained,
+  // correctly-sized document (draw() embeds the font itself), and a reader
+  // opening "score.svg" for a one-page score should not have to guess
+  // whether a second page exists.
+  const pageFilename = (
+    base: string,
+    ext: string,
+    index: number,
+    total: number,
+  ) => (total > 1 ? `${base}-p${index + 1}.${ext}` : `${base}.${ext}`);
+
+  exportSvgButton.addEventListener("click", () => {
+    const base = exportBaseName();
+    lastSvgs.forEach((svg, i) => {
+      const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      triggerDownload(blob, pageFilename(base, "svg", i, lastSvgs.length));
+    });
+  });
+
+  // Rasterizes by loading the SVG (already self-contained, font and all) as
+  // an <img> and drawing it to a <canvas> - no extra dependency for
+  // something a browser already knows how to do. `scale` renders at 2x the
+  // page's own point size, since a viewer or printer treating those points
+  // as CSS pixels 1:1 would otherwise get a noticeably soft image.
+  const svgToPngBlob = (
+    svg: string,
+    width: number,
+    height: number,
+    scale = 2,
+  ): Promise<Blob> =>
+    new Promise((resolve, reject) => {
+      const svgUrl = URL.createObjectURL(
+        new Blob([svg], { type: "image/svg+xml;charset=utf-8" }),
+      );
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(svgUrl);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("canvas 2D context unavailable"));
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          (blob) =>
+            blob ? resolve(blob) : reject(new Error("PNG export failed")),
+          "image/png",
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(svgUrl);
+        reject(new Error("could not rasterize the preview SVG"));
+      };
+      img.src = svgUrl;
+    });
+
+  exportPngButton.addEventListener("click", async () => {
+    const base = exportBaseName();
+    exportPngButton.disabled = true;
+    try {
+      for (let i = 0; i < lastSvgs.length; i++) {
+        const blob = await svgToPngBlob(lastSvgs[i], lastWidth, lastHeight);
+        triggerDownload(blob, pageFilename(base, "png", i, lastSvgs.length));
+      }
+    } catch (err) {
+      statusEl.textContent = err instanceof Error ? err.message : String(err);
+    } finally {
+      exportPngButton.disabled = false;
+    }
+  });
+
+  // A blank popup holding just the rendered pages, sized to them exactly via
+  // @page, then handed to the browser's own print dialog - "Save as PDF"
+  // there is the export. Building a PDF directly would mean a bundled
+  // library (jsPDF/svg2pdf.js and the bundle weight that brings) just to
+  // redo work the browser already does for free; a plain new window (opened
+  // synchronously, in direct response to the click, so no popup blocker
+  // intervenes) keeps this page's own toolbar and editor out of the printed
+  // output without fighting Starlight's site chrome in print media.
+  exportPdfButton.addEventListener("click", () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      statusEl.textContent = t({
+        en: "Could not open the print window - check your browser's popup blocker.",
+        th: "เปิดหน้าต่างพิมพ์ไม่ได้ - โปรดตรวจสอบตัวบล็อกป๊อปอัปของเบราว์เซอร์",
+      });
+      return;
+    }
+    const title = exportBaseName();
+    printWindow.document.write(
+      `<!doctype html><html><head><title>${title}</title><style>` +
+        `@page { size: ${lastWidth}pt ${lastHeight}pt; margin: 0; }` +
+        `html, body { margin: 0; padding: 0; }` +
+        `svg { display: block; width: ${lastWidth}pt; height: ${lastHeight}pt; page-break-after: always; }` +
+        `svg:last-child { page-break-after: auto; }` +
+        `</style></head><body>${lastSvgs.join("")}</body></html>`,
+    );
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
+  });
+
+  function renderPreview() {
+    const source = editor.getValue();
+    const options = buildOptions(overrides);
+    try {
+      const laidOut = layout(parse(source), options);
+      const svgs = laidOut.pages.map((page: { elements: unknown }) =>
+        draw(
+          {
+            width: laidOut.width,
+            height: laidOut.height,
+            elements: page.elements,
+          },
+          options,
+        ),
+      );
+      previewPane.innerHTML = svgs.join("");
+      statusEl.textContent = "";
+      lastSource = source;
+      lastWidth = laidOut.width;
+      lastHeight = laidOut.height;
+      lastSvgs = svgs;
+      setExportEnabled(true);
+    } catch (err) {
+      statusEl.textContent = err instanceof Error ? err.message : String(err);
+      setExportEnabled(false);
+    }
+  }
+
+  // --- Draggable divider: splits horizontally while the panes sit side by
+  // side, vertically once they stack. ---
+  let ratio = 0.5;
+  const applyRatio = () => {
+    (editorPane as HTMLElement).style.flexGrow = String(ratio);
+    (previewPane as HTMLElement).style.flexGrow = String(1 - ratio);
+  };
+  applyRatio();
+
+  // Asking the layout which way it went, rather than re-testing the width
+  // here: the switch is a container query now (see the <style> block), and
+  // matchMedia cannot express one. Reading the resolved flex-direction also
+  // means the drag axis cannot drift from the CSS if the threshold moves.
+  const isRow = () => getComputedStyle(split).flexDirection === "row";
+  let dragging = false;
+  divider.addEventListener("pointerdown", (e) => {
+    dragging = true;
+    divider.setPointerCapture(e.pointerId);
+  });
+  divider.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const rect = split.getBoundingClientRect();
+    const pos = isRow()
+      ? (e.clientX - rect.left) / rect.width
+      : (e.clientY - rect.top) / rect.height;
+    ratio = Math.min(0.85, Math.max(0.15, pos));
+    applyRatio();
+  });
+  const stopDrag = (e: PointerEvent) => {
+    dragging = false;
+    divider.releasePointerCapture(e.pointerId);
+  };
+  divider.addEventListener("pointerup", stopDrag);
+  divider.addEventListener("pointercancel", stopDrag);
+
+  await ready();
+  renderPreview();
+</script>
