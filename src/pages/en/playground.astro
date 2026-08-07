@@ -55,6 +55,16 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
           >
         </div>
       </details>
+
+      <details class="toolbar-export">
+        <summary>Export</summary>
+        <div class="export-panel">
+          <button type="button" id="export-txml">TXML</button>
+          <button type="button" id="export-svg">SVG</button>
+          <button type="button" id="export-png">PNG</button>
+          <button type="button" id="export-pdf">PDF (print)</button>
+        </div>
+      </details>
     </div>
 
     <div class="split" id="split">
@@ -197,6 +207,37 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 
   .toolbar-settings[open] {
     flex-basis: 100%;
+  }
+
+  .toolbar-export {
+    flex-basis: auto;
+  }
+
+  .export-panel {
+    padding-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .export-panel button {
+    font: inherit;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.25rem;
+    background: transparent;
+    color: var(--sl-color-text);
+    cursor: pointer;
+  }
+
+  .export-panel button:hover:not(:disabled) {
+    border-color: var(--sl-color-text-accent);
+    color: var(--sl-color-text-accent);
+  }
+
+  .export-panel button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .toolbar summary {
@@ -401,6 +442,18 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   const settingsAdvancedGrid = document.getElementById("settings-advanced")!;
   const settingsResetButton = document.getElementById(
     "settings-reset",
+  ) as HTMLButtonElement;
+  const exportTxmlButton = document.getElementById(
+    "export-txml",
+  ) as HTMLButtonElement;
+  const exportSvgButton = document.getElementById(
+    "export-svg",
+  ) as HTMLButtonElement;
+  const exportPngButton = document.getElementById(
+    "export-png",
+  ) as HTMLButtonElement;
+  const exportPdfButton = document.getElementById(
+    "export-pdf",
   ) as HTMLButtonElement;
 
   // --- Rendering settings panel ---
@@ -1171,6 +1224,150 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     });
   });
 
+  // --- Export: TXML, SVG, PNG, PDF ---
+  //
+  // Each export button acts on the last successfully rendered score, not on
+  // whatever is in the editor right now: the two agree except while the
+  // editor holds text that fails to parse, and exporting a blank or partial
+  // score then would be worse than exporting the last good one. The buttons
+  // are disabled instead while that gap exists (see the `catch` branch of
+  // renderPreview() below), so "last successful" and "the buttons are even
+  // clickable" stay the same condition.
+  let lastSource = "";
+  let lastWidth = 0;
+  let lastHeight = 0;
+  let lastSvgs: string[] = [];
+
+  const setExportEnabled = (enabled: boolean) => {
+    for (const button of [
+      exportTxmlButton,
+      exportSvgButton,
+      exportPngButton,
+      exportPdfButton,
+    ])
+      button.disabled = !enabled;
+  };
+  setExportEnabled(false);
+
+  // A source's own <title>, filesystem-safe: strip characters no target
+  // platform's filesystem accepts, since a title is free text and Thai
+  // scores' titles are not filename-shaped by nature. Falls back to a plain
+  // name where the title is empty or entirely made of such characters.
+  const exportBaseName = (): string => {
+    try {
+      const title = parse(lastSource)?.title;
+      const safe = String(title ?? "")
+        .replace(/[/\\:*?"<>|]/g, " ")
+        .trim();
+      return safe || "score";
+    } catch {
+      return "score";
+    }
+  };
+
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  // One file per page for SVG/PNG rather than trying to merge several pages
+  // into a single image: each page is already its own self-contained,
+  // correctly-sized document (draw() embeds the font itself), and a reader
+  // opening "score.svg" for a one-page score should not have to guess
+  // whether a second page exists.
+  const pageFilename = (base: string, ext: string, index: number, total: number) =>
+    total > 1 ? `${base}-p${index + 1}.${ext}` : `${base}.${ext}`;
+
+  exportTxmlButton.addEventListener("click", () => {
+    const blob = new Blob([lastSource], { type: "application/xml;charset=utf-8" });
+    triggerDownload(blob, `${exportBaseName()}.txml`);
+  });
+
+  exportSvgButton.addEventListener("click", () => {
+    const base = exportBaseName();
+    lastSvgs.forEach((svg, i) => {
+      const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      triggerDownload(blob, pageFilename(base, "svg", i, lastSvgs.length));
+    });
+  });
+
+  // Rasterizes by loading the SVG (already self-contained, font and all) as
+  // an <img> and drawing it to a <canvas> - no extra dependency for
+  // something a browser already knows how to do. `scale` renders at 2x the
+  // page's own point size, since a viewer or printer treating those points
+  // as CSS pixels 1:1 would otherwise get a noticeably soft image.
+  const svgToPngBlob = (svg: string, width: number, height: number, scale = 2): Promise<Blob> =>
+    new Promise((resolve, reject) => {
+      const svgUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(svgUrl);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("canvas 2D context unavailable"));
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("PNG export failed"))), "image/png");
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(svgUrl);
+        reject(new Error("could not rasterize the preview SVG"));
+      };
+      img.src = svgUrl;
+    });
+
+  exportPngButton.addEventListener("click", async () => {
+    const base = exportBaseName();
+    exportPngButton.disabled = true;
+    try {
+      for (let i = 0; i < lastSvgs.length; i++) {
+        const blob = await svgToPngBlob(lastSvgs[i], lastWidth, lastHeight);
+        triggerDownload(blob, pageFilename(base, "png", i, lastSvgs.length));
+      }
+    } catch (err) {
+      statusEl.textContent = err instanceof Error ? err.message : String(err);
+    } finally {
+      exportPngButton.disabled = false;
+    }
+  });
+
+  // A blank popup holding just the rendered pages, sized to them exactly via
+  // @page, then handed to the browser's own print dialog - "Save as PDF"
+  // there is the export. Building a PDF directly would mean a bundled
+  // library (jsPDF/svg2pdf.js and the bundle weight that brings) just to
+  // redo work the browser already does for free; a plain new window (opened
+  // synchronously, in direct response to the click, so no popup blocker
+  // intervenes) keeps this page's own toolbar and editor out of the printed
+  // output without fighting Starlight's site chrome in print media.
+  exportPdfButton.addEventListener("click", () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      statusEl.textContent = "Could not open the print window - check your browser's popup blocker.";
+      return;
+    }
+    const title = exportBaseName();
+    printWindow.document.write(
+      `<!doctype html><html><head><title>${title}</title><style>` +
+        `@page { size: ${lastWidth}pt ${lastHeight}pt; margin: 0; }` +
+        `html, body { margin: 0; padding: 0; }` +
+        `svg { display: block; width: ${lastWidth}pt; height: ${lastHeight}pt; page-break-after: always; }` +
+        `svg:last-child { page-break-after: auto; }` +
+        `</style></head><body>${lastSvgs.join("")}</body></html>`,
+    );
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
+  });
+
   function renderPreview() {
     const source = view.state.doc.toString();
     const options = buildOptions(overrides);
@@ -1188,8 +1385,14 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
       );
       previewPane.innerHTML = svgs.join("");
       statusEl.textContent = "";
+      lastSource = source;
+      lastWidth = laidOut.width;
+      lastHeight = laidOut.height;
+      lastSvgs = svgs;
+      setExportEnabled(true);
     } catch (err) {
       statusEl.textContent = err instanceof Error ? err.message : String(err);
+      setExportEnabled(false);
     }
   }
 
