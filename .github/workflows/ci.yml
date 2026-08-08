@@ -36,6 +36,9 @@ jobs:
       - name: Check conformance corpus
         run: pnpm run check:corpus
 
+      - name: Run renderer unit tests
+        run: pnpm run check:layout
+
       # Regenerates the XSD on every run, both to catch a schema that trang
       # can no longer convert and to keep the committed files in sync. It's
       # committed twice: public/schema/ is the downloadable copy (same

@@ -12,9 +12,10 @@ start:
 install:
 	corepack pnpm install --frozen-lockfile
 
+# Delegates to package.json's own check rather than listing the steps again,
+# so the two cannot drift the way they did when a third step was added here.
 check:
-	corepack pnpm run check:links
-	corepack pnpm run check:corpus
+	corepack pnpm run check
 
 ci: install check build
 
