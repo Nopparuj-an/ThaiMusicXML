@@ -2,9 +2,16 @@
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
   <header>
     <title>ลาวดวงเดือน</title>
-    <composer>พระเจ้าบรมวงศ์เธอ กรมหมื่นพิไชยมหินทโรดม</composer>
+    <composer><text align="right">ทำนอง: พระเจ้าบรมวงศ์เธอ กรมหมื่นพิไชยมหินทโรดม</text></composer>
+    <lyricist><text align="right">เนื้อร้อง: พระเจ้าบรมวงศ์เธอ กรมหมื่นพิไชยมหินทโรดม</text></lyricist>
+    <arranger><text align="right">รวบรวมและดัดแปลงจากหลายแหล่ง</text></arranger>
+    <license>PUBLIC DOMAIN</license>
+    <tuning reference="khrueang-sai"/>
   </header>
   <structure>
+    <br/>
+    <annotation>เพลงลาวดำเนินเกวียน (นิยมเรียกว่า ลาวดวงเดือน) เป็นเพลงไทยเดิมพระนิพนธ์ของพระเจ้าบรมวงศ์เธอ กรมหมื่นพิไชยมหินทโรดม พระราชโอรสพระองค์ที่ 41 ของพระบาทสมเด็จพระจุลจอมเกล้าเจ้าอยู่หัว</annotation>
+    <br/>
     <direction>
       <nathap value="ลาว" />
       <chan value="2" />
