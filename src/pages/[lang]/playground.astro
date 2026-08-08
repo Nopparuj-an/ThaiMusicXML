@@ -24,6 +24,10 @@ function t(strings: Record<Lang, string>): string {
 
 const templates: { value: string; label: Record<Lang, string> }[] = [
   {
+    value: "example-lao-duang-duean.txml",
+    label: { en: "Example: ลาวดวงเดือน", th: "ตัวอย่าง: ลาวดวงเดือน" },
+  },
+  {
     value: "example-khaek-borathes.txml",
     label: { en: "Example: แขกบรเทศ", th: "ตัวอย่าง: แขกบรเทศ" },
   },
@@ -1673,7 +1677,7 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       .trim() || "monospace";
 
   const editor = monaco.editor.create(editorPane, {
-    value: templateSource("example-khaek-borathes.txml"),
+    value: templateSource("example-lao-duang-duean.txml"),
     language: "xml",
     automaticLayout: true,
     minimap: { enabled: false },
