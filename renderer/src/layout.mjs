@@ -12,7 +12,7 @@
 // that can be compared against a stored copy.
 
 import { defaults } from "./settings.mjs";
-import { wrapText } from "./text.mjs";
+import { textWidth, wrapText } from "./text.mjs";
 
 // The Thai octave modifiers a pitch may spell directly (see note.md's Pitch
 // format). Neither is drawn as its own diacritic - glyph() strips whichever
@@ -139,6 +139,86 @@ export function linkSpan(rows) {
 export function columnX(column, total, cellLeft, cellWidth, spread) {
   const step = (cellWidth * spread) / total;
   return cellLeft + cellWidth / 2 + (column - (total + 1) / 2) * step;
+}
+
+// ---------------------------------------------------------------------------
+// Fitting words into a cell
+// ---------------------------------------------------------------------------
+
+/**
+ * Push overlapping boxes apart, moving each as little as possible.
+ *
+ * Syllables want to sit under their beats, and a word several times wider than
+ * a pitch letter cannot always have that. Where two of them collide, both give
+ * ground rather than the later one being shoved the whole way: the run keeps
+ * its order and its minimum spacing, and every box ends up as near its target
+ * as those two things allow. That is least-squares under an ordering
+ * constraint, which pool-adjacent-violators solves exactly in one pass.
+ *
+ * Subtracting each box's running minimum offset turns "far enough apart" into
+ * plain "non-decreasing", which is the form the pooling works on; adding the
+ * offsets back afterward restores real page coordinates.
+ *
+ * @param {number[]} targets where each box would sit if nothing were in its way
+ * @param {number[]} widths box widths, same order
+ * @param {number} gap the clear space to keep between neighbours
+ * @param {number} lo left edge the run must stay inside
+ * @param {number} hi right edge the run must stay inside
+ * @returns {number[]} centers, in the order given
+ */
+export function nudge(targets, widths, gap, lo, hi) {
+  const n = targets.length;
+  if (n === 0) return [];
+
+  const offsets = [0];
+  for (let i = 1; i < n; i++)
+    offsets.push(offsets[i - 1] + (widths[i - 1] + widths[i]) / 2 + gap);
+
+  // Each block is a run of boxes that turned out to want the same position, so
+  // they travel together from here on and take the average of what they wanted.
+  const blocks = [];
+  targets.forEach((target, i) => {
+    blocks.push({ sum: target - offsets[i], count: 1 });
+    while (blocks.length > 1) {
+      const last = blocks.at(-1);
+      const before = blocks.at(-2);
+      if (before.sum / before.count <= last.sum / last.count) break;
+      blocks.pop();
+      before.sum += last.sum;
+      before.count += last.count;
+    }
+  });
+
+  const xs = [];
+  for (const block of blocks)
+    for (let i = 0; i < block.count; i++) xs.push(block.sum / block.count + offsets[xs.length]);
+
+  // The run now holds together, but it may have grown past the cell doing it.
+  // Slide it whole, which costs the shape nothing; if it is wider than the cell
+  // even after shrinking, center the overflow so it spills both ways equally.
+  const runLeft = xs[0] - widths[0] / 2;
+  const runRight = xs[n - 1] + widths[n - 1] / 2;
+  const shift =
+    runRight - runLeft > hi - lo
+      ? (lo + hi) / 2 - (runLeft + runRight) / 2
+      : Math.max(0, lo - runLeft) - Math.max(0, runRight - hi);
+  return shift === 0 ? xs : xs.map((x) => x + shift);
+}
+
+/**
+ * The largest type size a measure's syllables all fit into its cell at.
+ *
+ * Widths, the gaps between them and the padding at the cell's edges all scale
+ * with the size, so the answer is one division rather than a search. Returns
+ * Infinity for a measure with nothing to fit, which then constrains nothing.
+ */
+export function lyricFitSize(texts, cellWidth, settings) {
+  if (texts.length === 0) return Infinity;
+  const perSize =
+    texts.reduce((total, text) => total + textWidth(text, 1), 0) +
+    (texts.length - 1) * settings.lyricGap +
+    2 * settings.lyricPad;
+  return cellWidth / perSize;
 }
 
 // ---------------------------------------------------------------------------
@@ -714,7 +794,18 @@ export function layout(score, options = {}) {
         const measure = r.line.measures[m];
         if (!measure) return null;
         if (r.part.type === "lyric") {
-          return { part: r.part, measure, lyric: true, baseline: r.top + s.rowHeight / 2 + s.lyricSize / 3 };
+          // The words come first here: a cell packed with long syllables sets
+          // smaller than the cell beside it rather than dragging the whole row
+          // down with it. The step between two neighbouring cells is visible,
+          // and it is the cheaper of the two - one crowded measure should not
+          // cost the rest of the line its type size.
+          const fit = lyricFitSize(
+            measure.items.filter((item) => item.kind === "syllable").map((item) => item.text),
+            cellWidth,
+            s,
+          );
+          const size = Math.max(s.lyricMinSize, Math.min(s.lyricSize, fit));
+          return { part: r.part, measure, lyric: true, size, baseline: r.top + s.rowHeight / 2 + size / 3 };
         }
         return {
           part: r.part,
@@ -742,14 +833,30 @@ export function layout(score, options = {}) {
           const aligned = n === beatArrivals.length;
           const at = (i) =>
             aligned ? x(beatArrivals[i]) : columnX(i + 1, n, cellLeft, cellWidth, s.spread);
-          items.forEach((item, i) => {
-            if (item.kind !== "syllable") return;
+
+          // Where the words are too wide for the beats they belong to, the
+          // beats give: a syllable moves off its arrival into whatever room
+          // the cell has left rather than printing on top of its neighbour.
+          // Only the syllables take part - a <rest> is blank space, so it
+          // neither needs room nor stops a word using its own.
+          const sung = items.map((item, i) => ({ item, i })).filter(({ item }) => item.kind === "syllable");
+          const size = row.size;
+          const pad = s.lyricPad * size;
+          const xs = nudge(
+            sung.map(({ i }) => at(i)),
+            sung.map(({ item }) => textWidth(item.text, size)),
+            s.lyricGap * size,
+            cellLeft + pad,
+            cellLeft + cellWidth - pad,
+          );
+
+          sung.forEach(({ item }, k) => {
             push({
               kind: "text",
-              x: at(i),
+              x: xs[k],
               y: row.baseline,
               text: item.text,
-              size: s.lyricSize,
+              size,
               anchor: "middle",
               role: "lyric",
             });

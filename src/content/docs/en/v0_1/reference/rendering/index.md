@@ -20,6 +20,7 @@ None of these lives in the document. There is nowhere in a ThaiMusicXML file to 
 | Octave mark shape and size | A small dot, drawn independent of the typeface | [Octave marks](#octave-marks) |
 | How thoroughly rests print | A hyphen for every rest in every notated part, blank in a lyric row | [Inside a measure](#inside-a-measure) |
 | Lyric row type size | Smaller than the notated rows | [Lyric rows](#lyric-rows) |
+| What happens when the words do not fit | The syllables move off their beats first, then that measure sets smaller | [Words that do not fit](#words-that-do-not-fit) |
 | Instrument-name labels | Top-right corner on a solo score; a deduplicated label column on an ensemble score | [Instrument names](#instrument-names) |
 | `name` printed as a section heading | Off | [Section headings](#section-headings) |
 | `<tuning>`, `<license>`, and `<bpm>` on the page | Off | [The title band](#the-title-band) |
@@ -113,6 +114,16 @@ Lyric rows take no part in the [subdivision count](#inside-a-measure). That coun
 That has a consequence worth planning for: a syllable is several times wider than a pitch letter, and nothing widens the cell to help. The items pack closer together, the way symbols do everywhere else in the grid. A renderer may also set the lyric row in a smaller size than the notated rows to buy the room back.
 
 A `<rest>` in a lyric row prints as blank space rather than as the hyphen it takes in a notated part. A hyphen between two syllables reads as a broken word, which is not what the rest means. It means no new syllable starts there and the vowel already sounding carries on, which is เอื้อน.
+
+### Words that do not fit
+
+A cell sized by the music will not always hold the words that go under it. Two things can happen then, and this section sets the order they happen in.
+
+The syllables move first. A word that would otherwise print on top of its neighbour shifts along the row into whatever space the cell has left, keeping the order it was written in, a clear gap from its neighbours, and both barlines. Where two collide they both move rather than the later one being shoved the whole way, so each ends up as near its own beat as the others allow. A syllable a few points off its arrival still reads as belonging to that beat; two syllables printed on top of each other read as nothing at all.
+
+Where the words are wider than the cell however they are arranged, that measure sets in a smaller size. Per measure, not per row: the cells beside it keep the size the rest of the score is set in. The step between two neighbouring cells is visible, and it costs less than taking a whole line down for the sake of one measure of it.
+
+Below some size the words stop being legible, so a renderer stops shrinking there and lets what is left overhang. A single word wider than a cell at that floor is past what layout can do for it, and the fix is the arranger's: write it as the syllables it is sung on.
 
 ## The title band
 

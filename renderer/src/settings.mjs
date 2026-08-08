@@ -21,7 +21,14 @@ export const defaults = {
   // insert one. `height` above is then a starting value only: the actual
   // page comes back however tall the content needs, still `width` wide with
   // the same margins on every edge, so no measure ever moves for it.
-  page: { width: 595.28, height: 841.89, marginSide: 42, marginTop: 42, marginBottom: 42, infinite: false },
+  page: {
+    width: 595.28,
+    height: 841.89,
+    marginSide: 42,
+    marginTop: 42,
+    marginBottom: 42,
+    infinite: false,
+  },
 
   // Fixed by "The measure grid": the cell width is the usable width divided by
   // eight whatever a line actually holds.
@@ -167,6 +174,24 @@ export const defaults = {
   // smaller to buy some of that room back. OPEN.
   lyricSize: 10,
 
+  // Words that will not fit where their beats are. Two things give, in this
+  // order: the syllables shift off their arrivals into whatever room the cell
+  // has left, and if that is still not enough that one measure sets smaller,
+  // down to lyricMinSize. Both are best effort - a word can be wider than the
+  // cell on its own, and then it simply overhangs.
+  //
+  // Shifting first is deliberate. The alignment is worth more than the type
+  // size on a measure that misses by a little, and a beat's syllable is still
+  // recognisably under its beat once it has moved a few points.
+  //
+  // Sizes are x the lyric size, so they hold as that changes. lyricGap is the
+  // clear space between neighbouring syllables and lyricPad the same at the
+  // cell's two edges, which is what keeps a word off the barline. OPEN, all
+  // three: nothing printed settles them.
+  lyricGap: 0.3,
+  lyricPad: 0.25,
+  lyricMinSize: 6,
+
   // Bow spans. Drawn as an arc above the row - "in" domes up toward the row
   // above, "out" is the same arc mirrored back down toward the row's own
   // notes, the direction itself being the "tips pointing down"/"pointing
@@ -182,7 +207,7 @@ export const defaults = {
   // against a printed score the way the link curve was: this is a first
   // pass, not a settled convention.
   bowTop: 1.05,
-  bowRise: 0.5,
+  bowRise: 0.4,
   bowStroke: 0.8,
 
   // A bow marked on a single note has nothing to span - its start and stop
@@ -210,7 +235,7 @@ export const defaults = {
   labelGap: 0.4,
 
   // Repeat brackets: a bracket in the margin right of the grid. OPEN.
-  repeatBracketGap: 0.6, // gap between the grid and the bracket, x pitchSize
+  repeatBracketGap: 0.8, // gap between the grid and the bracket, x pitchSize
   repeatBracketDepth: 0.5, // how far the bracket's arms reach in, x pitchSize
   repeatBracketStroke: 0.8,
   repeatLabelSize: 10,

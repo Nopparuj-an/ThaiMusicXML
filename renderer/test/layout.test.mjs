@@ -11,10 +11,10 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { shares, arrivals, columnX, linkSpan, layout, glyph } from "../src/layout.mjs";
+import { shares, arrivals, columnX, linkSpan, layout, glyph, nudge, lyricFitSize } from "../src/layout.mjs";
 import { parse } from "../src/parse.mjs";
 import { defaults } from "../src/settings.mjs";
-import { textReady } from "../src/text.mjs";
+import { textReady, textWidth } from "../src/text.mjs";
 
 await textReady();
 
@@ -838,6 +838,94 @@ test("a lyric measure not matching the beat count centers as one group, and a ly
 
   const noteArrival = byRole(pages[0], "symbol")[0].x;
   assert.notEqual(syllables[0].x, noteArrival, "the centered group makes no claim on any beat's arrival");
+});
+
+// Fitting words into a cell.
+
+test("boxes already clear of each other are left where they were", () => {
+  assert.deepEqual(nudge([10, 30, 50], [4, 4, 4], 1, 0, 100), [10, 30, 50]);
+});
+
+test("two boxes in the same place part evenly, each giving half the ground", () => {
+  const xs = nudge([20, 20], [4, 4], 2, 0, 100);
+  near(xs[0], 17, "the first backs off by half the overlap");
+  near(xs[1], 23, "and the second by the other half");
+  near(xs[1] - xs[0], 6, "which leaves them exactly the gap apart");
+});
+
+test("a run pushed past the cell's edge slides back inside whole", () => {
+  const xs = nudge([95, 96], [10, 10], 2, 0, 100);
+  near(xs[1] - xs[0], 12, "the spacing survives the slide");
+  assert.ok(xs[1] + 5 <= 100 + 1e-9, "the last box ends inside the right edge");
+});
+
+test("a run wider than the cell overhangs both edges equally rather than one", () => {
+  const xs = nudge([10, 20], [40, 40], 2, 0, 50);
+  near((xs[0] + xs[1]) / 2, 25, "what will not fit is centered on the cell");
+});
+
+test("the fitted size is the one that fills the cell exactly, gaps and padding included", () => {
+  const s = defaults;
+  const size = lyricFitSize(["กก", "ขข"], 100, s);
+  const used =
+    textWidth("กก", size) + textWidth("ขข", size) + s.lyricGap * size + 2 * s.lyricPad * size;
+  near(used, 100, "the words, the gap between them and both margins add up to the cell");
+  assert.equal(lyricFitSize([], 100, s), Infinity, "a measure with no words constrains nothing");
+});
+
+test("syllables too wide for their beats shift apart, and shrink only where shifting cannot save them", () => {
+  const words = ["เพราะ", "เสียง", "เพลง", "เพลิน"];
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble>
+    <part id="P1"/>
+    <part id="P2" type="lyric"/>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+        <measure number="2"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><syllable>ละ</syllable><syllable>หนอ</syllable><rest/><rest/></measure>
+        <measure number="2">${words.map((w) => `<syllable>${w}</syllable>`).join("")}</measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const syllables = byRole(pages[0], "lyric");
+  const s = defaults;
+  const cellLeft = s.page.marginSide;
+  const cellWidth = (s.page.width - 2 * cellLeft) / 8;
+
+  const easy = syllables.filter((t) => !words.includes(t.text));
+  assert.equal(easy.length, 2);
+  for (const t of easy) assert.equal(t.size, s.lyricSize, "a measure with room keeps the full size");
+
+  const crowded = syllables.filter((t) => words.includes(t.text));
+  assert.equal(crowded.length, 4);
+  assert.ok(crowded[0].size < s.lyricSize, "the packed measure sets smaller to fit");
+  assert.ok(crowded[0].size >= s.lyricMinSize, "but never past the legibility floor");
+
+  // Nothing overlaps and nothing crosses a barline, which is the whole point.
+  const half = (t) => textWidth(t.text, t.size) / 2;
+  for (const t of syllables) {
+    const cell = t.x < cellLeft + cellWidth ? cellLeft : cellLeft + cellWidth;
+    assert.ok(t.x - half(t) >= cell - 1e-9, `${t.text} clears the barline on its left`);
+    assert.ok(t.x + half(t) <= cell + cellWidth + 1e-9, `${t.text} clears the barline on its right`);
+  }
+  for (let i = 1; i < crowded.length; i++) {
+    const gap = crowded[i].x - half(crowded[i]) - (crowded[i - 1].x + half(crowded[i - 1]));
+    assert.ok(gap >= s.lyricGap * crowded[i].size - 1e-9, "neighbouring words keep clear of each other");
+  }
 });
 
 // Instrument-name labels.
