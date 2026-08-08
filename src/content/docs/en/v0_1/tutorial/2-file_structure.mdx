@@ -1,13 +1,15 @@
 ---
 title: File Structure
 description: How ThaiMusicXML files are organized
+sidebar:
+  order: 2
 ---
 
 import ExampleXml from "@/components/ExampleXml.astro";
 
-The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument and one section. This example adds a second instrument, annotations and performance directions in `<structure>`, and a repeat.
+The [Hello World](/en/v0_1/tutorial/1-hello_world/) example used one instrument and one section. This page adds a second instrument, performance directions, annotations, and a repeat, using the real ลาวดวงเดือน (Lao Duang Duen).
 
-![Example Song](../../../../../assets/docs/v0_1/tutorial/2-file_structure/image.png)
+![ลาวดวงเดือน, ท่อน 1](../../../../../assets/docs/v0_1/tutorial/2-file_structure/image.png)
 
 ## Example XML
 
@@ -19,46 +21,44 @@ The `<header>` can include a `<composer>` alongside `<title>`:
 
 ```xml
 <header>
-  <title>Example Song</title>
-  <composer>Example Composer</composer>
+  <title>ลาวดวงเดือน</title>
+  <composer><text align="right">ทำนอง: พระเจ้าบรมวงศ์เธอ กรมหมื่นพิไชยมหินทโรดม</text></composer>
 </header>
 ```
 
+Like `<annotation>`, `<composer>` can hold plain text or a `<text>` child with an `align` attribute. Here the composer line is right-aligned.
+
 ## Structure
 
-The `<structure>` element can contain several child types that describe the score layout:
+The `<structure>` element holds the score layout. It can contain annotations, performance directions, sections, and repeats:
 
 ```xml
 <structure>
-  <annotation>Example Comments</annotation>
   <direction>
-    <chan value="1" />
-    <bpm>65</bpm>
+    <nathap value="ลาว" />
+    <chan value="2" />
+    <bpm>60</bpm>
   </direction>
-  <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
   <repeat times="2">
+    <annotation>ท่อน 1</annotation>
     <section id="s1" name="ท่อน 1" />
+    <annotation>
+      <text align="right">(กลับต้น)</text>
+    </annotation>
   </repeat>
-  <annotation>End of section 1 message</annotation>
 </structure>
 ```
 
-- **`<annotation>`**: Free-form comments that can appear anywhere. Playback ignores them. An annotation in `<structure>` applies to the whole score; one inside a `<section-ref>` applies to that part only. It can contain plain text, which is left aligned, or up to one `<text>` child for each alignment:
+- **`<direction>`**: Performance directions that apply to the whole score.
+  - `<nathap>` names the drum cycle, here หน้าทับลาว.
+  - `<chan>` sets the ชั้น (rhythmic layer). `value="2"` means สองชั้น. ชั้น is not tempo; it is the spacing of the ฉิ่ง cycle. See [The score model](/en/v0_1/tutorial/3-the_score_model/) for the distinction.
+  - `<bpm>` fixes the tempo at 60 beats per minute.
+- **`<repeat times="2">`**: Wrapping a section in `<repeat>` plays it more than once. Here ท่อน 1 plays twice.
+- **`<annotation>`**: Free-form text. Inside `<structure>`, annotations label sections and add performance notes. The `<text align="right">(กลับต้น)</text>` annotation tells the player to return to the beginning.
 
-  ```xml
-  <annotation>
-    <text align="left">ท่อน 1</text>
-    <text align="center">Lao Duang Duen</text>
-    <text align="right">หน้า 1</text>
-  </annotation>
-  ```
+## Line and measure numbering
 
-  The `align` value can be `left`, `center`, or `right`. Do not mix plain text with `<text>` children.
-
-- **`<direction>`**: Performance directions. This example sets the ชั้น (`<chan>`) and tempo (`<bpm>`). ชั้น (chan) is the Thai rhythmic layer system. `value="1"` means ชั้นเดียว.
-- **`<section>`**: A named section. Wrapping it in a **`<repeat>`** plays it more than once. Repeats nest, so layering them multiplies the play count.
-
-Line and measure numbers are local to their parent elements. Lines start at `1` in each `<section-ref>`, and measures start at `1` in each `<line>`:
+Line and measure numbers are local to their parent. Lines start at `1` in each `<section-ref>`, and measures start at `1` in each `<line>`:
 
 ```xml
 <section-ref section="s1">
@@ -70,15 +70,9 @@ Line and measure numbers are local to their parent elements. Lines start at `1` 
     <measure number="1">...</measure>
   </line>
 </section-ref>
-
-<section-ref section="s2">
-  <line number="1">
-    <measure number="1">...</measure>
-  </line>
-</section-ref>
 ```
 
-A section's order comes from its position among the `<section>` elements in `<structure>`, not from an attribute. That order does not continue line or measure numbering across sections, and repeating a section does not change these numbers either.
+A section's order comes from its position in `<structure>`, not from an attribute. Repeating a section does not change line or measure numbers. The second playthrough restarts at line 1, measure 1. See [Sections, repeats, and endings](/en/v0_1/tutorial/6-sections_repeats_endings/) for nested repeats and `<line-repeat>`.
 
 ## Multiple instruments
 
@@ -87,30 +81,53 @@ The `<ensemble>` can list multiple parts:
 ```xml
 <ensemble>
   <part id="P1">
-    <instrument-name>Ranat Ek</instrument-name>
+    <instrument-name>ระนาดเอก</instrument-name>
+    <instrument-short-name>รน.เอก</instrument-short-name>
   </part>
   <part id="P2" type="unpitched">
-    <instrument-name>Ching</instrument-name>
+    <instrument-name>ฉิ่ง</instrument-name>
   </part>
 </ensemble>
 ```
 
-Each instrument gets its own `<part-data>` element naming it through the `part` attribute. Here, P1 is a Ranat Ek (ระนาดเอก, a Thai xylophone) and P2 is a Ching (ฉิ่ง, small cymbals). P2 has `type="unpitched"`, so its notes use `sound` instead of `pitch`.
+P1 is a ระนาดเอก (Ranat Ek, a Thai xylophone). `<instrument-short-name>` gives a shorter label for tight layouts.
+
+P2 is a ฉิ่ง (Ching, small cymbals). Adding `type="unpitched"` means its notes use `sound` instead of `pitch`:
+
+```xml
+<rest/><rest/><rest/><note sound="ฉิ่ง"/>
+```
+
+`sound="ฉิ่ง"` is the open stroke and `sound="ฉับ"` is the closed stroke. This piece is สองชั้น, so the ฉิ่ง plays one stroke per measure, alternating ฉิ่ง and ฉับ every measure. The three rests before each stroke fill the other three slots.
 
 ## Part data
 
-Each `<part-data>` links to a section through `<section-ref>`. The Ching part includes an annotation explaining its notation:
+Each instrument gets its own `<part-data>` element. The `part` attribute links back to a `<part>` in `<ensemble>`:
 
 ```xml
-<part-data part="P2">
+<part-data part="P1">
   <section-ref section="s1">
-    <annotation>0 = ฉิ่ง / 1 = ฉับ</annotation>
     <line number="1">
-      <measure number="1"><rest/><note sound="0"/><rest/><note sound="1"/></measure>
+      <measure number="1"><rest/><rest/><rest/><rest/></measure>
+      <measure number="2"><rest/><rest/><rest/><rest/></measure>
+      <measure number="3"><rest/><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/></measure>
+      <measure number="4"><rest/><note pitch="ซ"/><rest/><note pitch="ด"/></measure>
       ...
     </line>
   </section-ref>
 </part-data>
 ```
 
-An annotation inside a `<section-ref>` applies to that part alone, so this one documents the Ching notation convention without cluttering the other instruments: `0` means ฉิ่ง (open) and `1` means ฉับ (closed).
+Every `<part-data>` follows the same structure: `<section-ref>` linking to a section, then `<line>` and `<measure>` elements. Each measure holds exactly four note slots. This piece has four beats per measure, and each beat is one slot.
+
+The first two measures of line 1 are all rests. The ระนาดเอก enters in measure 3. A rest means the instrument strikes nothing new on that beat; it is not silence.
+
+---
+
+Next, see [The score model](/en/v0_1/tutorial/3-the_score_model/) for the conceptual foundations that make these elements work the way they do.
+
+:::note[Elements introduced]
+[`<composer>`](/en/v0_1/reference/elements/composer/), [`<direction>`](/en/v0_1/reference/elements/direction/), [`<nathap>`](/en/v0_1/reference/elements/nathap/), [`<chan>`](/en/v0_1/reference/elements/chan/), [`<bpm>`](/en/v0_1/reference/elements/bpm/), [`<repeat>`](/en/v0_1/reference/elements/repeat/), [`<annotation>`](/en/v0_1/reference/elements/annotation/), [`<text>`](/en/v0_1/reference/elements/text/), [`<instrument-short-name>`](/en/v0_1/reference/elements/instrument-short-name/)
+:::
+
+[Try it in the Playground](/en/playground/)

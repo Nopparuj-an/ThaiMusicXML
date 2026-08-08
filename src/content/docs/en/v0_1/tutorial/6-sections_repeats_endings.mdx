@@ -1,0 +1,116 @@
+---
+title: Sections, repeats, and endings
+description: How scores organize sections and handle repeats
+sidebar:
+  order: 6
+---
+
+import ExampleXml from "@/components/ExampleXml.astro";
+
+[File Structure](/en/v0_1/tutorial/2-file_structure/) showed a single section repeated. This page adds several sections, nested repeats, line-repeats, and a second ending. All of these appear in ลาวดวงเดือน.
+
+![ลาวดวงเดือน, ท่อน 1 and 2](../../../../../assets/docs/v0_1/tutorial/6-sections_repeats_endings/image.png)
+
+## Multiple sections
+
+A score can have several sections. Their order comes from their position in `<structure>`, not from an attribute:
+
+```xml
+<structure>
+  <section id="s1" name="ท่อน 1" />
+  <section id="s2" name="ท่อน 2" />
+  <section id="s3" name="ท่อน 3" />
+</structure>
+```
+
+ท่อน 1 plays first, then ท่อน 2, then ท่อน 3. Renaming the `id` or moving the `<section>` element changes the order. Each section's `<section-ref>` in `<part-data>` links to it by `id`.
+
+## Wrapping sections in repeats
+
+A `<repeat>` around a section plays it more than once. The tutorial file wraps each section:
+
+```xml
+<repeat times="2">
+  <annotation>ท่อน 1</annotation>
+  <section id="s1" name="ท่อน 1" />
+  <annotation>
+    <text align="right">(กลับต้น)</text>
+  </annotation>
+</repeat>
+```
+
+ท่อน 1 plays twice. The annotation "(กลับต้น)" tells the player to return to the beginning of the section. Repeats nest: wrapping a `<repeat>` inside another multiplies the counts.
+
+## Line and measure numbers restart
+
+Line and measure numbers are local to their parent. When a section repeats, the second playthrough restarts at line 1, measure 1. The numbers do not accumulate across repeats.
+
+```xml
+<!-- First play: line 1, measure 1 through 8 -->
+<!-- Second play: line 1, measure 1 through 8 again -->
+```
+
+This keeps references simple: "line 2, measure 5" means the same thing every time the section plays.
+
+## Line-repeat
+
+`<line-repeat>` repeats one or more lines within a section, without rewriting them:
+
+```xml
+<section id="s2" name="ท่อน 2">
+  <line-repeat first="5" last="5" times="2"/>
+</section>
+```
+
+This repeats line 5 of ท่อน 2 twice. The `first` and `last` attributes name a range of lines; when they are the same, a single line repeats. When they differ, the whole range repeats.
+
+From ลาวดวงเดือน, ท่อน 3 uses a range:
+
+```xml
+<section id="s3" name="ท่อน 3">
+  <line-repeat first="1" last="2" times="2"/>
+  <line-repeat first="4" last="4" times="2"/>
+</section>
+```
+
+Lines 1 through 2 repeat twice, then line 4 repeats twice. The `<line-repeat>` elements are children of `<section>`, not of `<structure>`.
+
+## Endings
+
+Sometimes the last line of a section differs on the final repeat. `<ending pass="2">` provides an alternate version of that line, used only on the specified pass:
+
+```xml
+<ending pass="2">
+  <annotation>ลงเที่ยว 2</annotation>
+  <line number="4">
+    <measure number="1"></measure>
+    <measure number="2"></measure>
+    <measure number="3"></measure>
+    <measure number="4"></measure>
+    <measure number="5"></measure>
+    <measure number="6"></measure>
+    <measure number="7"><rest/><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/></measure>
+    <measure number="8"><rest/><note pitch="ร"/><rest/><note pitch="ด"/></measure>
+  </line>
+</ending>
+```
+
+The `<ending>` replaces the corresponding line on the specified pass. On pass 1, the original line 4 plays as written. On pass 2, measures 1 through 6 are empty (the part rests) and measures 7 through 8 play the closing phrase. The annotation "ลงเที่ยว 2" marks the ending for the player.
+
+An `<ending>` is a child of `<section-ref>`, not of `<section>`. Each part can have its own ending for the same section.
+
+## Example file
+
+This tutorial file contains ท่อน 1 (all 4 lines) and ท่อน 2 (5 lines with a line-repeat on line 5). ท่อน 1 has an `<ending pass="2">` on line 4. Both sections are wrapped in `<repeat times="2">`.
+
+<ExampleXml file="tutorial6-sections-repeats.txml" />
+
+---
+
+Next, see [Ensembles and stacked instruments](/en/v0_1/tutorial/7-ensembles_stacked/) for scores with several parts and instruments notated across multiple rows.
+
+:::note[Elements introduced]
+[`<section>`](/en/v0_1/reference/elements/section/), [`<repeat>`](/en/v0_1/reference/elements/repeat/), [`<line-repeat>`](/en/v0_1/reference/elements/line-repeat/), [`<ending>`](/en/v0_1/reference/elements/ending/)
+:::
+
+[Try it in the Playground](/en/playground/)

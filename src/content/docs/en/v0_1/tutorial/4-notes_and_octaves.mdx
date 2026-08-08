@@ -1,0 +1,116 @@
+---
+title: Notes, rests, and octaves
+description: Pitch names, octave marks, and the rest element
+sidebar:
+  order: 4
+---
+
+## The pitch table
+
+ThaiMusicXML uses Thai scale degrees as note names. There are seven degrees, each with three valid spellings:
+
+| Degree | Numeric | Romanized | Thai |
+| ------ | ------- | --------- | ---- |
+| 1      | 1       | D         | ด    |
+| 2      | 2       | R         | ร    |
+| 3      | 3       | M         | ม    |
+| 4      | 4       | F         | ฟ    |
+| 5      | 5       | S         | ซ    |
+| 6      | 6       | L         | ล    |
+| 7      | 7       | T         | ท    |
+
+All three spellings name the same note. `pitch="1"`, `pitch="D"`, and `pitch="ด"` produce identical output. A file picks one spelling convention and keeps to it.
+
+The romanized letters are case-insensitive: `d` and `D` are the same degree. Numeric and Thai spellings each have only one form.
+
+## Octave marks
+
+The seven degrees cover one octave. To reach higher or lower octaves, Thai notation uses two modifiers:
+
+| Modifier | Thai | Effect            | Example                    |
+| -------- | ---- | ----------------- | -------------------------- |
+| นิคหิต   | ํ    | Raises one octave | ดํ is ด one octave up      |
+| พินทุ    | ฺ    | Lowers one octave | ทฺ is ท one octave down    |
+
+The modifiers attach to any of the three spellings: `1ํ`, `Dํ`, and `ดํ` all mean the same note, one octave higher than ด. They can stack: `ดํํ` is two octaves up, though in practice most music stays within two octaves in either direction.
+
+The default octave (no modifier) is the middle register. นิคหิต raises from there; พินทุ lowers.
+
+## Octaves beyond the Thai spellings
+
+When music reaches registers that the Thai modifiers cannot express cleanly, the `octave` attribute gives an explicit number:
+
+```xml
+<note pitch="ด" octave="2"/>
+<note pitch="D" octave="-2"/>
+```
+
+`octave="0"` is the default middle register. Positive numbers go up, negative go down. The attribute works with any spelling.
+
+## Rests
+
+A `<rest>` takes one beat, the same as a `<note>`. It means the instrument strikes nothing new on that beat. As page 3 explained, Thai instruments have no notated sustain: a rest is not silence, it is an absence of attack. A note left ringing under a rest is the instrument behaving normally.
+
+```xml
+<rest/>
+```
+
+A rest is self-closing with no attributes. Every beat in a measure is either a `<note>`, a `<rest>`, or a `<group>`.
+
+## Unpitched parts
+
+Some instruments, like the ฉิ่ง (small cymbals), do not play pitched notes. Setting `type="unpitched"` on a `<part>` means its notes use `sound` instead of `pitch`:
+
+```xml
+<rest/><rest/><rest/><note sound="ฉิ่ง"/>
+```
+
+The `sound` attribute takes any string. The values are local to the part, so an `<annotation>` inside the `<section-ref>` is the usual place to document them.
+
+From the tutorial file, the ฉิ่ง part in สองชั้น:
+
+```xml
+<line number="1">
+  <measure number="1"><rest/><rest/><rest/><note sound="ฉิ่ง"/></measure>
+  <measure number="2"><rest/><rest/><rest/><note sound="ฉับ"/></measure>
+</line>
+```
+
+In สองชั้น the ฉิ่ง plays one stroke per measure, alternating ฉิ่ง and ฉับ every measure. In ชั้นเดียว the cycle completes within a single measure: `rest, ฉิ่ง, rest, ฉับ`.
+
+## Drill: pitch spellings
+
+The file `public/corpus/valid/pitch-spellings.txml` exercises all three spellings and both modifiers on a single line:
+
+```xml
+<part-data part="P1">
+  <section-ref section="s1">
+    <line number="1">
+      <measure number="1">
+        <note pitch="1"/><note pitch="2"/><note pitch="3"/><note pitch="4"/>
+      </measure>
+      <measure number="2">
+        <note pitch="S"/><note pitch="L"/><note pitch="t"/><note pitch="d"/>
+      </measure>
+      <measure number="3">
+        <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ฟ"/>
+      </measure>
+      <measure number="4">
+        <note pitch="ดํ"/><note pitch="ทฺ"/><note pitch="ด" octave="2"/><note pitch="D" octave="-2"/>
+      </measure>
+    </line>
+  </section-ref>
+</part-data>
+```
+
+Measure 1 uses numeric, measure 2 romanized, measure 3 Thai. Measure 4 shows the modifiers: นิคหิต (ดํ), พินทุ (ทฺ), and the `octave` attribute.
+
+---
+
+Next, see [Beats and subdivision](/en/v0_1/tutorial/5-beats_and_subdivision/) for the `<group>` element, which splits a beat into equal parts.
+
+:::note[Elements introduced]
+[`<note pitch>`](/en/v0_1/reference/elements/note/), [`<note sound>`](/en/v0_1/reference/elements/note/), [`<rest>`](/en/v0_1/reference/elements/rest/), [`octave` attribute](/en/v0_1/reference/elements/note/#attributes), [`type="unpitched"`](/en/v0_1/reference/elements/part/#part-types)
+:::
+
+[Try it in the Playground](/en/playground/)

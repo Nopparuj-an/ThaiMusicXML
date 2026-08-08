@@ -1,6 +1,8 @@
 ---
 title: Hello World
 description: Your first ThaiMusicXML file
+sidebar:
+  order: 1
 ---
 
 import ExampleXml from "@/components/ExampleXml.astro";
@@ -76,7 +78,7 @@ The `<ensemble>` element lists the instruments. Each `<part>` has a unique `id` 
 
 The `<part-data>` element holds the music for a part. Its `part` attribute names a part in `<ensemble>`. Inside it, `<section-ref>` links to a section in `<structure>`. The music is organized into `<line>` elements, each containing `<measure>` elements with a `number` attribute.
 
-Notes use Thai scale names in the `pitch` attribute. Each degree has three interchangeable single-character spellings, so `pitch="1"`, `pitch="D"`, and `pitch="ด"` all name the same note:
+Notes use Thai scale names in the `pitch` attribute. Each degree has three interchangeable single-character spellings, so `pitch="1"`, `pitch="D"`, and `pitch="ด"` all name the same note. This piece uses five of the seven degrees:
 
 | Number | Thai | Romanized | Solfège |
 | ------ | ---- | --------- | ------- |
@@ -88,9 +90,7 @@ Notes use Thai scale names in the `pitch` attribute. Each degree has three inter
 | 6      | ล    | L         | La      |
 | 7      | ท    | T         | Ti      |
 
-The solfège column is only for reading the table aloud. The three columns on the left are the valid `pitch` values.
-
-Adding ํ (Nikhahit) after a note name raises it by an octave. Adding ฺ (Pinthu) lowers it by an octave. For example, `ดํ` is ด one octave higher, and `ทฺ` is ท one octave lower. The modifiers work with any of the three spellings.
+The full pitch table and octave marks are covered later in the tutorial (page 4, Notes, rests, and octaves).
 
 ```xml
 <rest/>
@@ -99,3 +99,9 @@ Adding ํ (Nikhahit) after a note name raises it by an octave. Adding ฺ (Pint
 A rest is a self-closing element with no attributes. It takes one beat, the same as a note, and means the instrument strikes nothing new on that beat. Thai notation has no sustain marking, so a note left ringing under a following rest is simply how the instrument behaves.
 
 This is a complete ThaiMusicXML file. Next, see [File Structure](/en/v0_1/tutorial/2-file_structure/) to learn how to add multiple instruments, sections, and performance directions.
+
+:::note[Elements introduced]
+[`<thai-score>`](/en/v0_1/reference/elements/thai-score/), [`<header>`](/en/v0_1/reference/elements/header/), [`<title>`](/en/v0_1/reference/elements/title/), [`<structure>`](/en/v0_1/reference/elements/structure/), [`<section>`](/en/v0_1/reference/elements/section/), [`<ensemble>`](/en/v0_1/reference/elements/ensemble/), [`<part>`](/en/v0_1/reference/elements/part/), [`<part-data>`](/en/v0_1/reference/elements/part-data/), [`<section-ref>`](/en/v0_1/reference/elements/section-ref/), [`<line>`](/en/v0_1/reference/elements/line/), [`<measure>`](/en/v0_1/reference/elements/measure/), [`<note>`](/en/v0_1/reference/elements/note/), [`<rest>`](/en/v0_1/reference/elements/rest/)
+:::
+
+[Try it in the Playground](/en/playground/)
