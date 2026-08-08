@@ -75,43 +75,46 @@ export function draw(page, options = {}) {
   if (fontFacesCss === null) throw new Error("draw.mjs: await drawReady() (or ready() from ready.mjs) before draw()");
   const s = { ...defaults, ...options };
 
-  const body = page.elements.map((el) => {
-    if (el.kind === "line")
-      return `  <line x1="${round(el.x1)}" y1="${round(el.y1)}" x2="${round(el.x2)}" y2="${round(el.y2)}"/>`;
+  // Three groups, each carrying the stroke and fill its shapes share, so no
+  // shape has to repeat them. Which group an element belongs to is its kind,
+  // decided here as it is emitted rather than read back out of the markup.
+  const rulings = [];
+  const curves = [];
+  const marks = [];
 
-    // An arc bowing up over the notes it marks.
-    if (el.kind === "arc") {
+  for (const el of page.elements) {
+    if (el.kind === "line") {
+      rulings.push(`  <line x1="${round(el.x1)}" y1="${round(el.y1)}" x2="${round(el.x2)}" y2="${round(el.y2)}"/>`);
+    } else if (el.kind === "arc") {
+      // An arc bowing up over the notes it marks.
       const mid = (el.x1 + el.x2) / 2;
-      return (
+      curves.push(
         `  <path class="link" d="M ${round(el.x1)} ${round(el.y)}` +
-        ` Q ${round(mid)} ${round(el.y - el.rise)} ${round(el.x2)} ${round(el.y)}"/>`
+          ` Q ${round(mid)} ${round(el.y - el.rise)} ${round(el.x2)} ${round(el.y)}"/>`,
       );
-    }
-
-    // A connector arching over a run. Layout picks the control point, which
-    // sits at one corner of the box the two ends span, so the stroke leaves one
-    // note and arrives at the other along the arch instead of cutting straight
-    // across as a diagonal.
-    if (el.kind === "curve")
-      return (
+    } else if (el.kind === "curve") {
+      // A connector arching over a run. Layout picks the control point, which
+      // sits at one corner of the box the two ends span, so the stroke leaves
+      // one note and arrives at the other along the arch instead of cutting
+      // straight across as a diagonal.
+      curves.push(
         `  <path class="link" d="M ${round(el.x1)} ${round(el.y1)}` +
-        ` Q ${round(el.cx)} ${round(el.cy)} ${round(el.x2)} ${round(el.y2)}"/>`
+          ` Q ${round(el.cx)} ${round(el.cy)} ${round(el.x2)} ${round(el.y2)}"/>`,
       );
-
-    // The octave mark: a small dot drawn as its own shape, not set as a
-    // diacritic in the font. See "Octave marks" in reference/rendering.
-    if (el.kind === "dot") {
+    } else if (el.kind === "dot") {
+      // The octave mark: a small dot drawn as its own shape, not set as a
+      // diacritic in the font. See "Octave marks" in reference/rendering.
       const fill = el.dim ? ` fill="${s.dimColor}"` : "";
-      return `  <circle cx="${round(el.x)}" cy="${round(el.y)}" r="${round(el.r)}"${fill}/>`;
+      marks.push(`  <circle cx="${round(el.x)}" cy="${round(el.y)}" r="${round(el.r)}"${fill}/>`);
+    } else {
+      const weight = el.weight ? ` font-weight="${el.weight}"` : "";
+      const fill = el.dim ? ` fill="${s.dimColor}"` : "";
+      marks.push(
+        `  <text x="${round(el.x)}" y="${round(el.y)}" font-size="${el.size}"` +
+          ` text-anchor="${el.anchor}"${weight}${fill}>${escape(el.text)}</text>`,
+      );
     }
-
-    const weight = el.weight ? ` font-weight="${el.weight}"` : "";
-    const fill = el.dim ? ` fill="${s.dimColor}"` : "";
-    return (
-      `  <text x="${round(el.x)}" y="${round(el.y)}" font-size="${el.size}"` +
-      ` text-anchor="${el.anchor}"${weight}${fill}>${escape(el.text)}</text>`
-    );
-  });
+  }
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${page.width}" height="${page.height}"`,
@@ -123,13 +126,13 @@ export function draw(page, options = {}) {
     `  </defs>`,
     `  <rect width="100%" height="100%" fill="#fff"/>`,
     `  <g stroke="#000" stroke-width="0.7" fill="none">`,
-    ...body.filter((l) => l.includes("<line")),
+    ...rulings,
     `  </g>`,
     `  <g stroke="#000" stroke-width="${s.linkStroke}" fill="none" stroke-linecap="round">`,
-    ...body.filter((l) => l.includes("<path")),
+    ...curves,
     `  </g>`,
     `  <g fill="#000" stroke="none">`,
-    ...body.filter((l) => l.includes("<text") || l.includes("<circle")),
+    ...marks,
     `  </g>`,
     `</svg>`,
   ].join("\n");
