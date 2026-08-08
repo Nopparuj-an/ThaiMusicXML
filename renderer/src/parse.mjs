@@ -235,9 +235,11 @@ export function parse(source) {
       else if (child.localName === "repeat") collect(child);
       else if (child.localName === "direction") {
         // None of nathap, chan, or bpm reach the page on their own - see each
-        // element's own Rendering section - but chan is what "the ชั้น in
-        // force" for a generated heading reads, so its place in the sequence
-        // still matters even though the value itself is not printed here.
+        // element's own Rendering section. bpm is read by showHeaderExtras;
+        // chan is read by nothing at present (a generated section heading
+        // used to combine it with the section's name, and no longer does),
+        // and is kept because a <direction>'s place in the sequence is part
+        // of what the document says, not a display decision to make here.
         const chanEl = el(child, "chan");
         const bpmEl = el(child, "bpm");
         structure.push({
