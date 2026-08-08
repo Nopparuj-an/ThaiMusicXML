@@ -7,7 +7,8 @@ the end of the session that closed the remaining gaps: the one real bug left
 (octaves outside the Thai spellings), the two opt-in settings the spec named
 but nothing implemented, and unit test coverage for everything Session 2 had
 only verified by eyeballing a render; updated again at the end of the session
-that replaced the literal นิคหิต/พินทุ octave-mark glyph with a drawn dot.
+that replaced the literal นิคหิต/พินทุ octave-mark glyph with a drawn dot, and
+again after the section-heading setting was cut back to a plain printed name.
 
 ## Progress log
 
@@ -40,6 +41,16 @@ that replaced the literal นิคหิต/พินทุ octave-mark glyph w
   which is a plain dot rather than either of those two orthographic
   diacritics. Rendering-only: the schema, `pitch` grammar, and `octave`
   attribute are unchanged.
+- Session 5: `generateHeadings` became `generateSectionName` and lost both the
+  ชั้น prefix and the "is there already a heading here" detection — it now
+  prints a section's `name`, plainly, for every named section (see below).
+  Then a cleanup pass with no behavior in it: `draw.mjs` groups its SVG output
+  by `el.kind` rather than by substring-matching the markup it just wrote,
+  `pnpm` is the package manager everywhere including inside `package.json`'s
+  own `check`, `make check` delegates to that one definition instead of
+  keeping a second list of steps that had already fallen a step behind, CI
+  runs the unit tests (it never did), and `parse.mjs` finally has its own
+  test file.
 
 ## Working practice
 
@@ -51,8 +62,10 @@ that replaced the literal นิคหิต/พินทุ octave-mark glyph w
   comparing a render to print, and each one was a real defect.
 - English first, per `AGENTS.md`. `CLAUDE.md` is a symlink to it, and the Edit
   tool refuses to write through the symlink.
-- `npm run check` runs links, corpus, and 42 unit tests. `npx astro build`
-  instead of `astro check`, which is broken here.
+- `pnpm run check` runs links, corpus, and 72 unit tests — the last of those
+  globs `renderer/test/*.test.mjs`, so a new test file needs no script edit.
+  `make check` and CI run the same steps. `npx astro build` instead of
+  `astro check`, which is broken here.
 - Schema and design changes need explicit sign-off before editing, then get
   applied across every affected file in one pass.
 
@@ -105,11 +118,11 @@ scale, per-instrument boxes, title band and credits, link curves and arcs,
 annotations in all three placements, `<br>`, text wrapping, pagination,
 endings, repeat brackets, bow spans and parentheses, lyric rows, the
 instrument-name label column, octaves beyond the Thai spellings, and the two
-settings the table names but does not default on: generated section headings
-and header extras (tuning/bpm/license) on the page. That is everything
-`rendering/index.md` describes except the typeface itself (Sarabun is set in
-`fontFamily`, but nothing checks the font is actually installed wherever this
-runs).
+settings the table names but does not default on: a section's `name` printed
+as a heading, and header extras (tuning/bpm/license) on the page. That is
+everything `rendering/index.md` describes except the typeface itself (Sarabun
+is set in `fontFamily`, but nothing checks the font is actually installed
+wherever this runs).
 
 ### Invariants worth not rediscovering
 
@@ -275,25 +288,34 @@ runs).
   `octaveDotGapAbove`, `octaveDotGapBelow` in `settings.mjs`) are a first
   pass, not a settled convention, the same as `linkTop`/`bowRise` — worth
   checking against a printed page rather than derived from anything.
-- **`generateHeadings` and `showHeaderExtras`** (both `settings.mjs`, both
+- **`generateSectionName` and `showHeaderExtras`** (both `settings.mjs`, both
   `false`) implement the two rows the settings table always documented but
-  that had no code path at all: "a renderer may offer to generate a heading
-  from `name` and the ชั้น in force" and "a renderer may offer to show
-  [`<tuning>`, `<license>`, `<bpm>`]." Both stayed unbuilt because the
-  default is to show neither, which the renderer already achieved by simply
-  never parsing `<direction>`, `<tuning>`, or `<license>` at all — the gap
-  was the toggle, not the default.
+  that had no code path at all: "a renderer may offer to print `name` as a
+  section heading" and "a renderer may offer to show [`<tuning>`,
+  `<license>`, `<bpm>`]." Both stayed unbuilt because the default is to show
+  neither, which the renderer already achieved by simply never parsing
+  `<direction>`, `<tuning>`, or `<license>` at all — the gap was the toggle,
+  not the default.
 
-  A generated heading is spliced into the parsed `<structure>` sequence as
-  an ordinary synthetic `annotation`, before `band`/`body` are split out,
+  A generated name is spliced into the parsed `<structure>` sequence as an
+  ordinary synthetic `annotation`, before `band`/`body` are split out,
   specifically so it flows through the exact same pagination and "text
   inside a break" machinery an author-typed heading does rather than adding
-  a second code path next to it. It fires only where a section's gap has no
-  annotation in it at all — walking back to the previous section or the
-  start of the document — so a score that already annotates some sections
-  and not others only gets headings filled in where it is actually sparse,
-  matching "keep it off by default, or a score with headings already
-  annotated ends up with two" applied gap by gap.
+  a second code path next to it. It prints the section's `name` and nothing
+  else, for every named section, unconditionally.
+
+  **It used to do more, and the extra was cut in Session 5**: the heading
+  combined the ชั้น in force (tracked by walking `<chan>` through the
+  structure) with the name, and suppressed itself where the gap ahead of a
+  section already held an annotation, on the reasoning that a score with
+  headings already annotated should not end up with two. Both went. The
+  suppression could not tell an authored heading from an unrelated
+  annotation that happened to sit in the same gap, so it fired for the wrong
+  reason as often as the right one — and once suppression is gone, "keep it
+  off by default" is the whole of the protection against doubled text, which
+  is what the setting being `false` already is. Turning it on for a score
+  that writes its own headings prints both, by design and by the author's
+  call.
 
   `showHeaderExtras` prints `<tuning>` and `<license>` from `<header>`, and
   `<bpm>` from whichever `<direction>` lands in the title band, as one small
@@ -301,12 +323,12 @@ runs).
   its own Rendering section says it is not printed, full stop, which is a
   stronger rule than "off by default." **Scoped deliberately**: a `<bpm>`
   inside a later `<direction>` — a tempo change partway through the piece —
-  is parsed (so `generateHeadings`' ชั้น-in-force tracking sees `<chan>`
-  changes anywhere in the document) but is not displayed anywhere, since the
-  spec's own placement language ("the title band") only really describes the
-  single-direction-before-the-first-section shape every corpus example
-  actually uses. Worth building if a real score ever puts a second `<bpm>`
-  or `<chan>` change mid-piece and wants it on the page.
+  is parsed but is not displayed anywhere, since the spec's own placement
+  language ("the title band") only really describes the single-direction-
+  before-the-first-section shape every corpus example actually uses. `<chan>` is likewise still parsed onto every `direction`
+  item and now read by nothing at all, the ชั้น tracking having been its
+  only reader. Worth building if a real score ever puts a second `<bpm>` or
+  a `<chan>` change mid-piece and wants it on the page.
 - **Every eyeballed-only feature from Session 2 now has unit tests**:
   endings (an ending's own annotation heading, and that it does not
   re-print the section-ref's own annotation underneath it), repeat brackets
@@ -321,6 +343,17 @@ runs).
   `parse.mjs` to do it — a bow/parenthesis span is tested by reading
   `parse(doc).music[part][section].bowSpans` straight off `parse()`'s own
   return value rather than calling `resolveSpans()` in isolation.
+- **`parse.mjs` has its own tests** (`renderer/test/parse.test.mjs`, Session
+  5). It had none before: the layout tests reached through it, and
+  `check-corpus.mjs` checks documents against the schema and the prose rules
+  rather than checking this reader's reading of them, so nothing pinned the
+  tree `parse()` actually returns. Most of the file is `resolveSpans`, which
+  is where the state lives — a marker's meaning depends on notes it does not
+  sit beside, and on which run of `<line>` elements it is matched within.
+  The documented limitations are pinned as tests too, so the day one of them
+  is fixed the test that says "silently unmatched" is what fails and asks to
+  be rewritten. Same access route as the layout tests: everything goes
+  through `parse()`'s return value, and `resolveSpans` stays unexported.
 - **The tutorial and example doc pages no longer hand-copy a `.txml` file
   into a fenced code block.** `src/components/ExampleXml.astro` reads the
   named file from `renderer/examples/` at build time (`import.meta.glob`,
