@@ -17,31 +17,59 @@ arranger writes it," no notated sustain) that this whole pipeline leans on.
 
 ## Phase 0: get the source readable
 
-The Read tool can open a PDF directly, but two things commonly block that:
+The Read tool can open a PDF directly, but a few things commonly block that.
 
-- **macOS blocks reading files under `~/Downloads`** (and similar
-  TCC-protected folders) for this tool even when the file's Unix permissions
-  look fine (`cp`/`cat` fail with `Operation not permitted`). This blocks the
-  Read tool *and* Bash's `cp`/`cat` identically, and a sandbox override
-  (`dangerouslyDisableSandbox`) doesn't help either - TCC is an OS-level
-  permission, not this tool's sandbox. Don't retry the copy with different
-  flags; ask the user to move or copy the file into the project directory
-  right away.
-- **Dense grid pages need more resolution than the Read tool's default PDF
-  rendering gives you.** Once the file is reachable, install and use:
+**Find the file first if the user pasted an image instead of giving a path.**
+In a Claude Code web/remote session, an image dropped straight into the chat
+isn't at a path the user names - it's already been saved server-side. Before
+asking the user to send it again, check:
 
-  ```
-  brew install poppler       # pdftoppm, pdfinfo
-  brew install imagemagick   # magick, for cropping
-  brew install librsvg       # rsvg-convert, for previewing rendered output later
-  ```
+```
+ls -t /root/.claude/uploads/<session-id>/ 2>/dev/null
+find /root/.claude/uploads -newer /path/to/some/recent/file -type f 2>/dev/null
+```
 
-  Rasterize the pages you need at high DPI:
+(session id is in the scratchpad path in your system prompt). Only fall back
+to asking the user for a file if nothing turns up there - a broad `find /`
+across the whole filesystem is a last resort, not the first move.
 
-  ```
-  pdfinfo the-file.pdf                      # page count, sanity check
-  pdftoppm -png -r 300 -f <first> -l <last> the-file.pdf out/p
-  ```
+**macOS only: `~/Downloads` blocks reads.** macOS blocks reading files under
+`~/Downloads` (and similar TCC-protected folders) for this tool even when the
+file's Unix permissions look fine (`cp`/`cat` fail with `Operation not
+permitted`). This blocks the Read tool _and_ Bash's `cp`/`cat` identically,
+and a sandbox override (`dangerouslyDisableSandbox`) doesn't help either -
+TCC is an OS-level permission, not this tool's sandbox. Don't retry the copy
+with different flags; ask the user to move or copy the file into the project
+directory right away. This is a macOS-specific concern; it does not apply in
+a Linux container (including most remote/web sessions), where an uploaded or
+pasted file is already plainly readable once found.
+
+**Dense grid pages need more resolution than the Read tool's default
+rendering gives you, and often the tools to fix that aren't preinstalled.**
+Check what's already on `PATH` before installing anything
+(`which pdftoppm rsvg-convert magick python3`), then fill gaps with whatever
+package manager the environment actually has:
+
+```
+# macOS
+brew install poppler       # pdftoppm, pdfinfo
+brew install imagemagick   # magick, for cropping
+brew install librsvg       # rsvg-convert, for previewing rendered output later
+
+# Debian/Ubuntu containers (most remote/web sessions) - needs sudo/root
+apt-get install -y poppler-utils librsvg2-bin
+# imagemagick is frequently absent and not worth installing just for this:
+# Python + Pillow covers crop/resize/identify equally well and is usually
+# already present or a one-line pip install away.
+pip install pillow
+```
+
+Rasterize the pages you need at high DPI:
+
+```
+pdfinfo the-file.pdf                      # page count, sanity check
+pdftoppm -png -r 300 -f <first> -l <last> the-file.pdf out/p
+```
 
 If the source is a multi-song booklet, read the first page or two at normal
 resolution with the Read tool to find which page range holds the target
@@ -53,12 +81,24 @@ A page of dense notation (small cells, many rows) will not read reliably at
 one shot, even from a 300dpi render. Crop it into **overlapping horizontal
 bands** so no row ever sits exactly on a crop boundary (a row split across two
 crops is the single most common source of misread cells). Compute the overlap
-*before* the first crop - don't start by slicing the page into N equal,
+_before_ the first crop - don't start by slicing the page into N equal,
 non-overlapping bands and only add overlap after noticing a row got cut at a
 boundary; that means re-cropping and re-reading every band a second time:
 
 ```
 magick p-NN.png -crop <width>x1150+0+<i*950> +repage band_NN_<i>.png
+```
+
+Where `magick` isn't installed (common in Linux containers - see Phase 0),
+Python + Pillow does the same crop/resize in a couple of lines and needs
+nothing beyond `pip install pillow`:
+
+```python
+from PIL import Image
+im = Image.open("p-NN.png")
+c = im.crop((left, top, right, bottom))       # crop box in im's own pixels
+c = c.resize((c.width * 2, c.height * 2), Image.LANCZOS)  # upscale to read
+c.save("band_NN_i.png")
 ```
 
 950px stride with a 1150px band height gives ~200px of overlap, enough that
@@ -67,6 +107,15 @@ Adjust the numbers to the page's actual row height (measure it from one band
 first) rather than trusting these defaults blindly. This banding is for dense
 multi-row pages; a short piece with only a couple of rows can be cropped
 directly per-row or per-cell without bothering with stride math at all.
+
+**Crop coordinates are only valid for the file they were measured on.** The
+Read tool's image preview reports "displayed at WxH, multiply by N to map to
+the original" - that `N` describes the file you just read, not any other
+file. If you crop from that image, coordinates are in _its_ pixel space; if
+you then crop again from the crop (a common move when zooming into one
+ambiguous cell), you need a fresh multiplier measured on the crop itself,
+not the original page's. Carrying an old scale factor over to a new crop is
+the single most common way to end up zoomed into the wrong cell.
 
 Before generating a new crop, check whether one with the geometry you need
 already exists from an earlier pass - don't regenerate and re-read a crop you
@@ -93,7 +142,7 @@ on.
 **Cross-validate by re-reading.** Thai classical pieces are highly formulaic:
 short melodic cells recur, sometimes identically, across a piece. If two
 independently-read bands produce byte-identical cell sequences, that's a
-*good* sign (confirms your reading), not a reason to suspect you copy-pasted
+_good_ sign (confirms your reading), not a reason to suspect you copy-pasted
 by mistake. Conversely, if a re-read of the same band produces a different
 transcription than your first pass, that's the signal to slow down and crop
 tighter. Don't silently pick one.
@@ -127,7 +176,7 @@ Key structural questions to resolve from evidence, not assumption:
   always the two rows of one instrument (right hand over left), encoded with
   `<part stack="..." row="1">` / `row="2"`, matching `part.md`'s
   stacked-instrument example. Evidence for this over "two sequential measures
-  stacked to save page width": the two rows frequently hold *different* notes
+  stacked to save page width": the two rows frequently hold _different_ notes
   at the same beat position (not just different measures' worth of a single
   melody), and they coincide exactly at cadence points: heterophonic doubling
   between two hands, not two spans of one line. Matching an existing corpus
@@ -180,14 +229,35 @@ tool for this transcription, not project code.
 
 ## Phase 4: validate before calling it done
 
-Run all three of these; each catches a different class of mistake:
+`node renderer/render.mjs` needs the repo's npm dependencies installed first.
+On a fresh checkout (typical for a remote/web session container) `node_modules`
+won't exist yet and the render fails cold with `ERR_MODULE_NOT_FOUND`. Check
+before running it:
+
+```
+test -d node_modules || npm install --legacy-peer-deps
+```
+
+`--legacy-peer-deps` is required here, not optional: this repo's `astro
+check` toolchain has a peer-dependency conflict (`typescript@7` vs.
+`@astrojs/check`'s `^5 || ^6` peer range) that makes a plain `npm install`
+fail outright. This is unrelated to the render pipeline, which doesn't touch
+Astro at all, but the install still needs the flag to complete.
+
+Then run all three of these; each catches a different class of mistake:
 
 ```
 xmllint --noout --relaxng public/schema/thaimusicxml-0.1.rng renderer/examples/example-<slug>.txml
 mkdir -p renderer/out
 node renderer/render.mjs renderer/examples/example-<slug>.txml renderer/out/example-<slug>.svg
-rsvg-convert -w 1240 -o renderer/out/example-<slug>-1.png renderer/out/example-<slug>-1.svg   # repeat per page
+rsvg-convert -w 1240 -o renderer/out/example-<slug>.png renderer/out/example-<slug>.svg   # single-page piece
+rsvg-convert -w 1240 -o renderer/out/example-<slug>-1.png renderer/out/example-<slug>-1.svg   # if the renderer split it into numbered pages, repeat per page
 ```
+
+`rsvg-convert` itself may need installing - see Phase 0's Linux/apt-get note.
+Check `ls renderer/out/` after the render step to see whether it produced one
+plain `.svg` (short piece, single page) or several numbered ones, and convert
+accordingly rather than assuming the numbered form.
 
 Then **read the rendered PNG(s) back** and compare them side by side against
 the source scan, row for row. A schema pass and a clean render only prove the
