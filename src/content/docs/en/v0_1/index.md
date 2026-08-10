@@ -10,7 +10,7 @@ This version is under active development. Parts of the specification may be inco
 ## Abstract
 
 ThaiMusicXML is an open, lightweight XML schema for Thai traditional music (เพลงไทยเดิม/Phleng Thai Doem).
-This format models Thai musical concepts: 7-tone scales, 8-measure grid systems, and structural speed levels (ชั้น/Chan).
+This format models Thai musical concepts: 7-tone scales, 8-measure grid systems.
 
 ## About this project
 

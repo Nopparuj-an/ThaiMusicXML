@@ -7,7 +7,7 @@ description: About ThaiMusicXML
 
 ThaiMusicXML is an open, royalty-free digital notation standard for Thai traditional music (เพลงไทยเดิม/Phleng Thai Doem).
 
-Western music theory uses 5-line staves, clefs, 12-TET divisions, sharps and flats, and variable time signatures. These do not map directly to Thai music, so this format models Thai musical concepts: 7-tone scales, 8-measure grid systems, and structural speed levels (ชั้น/Chan). Thai traditional notation uses a different structure:
+Western music theory uses 5-line staves, clefs, 12-TET divisions, sharps and flats, and variable time signatures. These do not map directly to Thai music, so this format models Thai musical concepts: 7-tone scales, 8-measure grid systems. Thai traditional notation uses a different structure:
 
 - 7-Tone System: Represented symbolically via solfège (ด, ร, ม, ฟ, ซ, ล, ท) or digits (1-7)
 - Octave Markers: Represented via an `octave` integer attribute, or natively within `pitch` using นิคหิต/พินทุ (ดํ, ดฺ). Either way renders as a small dot above or below the note
