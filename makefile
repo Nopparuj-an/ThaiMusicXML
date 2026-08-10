@@ -7,7 +7,7 @@ build:
 	corepack pnpm run build
 
 start:
-	corepack pnpm start
+	corepack pnpm preview
 
 install:
 	corepack pnpm install --frozen-lockfile
