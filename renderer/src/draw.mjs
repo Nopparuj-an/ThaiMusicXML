@@ -75,21 +75,28 @@ export function draw(page, options = {}) {
   if (fontFacesCss === null) throw new Error("draw.mjs: await drawReady() (or ready() from ready.mjs) before draw()");
   const s = { ...defaults, ...options };
 
-  // Three groups, each carrying the stroke and fill its shapes share, so no
-  // shape has to repeat them. Which group an element belongs to is its kind,
-  // decided here as it is emitted rather than read back out of the markup.
+  // Each group carries the stroke and fill its shapes share, so no shape has
+  // to repeat them. Which group an element belongs to is its kind (and, for
+  // strokes that vary by role - a bow's from a link's, a repeat bracket's
+  // from a grid rule's - its role too), decided here as it is emitted rather
+  // than read back out of the markup.
   const rulings = [];
-  const curves = [];
+  const repeatBrackets = [];
+  const links = [];
+  const bows = [];
   const marks = [];
 
   for (const el of page.elements) {
     if (el.kind === "line") {
-      rulings.push(`  <line x1="${round(el.x1)}" y1="${round(el.y1)}" x2="${round(el.x2)}" y2="${round(el.y2)}"/>`);
+      const group = el.role === "repeat-bracket" ? repeatBrackets : rulings;
+      group.push(`  <line x1="${round(el.x1)}" y1="${round(el.y1)}" x2="${round(el.x2)}" y2="${round(el.y2)}"/>`);
     } else if (el.kind === "arc") {
-      // An arc bowing up over the notes it marks.
+      // An arc bowing up over the notes it marks - a link curve's own shape
+      // where role is "link", a bow's where role is "bow".
       const mid = (el.x1 + el.x2) / 2;
-      curves.push(
-        `  <path class="link" d="M ${round(el.x1)} ${round(el.y)}` +
+      const group = el.role === "bow" ? bows : links;
+      group.push(
+        `  <path class="${el.role}" d="M ${round(el.x1)} ${round(el.y)}` +
           ` Q ${round(mid)} ${round(el.y - el.rise)} ${round(el.x2)} ${round(el.y)}"/>`,
       );
     } else if (el.kind === "curve") {
@@ -97,7 +104,7 @@ export function draw(page, options = {}) {
       // sits at one corner of the box the two ends span, so the stroke leaves
       // one note and arrives at the other along the arch instead of cutting
       // straight across as a diagonal.
-      curves.push(
+      links.push(
         `  <path class="link" d="M ${round(el.x1)} ${round(el.y1)}` +
           ` Q ${round(el.cx)} ${round(el.cy)} ${round(el.x2)} ${round(el.y2)}"/>`,
       );
@@ -128,8 +135,14 @@ export function draw(page, options = {}) {
     `  <g stroke="#000" stroke-width="0.7" fill="none">`,
     ...rulings,
     `  </g>`,
+    `  <g stroke="#000" stroke-width="${s.repeatBracketStroke}" fill="none">`,
+    ...repeatBrackets,
+    `  </g>`,
     `  <g stroke="#000" stroke-width="${s.linkStroke}" fill="none" stroke-linecap="round">`,
-    ...curves,
+    ...links,
+    `  </g>`,
+    `  <g stroke="#000" stroke-width="${s.bowStroke}" fill="none" stroke-linecap="round">`,
+    ...bows,
     `  </g>`,
     `  <g fill="#000" stroke="none">`,
     ...marks,

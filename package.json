@@ -13,7 +13,8 @@
     "check:links": "node scripts/check-docs-links.mjs",
     "check:corpus": "node scripts/check-corpus.mjs",
     "check:layout": "node --test \"renderer/test/*.test.mjs\"",
-    "check": "pnpm run check:links && pnpm run check:corpus && pnpm run check:layout",
+    "lint": "eslint .",
+    "check": "pnpm run check:links && pnpm run check:corpus && pnpm run check:layout && pnpm run lint",
     "render": "node renderer/render.mjs"
   },
   "imports": {
@@ -39,6 +40,9 @@
     "typescript": "^7.0.2"
   },
   "devDependencies": {
-    "@xmldom/xmldom": "^0.9.10"
+    "@eslint/js": "^10.0.1",
+    "@xmldom/xmldom": "^0.9.10",
+    "eslint": "^10.8.1",
+    "globals": "^17.10.0"
   }
 }
