@@ -129,6 +129,26 @@ function endingFor(endings, lineNumber, pass) {
 }
 
 /**
+ * The line a part actually plays at `number` on `pass`: the section-ref's
+ * base line, with any <ending> override applied. In a notated part, a
+ * completely empty measure in that override (no beats at all) means
+ * "unchanged from the line being replaced" - see ending.md's "Unchanged
+ * measures" - so it's swapped back for the base line's own measure at that
+ * position rather than read as a real zero-length measure. A lyric part's
+ * empty measure keeps its own, different meaning (nothing sung, per
+ * syllable.md) and is never substituted this way.
+ */
+function effectiveLine(sectionMusic, number, pass, isLyric) {
+  const base = sectionMusic.lines.find((l) => l.number === number);
+  const override = endingFor(sectionMusic.endings, number, pass);
+  if (!override || isLyric) return override ?? base;
+  return {
+    ...override,
+    measures: override.measures.map((m, i) => (m.beats.length === 0 ? base.measures[i] : m)),
+  };
+}
+
+/**
  * Every slot in one measure, flattened across beats and <group> members,
  * each landing at the position group.md and the renderer's arrivals() both
  * use: a beat or group arrives on its last slot, so a k-way split's final
@@ -236,12 +256,8 @@ function resolveLyricSectionPass(lyricSectionMusic, targetSectionMusic, ranges, 
   const syllables = [];
   let cursor = ZERO;
   for (const number of order) {
-    const targetOverride = endingFor(targetSectionMusic.endings, number, pass);
-    const targetLine = targetOverride ?? targetSectionMusic.lines.find((l) => l.number === number);
-    const lyricOverride = lyricSectionMusic ? endingFor(lyricSectionMusic.endings, number, pass) : null;
-    const lyricLine = lyricSectionMusic
-      ? (lyricOverride ?? lyricSectionMusic.lines.find((l) => l.number === number))
-      : null;
+    const targetLine = effectiveLine(targetSectionMusic, number, pass, false);
+    const lyricLine = lyricSectionMusic ? effectiveLine(lyricSectionMusic, number, pass, true) : null;
     targetLine.measures.forEach((measure, measureIndex) => {
       const beatCount = measure.beats.length;
       const lyricMeasure = lyricLine?.measures[measureIndex];
@@ -278,19 +294,18 @@ const measureLength = (beats) => frac(beats.length);
  * enclosing <repeat>, since a repeat replays this same resolution unchanged
  * on each of its passes.
  */
-function resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics = []) {
+function resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics = [], isLyric = false) {
   const lineCount = sectionMusic.lines.length;
   const order = lineOrder(lineCount, ranges);
   const notes = [];
   const measureBoundaries = [];
   let cursor = ZERO;
   for (const number of order) {
-    const override = endingFor(sectionMusic.endings, number, pass);
-    const line = override ?? sectionMusic.lines.find((l) => l.number === number);
-    const siblingLines = siblingSectionMusics.map((sm) => {
-      const siblingOverride = endingFor(sm.endings, number, pass);
-      return siblingOverride ?? sm.lines.find((l) => l.number === number);
-    });
+    const line = effectiveLine(sectionMusic, number, pass, isLyric);
+    // A stack's sibling rows are always notated (siblingIdsOf excludes
+    // type="lyric"), so their own ending substitutions get the same
+    // inherit-empty-measures treatment regardless of the calling part's type.
+    const siblingLines = siblingSectionMusics.map((sm) => effectiveLine(sm, number, pass, false));
     line.measures.forEach((measure, measureIndex) => {
       const siblingAttacks = siblingAttackOnsets(siblingLines.map((sl) => sl?.measures[measureIndex]));
       for (const note of foldMeasure(measure.beats, siblingAttacks)) {
@@ -325,13 +340,14 @@ export function resolve(source) {
   function resolveSection(partId, sectionId, totalPasses) {
     const sectionMusic = parsed.music[partId]?.[sectionId];
     if (!sectionMusic) return null;
+    const isLyric = parsed.parts.find((p) => p.id === partId)?.type === "lyric";
     const ranges = rangesBySection[sectionId] ?? [];
     const siblingSectionMusics = siblingIdsOf(partId)
       .map((id) => parsed.music[id]?.[sectionId])
       .filter(Boolean);
     const passes = [];
     for (let pass = 1; pass <= totalPasses; pass++) {
-      passes.push({ pass, ...resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics) });
+      passes.push({ pass, ...resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics, isLyric) });
     }
     return { sectionId, totalPasses, passes };
   }

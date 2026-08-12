@@ -70,6 +70,16 @@ test("<ending> substitutes its line only on the passes it names", () => {
   for (const pass of p2.passes) assert.deepEqual(pitches(pass.notes).slice(4), ["ล", "ซ", "ม", "ร"]);
 });
 
+test("an empty measure in a notated part's <ending> inherits the base line's own measure", () => {
+  // ending-inherits-empty-measure.txml: line 2 has two measures (ม ซ / ล ท).
+  // Pass 2's ending leaves measure 1 empty (unchanged - inherits ม ซ from the
+  // base line) and only overrides measure 2 (ล ดํ instead of ล ท).
+  const doc = resolve(corpus("ending-inherits-empty-measure.txml"));
+  const { passes } = doc.resolveSection("P1", "s1", 2);
+  assert.deepEqual(pitches(passes[0].notes).slice(2), ["ม", "ซ", "ล", "ท"]); // pass 1: base line 2 unchanged
+  assert.deepEqual(pitches(passes[1].notes).slice(2), ["ม", "ซ", "ล", "ดํ"]); // pass 2: measure 1 inherited, measure 2 overridden
+});
+
 test("unroll() concatenates every pass in playback order", () => {
   const doc = resolve(corpus("repeats-and-endings.txml"));
   const { notes } = doc.unroll("P1");

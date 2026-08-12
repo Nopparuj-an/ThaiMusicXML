@@ -364,6 +364,8 @@ function checkPartDataShape(ctx, err, warn) {
 function checkEndingsAndSpans(ctx, err) {
   for (const pd of ctx.partDatas)
     for (const sr of kids(pd, "section-ref")) {
+      const part = ctx.partById.get(pd.getAttribute("part"));
+      const lyric = (part?.getAttribute("type") || "pitched") === "lyric";
       const sectionId = sr.getAttribute("section");
       const total = ctx.passCount.get(sectionId) ?? 1;
       const lines = kids(sr, "line");
@@ -406,6 +408,10 @@ function checkEndingsAndSpans(ctx, err) {
             continue;
           }
           a.forEach((measure, i) => {
+            // A completely empty measure in a notated part's ending means
+            // "unchanged from the line being replaced" - see ending.md's
+            // "Unchanged measures" - not a real zero-beat measure to compare.
+            if (!lyric && beats(measure).length === 0) return;
             if (beats(measure).length !== beats(b[i]).length)
               err(`<ending> line ${line.getAttribute("number")} measure ${i + 1} has ${beats(measure).length} beat(s) where the line it replaces has ${beats(b[i]).length}`);
           });
@@ -420,7 +426,11 @@ function checkEndingsAndSpans(ctx, err) {
           }
       }
 
-      // Spans, matched within each resolved pass.
+      // Spans, matched within each resolved pass. An empty measure in a
+      // notated part's ending inherits the base line's own measure - markers
+      // included - so span matching walks the merged (not the literal)
+      // content, same as ending.md's "Unchanged measures" and "Spans across
+      // an overridden line" both require.
       for (let pass = 1; pass <= total; pass++) {
         const override = new Map();
         for (const ending of endings) {
@@ -430,23 +440,29 @@ function checkEndingsAndSpans(ctx, err) {
           if (!passes.includes(pass)) continue;
           for (const l of kids(ending, "line")) override.set(num(l, "number"), l);
         }
-        const resolved = lines.map((l) => override.get(num(l, "number")) ?? l);
+        const resolvedMeasures = lines.flatMap((line) => {
+          const baseMeasures = kids(line, "measure");
+          const overrideLine = override.get(num(line, "number"));
+          if (!overrideLine) return baseMeasures;
+          return kids(overrideLine, "measure").map((measure, i) =>
+            !lyric && beats(measure).length === 0 ? baseMeasures[i] : measure,
+          );
+        });
 
         for (const kind of ["bow", "parenthesis"]) {
           let open = false;
-          for (const line of resolved)
-            for (const measure of kids(line, "measure"))
-              for (const marker of inOrder(measure, kind)) {
-                if (marker.getAttribute("type") === "start") {
-                  if (open)
-                    err(`a ${kind} span opens on pass ${pass} while another is still open; spans cannot nest or overlap`);
-                  open = true;
-                } else {
-                  if (!open)
-                    err(`a ${kind} stop on pass ${pass} closes no open span`);
-                  open = false;
-                }
+          for (const measure of resolvedMeasures)
+            for (const marker of inOrder(measure, kind)) {
+              if (marker.getAttribute("type") === "start") {
+                if (open)
+                  err(`a ${kind} span opens on pass ${pass} while another is still open; spans cannot nest or overlap`);
+                open = true;
+              } else {
+                if (!open)
+                  err(`a ${kind} stop on pass ${pass} closes no open span`);
+                open = false;
               }
+            }
           if (open)
             err(`a ${kind} span is left open at the end of pass ${pass} of section "${sectionId}"`);
         }

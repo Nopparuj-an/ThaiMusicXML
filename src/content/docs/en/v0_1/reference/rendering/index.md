@@ -219,7 +219,7 @@ Leaving it to the arranger is the only workable answer here. กลับต้�
 
 ## Variant endings
 
-An [`<ending>`](/en/v0_1/reference/elements/ending/) renders below the section it belongs to, not inside the grid. Print the ending's [`<annotation>`](/en/v0_1/reference/elements/annotation/) as a heading, then the replacement lines under it as their own grid, ruled and sized like any other.
+An [`<ending>`](/en/v0_1/reference/elements/ending/) renders below the section it belongs to, not inside the grid. Print the ending's [`<annotation>`](/en/v0_1/reference/elements/annotation/) as a heading, then the replacement lines under it as their own grid, ruled and sized like any other. A completely empty measure in that grid - a notated part's shorthand for "unchanged from the line being replaced", see [`<ending>`'s "Unchanged measures"](/en/v0_1/reference/elements/ending/#unchanged-measures) - prints as an empty cell rather than the notes it stands in for; a reader checks the base line above the ending for what that measure actually plays.
 
 Thai scores are usually written for one instrument, where an ending can sit under the section unlabelled and still be unambiguous. This spec allows any number of parts, and there the reader needs to be told which instrument the variant belongs to and when it applies. That is what the annotation carries, in the author's own words: `ขิม รอบสุดท้ายเปลี่ยนเป็น` names the instrument and the pass together. The `pass` attribute is what a player reads; the annotation is what a human reads. A renderer prints the annotation as written and does not try to generate the sentence from `pass`.
 
