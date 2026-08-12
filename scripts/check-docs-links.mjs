@@ -21,8 +21,13 @@ const TREEVIEW = join(DOCS, DEFAULT_LOCALE, "v0_1/reference/elements/index.mdx")
 // github-slugger's algorithm: lowercase, drop a fixed punctuation set, spaces
 // to hyphens. It leaves non-Latin scripts alone, which is what keeps Thai
 // headings such as "Relationship to ชั้น" linkable.
-const PUNCTUATION =
-  /[ -⁯⸀-⹿\\'!"#$%&()*+,./:;<=>?@[\]^`{|}~]/g;
+//
+// The ranges below are copied character-for-character from github-slugger's
+// own regex rather than rewritten as \uXXXX escapes, so this stays an exact
+// match for its behavior; that includes literal Unicode space characters,
+// which the eslint-disable below is for.
+// eslint-disable-next-line no-irregular-whitespace
+const PUNCTUATION = /[ -⁯⸀-⹿\\'!"#$%&()*+,./:;<=>?@[\]^`{|}~]/g;
 
 function slugify(heading) {
   // Explicit {#id} overrides the auto-generated slug
