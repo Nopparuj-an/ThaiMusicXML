@@ -13,8 +13,8 @@ import { textWidth } from "./text.mjs";
 // format). Neither is drawn as its own diacritic - glyph() strips whichever
 // is present and turns it into a drawn dot instead. See "Octave marks" in
 // reference/rendering.
-const NIKHAHIT = "ํ"; // raise one octave
-const PINTHU = "ฺ"; // lower one octave
+export const NIKHAHIT = "ํ"; // raise one octave
+export const PINTHU = "ฺ"; // lower one octave
 
 // The seven base notes, in the three interchangeable spellings note.md's
 // Pitch format lists. Order is the scale degree, 1-indexed to match it.
@@ -29,7 +29,7 @@ const BASE_NOTES = [
 ];
 
 // Any of the three spellings, either letter case, to its scale degree.
-const DEGREE_BY_SPELLING = new Map(
+export const DEGREE_BY_SPELLING = new Map(
   BASE_NOTES.flatMap(({ thai, letter, number }, i) => [
     [thai, i],
     [letter, i],

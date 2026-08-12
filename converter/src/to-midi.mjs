@@ -1,0 +1,262 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
+// ThaiMusicXML -> Standard MIDI File (SMF format 1). See reference/conversion
+// in the docs for the mapping policy this implements.
+//
+// Repeats are always fully unrolled here (Standard MIDI has no native
+// repeat concept, unlike the MusicXML writer's native-barline goal), lyric
+// parts are skipped (no defined pairing to a notated part), and <annotation>
+// text/<nathap> aren't carried into meta events yet - resolve.mjs's
+// playOrder doesn't capture their content, only <chan>'s value and <bpm>. See
+// HANDOFF.md.
+
+import { resolvePitch, resolveTuning } from "./pitch.mjs";
+import { lcm } from "./fraction.mjs";
+import { groupParts } from "./ensemble-groups.mjs";
+
+// General MIDI program numbers, 1-indexed as GM names them; the wire value
+// sent in a Program Change is one less. See reference/conversion's "MIDI:
+// instrument patches".
+const GM_INSTRUMENTS = [
+  { match: "ระนาดเอก", program: 14 }, // Xylophone
+  { match: "ฆ้องวงใหญ่", program: 12 }, // Vibraphone
+  { match: "ขิม", program: 16 }, // Dulcimer
+  { match: "จะเข้", program: 108 }, // Koto
+  { match: "ซอด้วง", program: 41 }, // Violin
+  { match: "ซออู้", program: 43 }, // Cello
+];
+const DEFAULT_PROGRAM = 14; // Xylophone, with a warning - see "MIDI: instrument patches"
+
+// General MIDI percussion key numbers (channel 10), cycled across a part's
+// distinct `sound` codes in first-appearance order. See "MIDI: percussion".
+const PERCUSSION_NOTES = [38, 39, 42, 46, 45, 50, 56, 75];
+const PERCUSSION_CHANNEL = 9; // MIDI channel 10, 0-indexed
+
+/** GM program (1-indexed) for a pitched instrument-name, overrides checked first, substring match against the table otherwise. */
+function resolveProgram(instrumentName, overrides, warn) {
+  for (const [match, program] of Object.entries(overrides)) {
+    if (instrumentName.includes(match)) return program;
+  }
+  for (const { match, program } of GM_INSTRUMENTS) {
+    if (instrumentName.includes(match)) return program;
+  }
+  warn(`no General MIDI patch known for instrument "${instrumentName}", using Xylophone`);
+  return DEFAULT_PROGRAM;
+}
+
+/**
+ * Every distinct `sound` code across every group, first-appearance order,
+ * mapped to a GM percussion note, overrides checked first. Scans every
+ * group regardless of its declared type: a `sound`-bearing note is only
+ * supposed to appear on a `type="unpitched"` part (note.md's Conformance),
+ * but the converter still needs a note to play if one turns up elsewhere -
+ * see the per-note check in addNoteEvents, which is what actually warns.
+ */
+function resolvePercussionNotes(groups, doc, overrides) {
+  const codes = [];
+  for (const group of groups) {
+    for (const member of group.members) {
+      for (const note of doc.unroll(member.id).notes) {
+        if (!note.rest && note.sound != null && !codes.includes(note.sound)) codes.push(note.sound);
+      }
+    }
+  }
+  const map = {};
+  let cycle = 0;
+  for (const code of codes) {
+    if (code in overrides) {
+      map[code] = overrides[code];
+      continue;
+    }
+    map[code] = PERCUSSION_NOTES[cycle % PERCUSSION_NOTES.length];
+    cycle++;
+  }
+  return map;
+}
+
+/** Every fraction denominator (onset and duration) across a set of unrolled note lists, for sizing one shared tick resolution. */
+function denominatorsOf(unrolled) {
+  const out = [];
+  for (const { notes } of unrolled) for (const note of notes) out.push(note.onset.d, note.duration.d);
+  return out;
+}
+
+const ticksFor = (fraction, ticksPerSlot) => Math.round((fraction.n * ticksPerSlot) / fraction.d);
+
+function variableLengthQuantity(value) {
+  const bytes = [value & 0x7f];
+  value = Math.floor(value / 128);
+  while (value > 0) {
+    bytes.unshift((value & 0x7f) | 0x80);
+    value = Math.floor(value / 128);
+  }
+  return bytes;
+}
+
+class Track {
+  constructor() {
+    this.events = [];
+  }
+
+  add(tick, bytes) {
+    this.events.push({ tick, bytes });
+  }
+
+  toBytes() {
+    this.events.sort((a, b) => a.tick - b.tick); // stable: same-tick events keep insertion order
+    const body = [];
+    let previousTick = 0;
+    for (const { tick, bytes } of this.events) {
+      body.push(...variableLengthQuantity(tick - previousTick), ...bytes);
+      previousTick = tick;
+    }
+    body.push(0x00, 0xff, 0x2f, 0x00); // end of track
+    const length = body.length;
+    return [
+      0x4d,
+      0x54,
+      0x72,
+      0x6b, // "MTrk"
+      (length >>> 24) & 0xff,
+      (length >>> 16) & 0xff,
+      (length >>> 8) & 0xff,
+      length & 0xff,
+      ...body,
+    ];
+  }
+}
+
+const textMetaEvent = (type, text) => {
+  const bytes = Array.from(Buffer.from(text, "utf8"));
+  return [0xff, type, ...variableLengthQuantity(bytes.length), ...bytes];
+};
+
+/**
+ * One group's notes as note-on/note-off pairs, percussion using its resolved
+ * note map instead of pitch. Decided per note by whether it actually carries
+ * `sound`, not by the group's declared type: `sound` is only supposed to
+ * appear on a `type="unpitched"` part (note.md's Conformance), but a
+ * mismatch is a warning elsewhere in this format, not a hard failure, and a
+ * stray one shouldn't crash the whole conversion. A mismatched note still
+ * routes to the percussion channel regardless of its group's own channel,
+ * since that's the only channel a percussion note number means anything on.
+ */
+function addNoteEvents(track, group, channel, doc, tuning, ticksPerSlot, percussionNotes, warn) {
+  const isUnpitched = group.members[0].type === "unpitched";
+  for (const member of group.members) {
+    for (const note of doc.unroll(member.id).notes) {
+      if (note.rest) continue;
+      const usesSound = note.sound != null;
+      if (usesSound !== isUnpitched) {
+        warn(
+          `part "${member.id}" (type="${member.type}") has a note that ${usesSound ? "carries sound" : "carries pitch"}, which doesn't match its declared type; treating it as ${usesSound ? "percussion" : "pitched"}`,
+        );
+      }
+      const midi = usesSound ? percussionNotes[note.sound] : resolvePitch(note.pitch, note.octave, tuning).midi;
+      const noteChannel = usesSound ? PERCUSSION_CHANNEL : channel;
+      const onsetTicks = ticksFor(note.onset, ticksPerSlot);
+      const offTicks = onsetTicks + ticksFor(note.duration, ticksPerSlot);
+      track.add(onsetTicks, [0x90 | noteChannel, midi, 100]);
+      track.add(offTicks, [0x80 | noteChannel, midi, 64]);
+    }
+  }
+}
+
+/**
+ * Convert a resolved ThaiMusicXML document (from resolve.mjs) to a Standard
+ * MIDI File, format 1: one tempo/meta track plus one track per output part.
+ * `options.tuning` overrides <tuning> or its absence; `options.splitStacks`
+ * gives each stacked row its own track instead of merging them;
+ * `options.instrumentMap`/`options.percussionMap` override the built-in GM
+ * patch/percussion-note tables, keyed the same way (a substring of
+ * `instrument-name`, or a literal `sound` code).
+ */
+export function toMidi(doc, options = {}) {
+  const warn = options.warn ?? (() => {});
+  const tuning = resolveTuning(options.tuning ?? doc.tuning, warn);
+  const instrumentMap = options.instrumentMap ?? {};
+  const percussionMap = options.percussionMap ?? {};
+
+  const groups = groupParts(
+    doc.parts.filter((p) => p.type !== "lyric"),
+    options.splitStacks,
+  );
+  if (doc.parts.some((p) => p.type === "lyric")) {
+    warn("lyric parts have no defined pairing to a notated part in v0.1 and are not exported");
+  }
+
+  const unrolledByGroup = groups.map((g) => g.members.map((m) => doc.unroll(m.id)));
+  const allDenominators = unrolledByGroup.flatMap(denominatorsOf);
+  const ticksPerSlot = allDenominators.reduce(lcm, 1);
+  const division = ticksPerSlot * 2; // ticks per quarter note: one bpm beat, two slots
+
+  const percussionNotes = resolvePercussionNotes(groups, doc, percussionMap);
+
+  const metaTrack = new Track();
+  if (doc.title) metaTrack.add(0, textMetaEvent(0x03, doc.title));
+  metaTrack.add(0, [0xff, 0x58, 0x04, 0x02, 0x02, 0x18, 0x08]); // 2/4 time signature
+
+  // playOrder's directions don't depend on any one part, so any group's own
+  // timeline works as the reference for placing tempo/chan markers - see
+  // HANDOFF.md for the one edge case (a part that skips a section) this
+  // doesn't perfectly account for.
+  const reference = groups[0] ? doc.unroll(groups[0].members[0].id) : { tempoChanges: [] };
+  for (const { onset, bpm } of reference.tempoChanges) {
+    const microsecondsPerQuarter = Math.round(60000000 / bpm);
+    metaTrack.add(ticksFor(onset, ticksPerSlot), [
+      0xff,
+      0x51,
+      0x03,
+      (microsecondsPerQuarter >>> 16) & 0xff,
+      (microsecondsPerQuarter >>> 8) & 0xff,
+      microsecondsPerQuarter & 0xff,
+    ]);
+  }
+  for (const { onset, chan } of reference.chanChanges) {
+    metaTrack.add(ticksFor(onset, ticksPerSlot), textMetaEvent(0x06, `chan ${chan}`));
+  }
+
+  const channels = [];
+  let nextChannel = 0;
+  for (const group of groups) {
+    if (group.members[0].type === "unpitched") {
+      channels.push(PERCUSSION_CHANNEL);
+      continue;
+    }
+    if (nextChannel === PERCUSSION_CHANNEL) nextChannel++;
+    if (nextChannel > 15) throw new Error("more pitched instruments than available MIDI channels (15)");
+    channels.push(nextChannel++);
+  }
+
+  const tracks = groups.map((group, i) => {
+    const track = new Track();
+    const channel = channels[i];
+    track.add(0, textMetaEvent(0x03, group.name));
+    if (channel !== PERCUSSION_CHANNEL) {
+      const program = resolveProgram(group.members[0].name, instrumentMap, warn);
+      track.add(0, [0xc0 | channel, program - 1]);
+    }
+    addNoteEvents(track, group, channel, doc, tuning, ticksPerSlot, percussionNotes, warn);
+    return track;
+  });
+
+  const allTracks = [metaTrack, ...tracks];
+  const header = [
+    0x4d,
+    0x54,
+    0x68,
+    0x64, // "MThd"
+    0x00,
+    0x00,
+    0x00,
+    0x06,
+    0x00,
+    0x01, // format 1
+    (allTracks.length >>> 8) & 0xff,
+    allTracks.length & 0xff,
+    (division >>> 8) & 0xff,
+    division & 0xff,
+  ];
+  return Buffer.from([...header, ...allTracks.flatMap((t) => t.toBytes())]);
+}

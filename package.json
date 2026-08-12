@@ -13,8 +13,9 @@
     "check:links": "node scripts/check-docs-links.mjs",
     "check:corpus": "node scripts/check-corpus.mjs",
     "check:layout": "node --test \"renderer/test/*.test.mjs\"",
+    "check:convert": "node --test \"converter/test/*.test.mjs\"",
     "lint": "eslint .",
-    "check": "pnpm run check:links && pnpm run check:corpus && pnpm run check:layout && pnpm run lint",
+    "check": "pnpm run check:links && pnpm run check:corpus && pnpm run check:layout && pnpm run check:convert && pnpm run lint",
     "render": "node renderer/render.mjs"
   },
   "imports": {

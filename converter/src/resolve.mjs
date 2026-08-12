@@ -1,0 +1,309 @@
+// Copyright 2026 Nopparuj Ananvoranich
+// SPDX-License-Identifier: Apache-2.0
+
+// Structural resolution shared by every converter target: pass counts, line
+// order (line-repeat expanded), ending substitution, and rest folding. See
+// reference/conversion in the docs for the policy this implements.
+//
+// renderer/src/parse.mjs already reads header/parts/music (lines, beats,
+// slots, bow and parenthesis spans) well and is reused as-is. What it
+// deliberately does not do is unroll <repeat>, since the static page
+// renderer draws a section once regardless of how many times it plays. This
+// module adds that layer on top rather than duplicating parse.mjs's XML walk.
+
+import { DOMParser } from "#dom-parser";
+import { parse } from "../../renderer/src/parse.mjs";
+import { frac, add, subtract, compare, ZERO } from "./fraction.mjs";
+
+const NS = "https://thaimusicxml.anan.ovh/ns/0.1";
+
+const els = (node, name) =>
+  Array.from(node.getElementsByTagNameNS(NS, name)).filter((el) => el.parentNode === node);
+
+/**
+ * <structure> walked depth-first, multiplying <repeat times> as it descends.
+ * Unlike parse.mjs's `structure`, this keeps one entry per <section>
+ * occurrence with its total pass count, and drops into nested <repeat>
+ * elements rather than flattening them away. See <repeat>'s "Total pass
+ * count".
+ */
+function playOrder(structureEl) {
+  const out = [];
+  const walk = (node, multiplier) => {
+    for (const child of Array.from(node.childNodes)) {
+      if (child.nodeType !== 1) continue;
+      if (child.localName === "repeat") {
+        const times = child.hasAttribute("times") ? Number(child.getAttribute("times")) : 1;
+        walk(child, multiplier * times);
+      } else if (child.localName === "section") {
+        out.push({ kind: "section", id: child.getAttribute("id"), totalPasses: multiplier });
+      } else if (child.localName === "direction") {
+        const chanEl = els(child, "chan")[0];
+        const bpmEl = els(child, "bpm")[0];
+        out.push({
+          kind: "direction",
+          chan: chanEl ? chanEl.getAttribute("value") : null,
+          bpm: bpmEl ? Number(bpmEl.textContent.trim()) : null,
+        });
+      } else if (child.localName === "annotation") {
+        out.push({ kind: "annotation" });
+      } else if (child.localName === "br") {
+        out.push({ kind: "br" });
+      }
+    }
+  };
+  walk(structureEl, 1);
+  return out;
+}
+
+/**
+ * <line-repeat> ranges as a forest: a range's children are the ranges
+ * properly nested directly inside it. Ranges are guaranteed nested or
+ * disjoint, never partially overlapping, so a first-ascending sort plus a
+ * containment stack is enough to build it. See <line-repeat>'s Conformance.
+ */
+function buildRangeForest(ranges) {
+  const sorted = [...ranges].sort((a, b) => a.first - b.first);
+  const forest = [];
+  const stack = [];
+  for (const r of sorted) {
+    const node = { ...r, children: [] };
+    while (stack.length && stack[stack.length - 1].last < r.first) stack.pop();
+    if (stack.length) stack[stack.length - 1].children.push(node);
+    else forest.push(node);
+    stack.push(node);
+  }
+  return forest;
+}
+
+/** One line number in document order for every line a range plays, its own nested ranges included. */
+function expandRange(node) {
+  const seq = [];
+  const childByFirst = new Map(node.children.map((c) => [c.first, c]));
+  let l = node.first;
+  while (l <= node.last) {
+    const child = childByFirst.get(l);
+    if (child) {
+      for (let t = 0; t < (child.times || 1); t++) seq.push(...expandRange(child));
+      l = child.last + 1;
+    } else {
+      seq.push(l);
+      l++;
+    }
+  }
+  return seq;
+}
+
+/**
+ * The order lines play in for one pass of a section, line-repeat ranges
+ * expanded. Independent of which pass: a line-repeat re-triggers identically
+ * on every pass, only the content of a given line number varies by pass (via
+ * <ending>). See <line-repeat>.
+ */
+function lineOrder(lineCount, ranges) {
+  const forest = buildRangeForest(ranges);
+  const topByFirst = new Map(forest.map((n) => [n.first, n]));
+  const order = [];
+  let l = 1;
+  while (l <= lineCount) {
+    const node = topByFirst.get(l);
+    if (node) {
+      for (let t = 0; t < (node.times || 1); t++) order.push(...expandRange(node));
+      l = node.last + 1;
+    } else {
+      order.push(l);
+      l++;
+    }
+  }
+  return order;
+}
+
+/** Which <ending>, if any, replaces line `lineNumber` on pass `pass`. */
+function endingFor(endings, lineNumber, pass) {
+  for (const ending of endings) {
+    if (!ending.pass.includes(pass)) continue;
+    const line = ending.lines.find((l) => l.number === lineNumber);
+    if (line) return line;
+  }
+  return null;
+}
+
+/**
+ * Every slot in one measure, flattened across beats and <group> members,
+ * each landing at the position group.md and the renderer's arrivals() both
+ * use: a beat or group arrives on its last slot, so a k-way split's final
+ * member coincides with where a plain note at that beat would fall, and the
+ * earlier members run up to it from before. Beat i (0-based) holds k slots
+ * at onset i-(k-1-j)/k for member j - the k=1 case reduces to onset i, a
+ * plain beat's own position, unchanged.
+ */
+function flattenBeats(beats) {
+  const flat = [];
+  beats.forEach((beat, i) => {
+    const k = beat.slots.length;
+    beat.slots.forEach((slot, j) => {
+      flat.push({ onset: frac(i * k - (k - 1 - j), k), slot });
+    });
+  });
+  return flat;
+}
+
+/**
+ * One measure's slots folded into resolved notes: a <rest> extends the
+ * previous note's duration rather than sounding as silence, capped at this
+ * measure's own boundary. See reference/conversion's "Rests". Every kept
+ * event's duration reaches to the next kept event's onset, not to a fixed
+ * share of its own beat: a <group> member's next attack may be its own
+ * sibling a fraction of a beat away, or, for a group's last member, nothing
+ * closer than the next beat entirely - and the same reach applies to a rest
+ * with nothing sounding yet before it, which a following group's early
+ * members can cut short by attacking before its beat would otherwise end.
+ *
+ * `siblingAttacks` are onsets, local to this same measure, of every note in
+ * a sibling row of the same <ensemble> stack. A stack is one physical
+ * instrument (see group.md's `link`), so a note's decay stops mattering the
+ * moment *any* row of it strikes again, not only its own. This only ever
+ * shortens a note whose own row left its length undetermined - a rest was
+ * absorbed after it, or its row simply has nothing more written this
+ * measure - never one whose own row's next note follows it with no gap,
+ * which is an explicit choice a sibling's activity shouldn't override (that
+ * would flatten deliberate interlocking, one hand holding while the other
+ * moves, into a single shared grain).
+ */
+function foldMeasure(beats, siblingAttacks = []) {
+  const flat = flattenBeats(beats);
+  const kept = [];
+  let sounding = false;
+  flat.forEach(({ onset, slot }, flatIndex) => {
+    if (slot.kind === "note") {
+      kept.push({ onset, flatIndex, pitch: slot.pitch, sound: slot.sound, octave: slot.octave });
+      sounding = true;
+    } else if (!sounding) {
+      kept.push({ onset, flatIndex, rest: true });
+    }
+  });
+  kept.forEach((note, idx) => {
+    const end = idx + 1 < kept.length ? kept[idx + 1].onset : frac(beats.length);
+    const nextFlat = flat[note.flatIndex + 1];
+    const explicit = nextFlat?.slot.kind === "note";
+    let cappedEnd = end;
+    if (!note.rest && !explicit) {
+      for (const attack of siblingAttacks) {
+        if (compare(attack, note.onset) > 0 && compare(attack, cappedEnd) < 0) cappedEnd = attack;
+      }
+    }
+    note.duration = subtract(cappedEnd, note.onset);
+    delete note.flatIndex;
+  });
+  return kept;
+}
+
+/** Onsets, local to one measure, of every note (not rest) a stack's sibling row plays there. */
+function siblingAttackOnsets(siblingMeasures) {
+  const onsets = [];
+  for (const measure of siblingMeasures) {
+    if (!measure) continue;
+    for (const { onset, slot } of flattenBeats(measure.beats)) {
+      if (slot.kind === "note") onsets.push(onset);
+    }
+  }
+  return onsets;
+}
+
+/** Total slot duration of one measure, before folding: the number of beats, each one slot. */
+const measureLength = (beats) => frac(beats.length);
+
+/**
+ * The resolved note timeline for one part's play of one section on one pass:
+ * line order expanded, ending substitutions applied, rests folded per
+ * measure, onsets made cumulative across the pass. Independent of any
+ * enclosing <repeat>, since a repeat replays this same resolution unchanged
+ * on each of its passes.
+ */
+function resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics = []) {
+  const lineCount = sectionMusic.lines.length;
+  const order = lineOrder(lineCount, ranges);
+  const notes = [];
+  const measureBoundaries = [];
+  let cursor = ZERO;
+  for (const number of order) {
+    const override = endingFor(sectionMusic.endings, number, pass);
+    const line = override ?? sectionMusic.lines.find((l) => l.number === number);
+    const siblingLines = siblingSectionMusics.map((sm) => {
+      const siblingOverride = endingFor(sm.endings, number, pass);
+      return siblingOverride ?? sm.lines.find((l) => l.number === number);
+    });
+    line.measures.forEach((measure, measureIndex) => {
+      const siblingAttacks = siblingAttackOnsets(siblingLines.map((sl) => sl?.measures[measureIndex]));
+      for (const note of foldMeasure(measure.beats, siblingAttacks)) {
+        notes.push({ ...note, onset: add(cursor, note.onset), line: number, measure: measure.number });
+      }
+      cursor = add(cursor, measureLength(measure.beats));
+      measureBoundaries.push(cursor);
+    });
+  }
+  return { notes, length: cursor, measureBoundaries };
+}
+
+export function resolve(source) {
+  const parsed = parse(source);
+  const doc = new DOMParser().parseFromString(source, "text/xml");
+  const structureEl = els(doc.documentElement, "structure")[0];
+  const order = playOrder(structureEl);
+  const rangesBySection = Object.fromEntries(
+    parsed.sections.map((s) => [s.id, s.lineRepeats]),
+  );
+
+  /** Other notated rows of the same <ensemble> stack - a lyric row has no beats to strike, so it's excluded, per group.md's `link`. */
+  function siblingIdsOf(partId) {
+    const part = parsed.parts.find((p) => p.id === partId);
+    if (!part?.stack) return [];
+    return parsed.parts
+      .filter((p) => p.stack === part.stack && p.id !== partId && p.type !== "lyric")
+      .map((p) => p.id);
+  }
+
+  /** Every pass of one part's section occurrence, 1-based. */
+  function resolveSection(partId, sectionId, totalPasses) {
+    const sectionMusic = parsed.music[partId]?.[sectionId];
+    if (!sectionMusic) return null;
+    const ranges = rangesBySection[sectionId] ?? [];
+    const siblingSectionMusics = siblingIdsOf(partId)
+      .map((id) => parsed.music[id]?.[sectionId])
+      .filter(Boolean);
+    const passes = [];
+    for (let pass = 1; pass <= totalPasses; pass++) {
+      passes.push({ pass, ...resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics) });
+    }
+    return { sectionId, totalPasses, passes };
+  }
+
+  /** Every part's notes, concatenated in true playback order across the whole piece. */
+  function unroll(partId) {
+    const notes = [];
+    const measureBoundaries = [];
+    let cursor = ZERO;
+    let bpm = null;
+    const tempoChanges = [];
+    const chanChanges = [];
+    for (const item of order) {
+      if (item.kind === "direction") {
+        if (item.bpm) bpm = item.bpm;
+        if (bpm !== null) tempoChanges.push({ onset: cursor, bpm });
+        if (item.chan) chanChanges.push({ onset: cursor, chan: item.chan });
+        continue;
+      }
+      if (item.kind !== "section") continue;
+      const resolved = resolveSection(partId, item.id, item.totalPasses);
+      if (!resolved) continue;
+      for (const { notes: passNotes, length, measureBoundaries: passBoundaries } of resolved.passes) {
+        for (const note of passNotes) notes.push({ ...note, onset: add(cursor, note.onset) });
+        for (const b of passBoundaries) measureBoundaries.push(add(cursor, b));
+        cursor = add(cursor, length);
+      }
+    }
+    return { notes, tempoChanges, chanChanges, measureBoundaries };
+  }
+
+  return { ...parsed, playOrder: order, resolveSection, unroll };
+}

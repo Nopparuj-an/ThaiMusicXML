@@ -127,6 +127,11 @@ export default defineConfig({
                   slug: "v0_1/reference/schema",
                 },
                 {
+                  label: "Conversion",
+                  translations: { th: "การแปลงไฟล์" },
+                  slug: "v0_1/reference/conversion",
+                },
+                {
                   label: "Elements",
                   translations: { th: "องค์ประกอบ" },
                   items: [

@@ -1,0 +1,83 @@
+# Converter handoff notes
+
+Working notes for picking this back up later. Not user-facing docs (those
+live in `src/content/docs/en/v0_1/reference/conversion/index.md`, which is
+the actual policy spec this code implements).
+
+## Module map
+
+- `src/fraction.mjs` — exact `{n, d}` rational arithmetic. Everything timing-related uses this, never floats, since `<group>` divisions aren't bounded to powers of two.
+- `src/resolve.mjs` — structural resolver. Reuses `renderer/src/parse.mjs` for header/parts/music, adds its own walk of `<structure>` for pass counts. Exposes `resolve(source) -> { ...parsed, playOrder, resolveSection, unroll }`.
+  - `resolveSection(partId, sectionId, totalPasses)` — per-pass note timelines, for MusicXML (which writes one part at a time, following `<structure>`'s own repeat/ending semantics).
+  - `unroll(partId)` — the whole piece for one part, fully concatenated across every pass, flattened. This is what MIDI wants, and it's also what the current MusicXML writer uses (see below).
+  - Both return notes with exact-fraction `onset`/`duration`, plus `measureBoundaries` (cumulative onset of each measure's end) so a consumer can slice the flat note list into measures without re-deriving line/beat structure itself.
+  - The critical invariant a consumer can rely on: no resolved note ever crosses a measure boundary. `foldMeasure` guarantees the last kept item in a measure ends exactly at that measure's own length. This is what makes bucketing notes into `<measure>` elements by comparing onsets to `measureBoundaries` safe.
+  - `foldMeasure` is stack-aware: it takes an optional `siblingAttacks` list (onsets, local to the measure, of every note a sibling row of the same `stack` plays there) and uses it to cap a note's open-ended extension - but only an open-ended one, never a note whose own row's next note follows with no gap. `resolveSection` computes this by finding the calling part's stack-mates (`parsed.parts` filtered by matching `stack`, excluding `type="lyric"`) and threading their same-position measures through `resolveSectionPass`. See "Rests" in the docs for the exact rule and why the distinction matters (it's what keeps deliberate interlocking - one hand holding while the other moves fast - from getting flattened).
+- `src/pitch.mjs` — `<tuning>` resolution + one note's absolute pitch (MIDI number and MusicXML step/alter/octave from the same semitone value, so both export targets agree). Shared by both targets.
+- `src/musicxml-durations.mjs` — a resolved note's fraction duration → MusicXML `<duration>`/`<type>`/`<dots>`/`<time-modification>`, tied across multiple `<note>` elements if needed. Load-bearing insight: a duration's own reduced denominator tells you what tuplet it needs (strip factors of 2; the odd part left over, if any, is the tuplet's `k`) — this holds regardless of *how* the duration arose (plain group member, one that absorbed a sibling rest, a plain note whose decay got cut short by a following group's early pickup, or a *rest* that's the kept thing before anything has sounded).
+- `src/to-musicxml.mjs` — the actual XML assembly. See "Known scope-narrowing" below — it currently always unrolls repeats rather than emitting native barlines/voltas.
+- `src/ensemble-groups.mjs` — `groupParts(parts, splitStacks)`, factored out once both writers needed the identical stack-merging logic. Both writers must stay in lockstep here: if one changes how a stack becomes an output unit, so must the other.
+- `src/to-midi.mjs` — Standard MIDI File (format 1) byte assembly: one meta/tempo track plus one track per output part/stack, built with hand-rolled VLQ delta-time and chunk encoding (no external MIDI library, consistent with this project's general no-new-dependencies style). Repeats are *always* fully unrolled (Standard MIDI has no native repeat concept at all, so there's no "simple case" the way MusicXML has). `<annotation>` text and `<nathap>` aren't carried into meta events - `resolve.mjs`'s `playOrder` doesn't capture their content, only `<chan>`'s value and `<bpm>`, so only those two make it into meta events. A stray `sound`-bearing note in a part not declared `type="unpitched"` (a real inconsistency `example-lao-duang-duean.txml` turned out to have) is *decided per note*, not per part/group: it warns and routes to the percussion channel rather than crashing - see the `sound !== declared type` bug below.
+- `dump.mjs` — CLI (`node converter/dump.mjs <score.txml> [partId]`) that prints the resolved note timeline per part/section/pass. This is the tool of choice for eyeballing correctness against a real piece before trusting a unit test's hand-derived expected values — it's how both real bugs below were actually found.
+
+## Known scope-narrowing (deliberate, not forgotten)
+
+`to-musicxml.mjs` always **unrolls** every pass of every repeated section into
+its own plain measures, rather than the documented default (native repeat
+barlines + volta endings for a `<repeat>` that wraps exactly one section).
+Sound and pitch are fully correct either way; a repeated piece just doesn't
+*look* repeated yet — this is Task #2 in the project's task list, deferred
+because it needs a `<structure>`-tree walk (classify each `<repeat>` as
+"wraps one section" vs. "wraps several siblings", the latter needing the
+documented unroll-that-scope fallback) that hasn't been built. No example
+file currently exercises the "wraps several siblings" case.
+
+Lyric parts (`type="lyric"` in `<ensemble>`) are skipped with a warning, not
+exported. The docs note there's no defined pairing mechanism from a lyric
+part to a notated part — that's a real open design question, not just an
+unimplemented feature.
+
+Unpitched parts get one fixed notehead position (a placeholder), since sound
+codes have no defined mapping to a staff line/space.
+
+## Real bugs found so far, all by testing against real files, not just unit tests
+
+1. **Group member positioning** (in `resolve.mjs`, before this writer existed): the original onset formula spread group members forward from the beat; the actual rule (matching `renderer/src/geometry.mjs`'s `arrivals()`, which already had it right) is "beats anchor to the right" — the *last* member lands on the beat, earlier members lead up to it. Found via `dump.mjs` output against a real piece, by ear/eye from the user, not by a failing test — the unit tests at the time all had their expected values derived from the same wrong mental model.
+2. **`<divisions>` sizing scanned only each stack's first row** (in `to-musicxml.mjs`): a `<group>` living only in a stack's second row was invisible to the piece-wide `ticksPerSlot()` scan, since the scan only looked at `group.members[0]`. Crashed outright (`cannot represent a duration of 0.5 ticks at 2 divisions`) on `tutorial7-ensemble.txml`. Fixed by scanning every member of every group. **Lesson: always test-convert every real example/corpus file, not just the one or two picked for manual review** — this is what caught it.
+3. **Tuplet-scaled notes/rests need an explicit `<tuplet type="start"/>`/`<tuplet type="stop"/>` bracket, not just `<time-modification>` on each note — this took two attempts to actually fix.**
+   - First symptom: a *kept* rest (real silence before anything has sounded) landing inside a group's bracket had no `<time-modification>` at all — the rest-handling branch of `noteElements` discarded the `tuplet` field `encodeDuration()` returned. Fixed by emitting it for rests too.
+   - That fix alone did **not** resolve the user's reported MuseScore error (`Incomplete measure ... Found: 25/48, Expected: 2/4`), because the actual cause was one level deeper: `<time-modification>` on every note is necessary but not sufficient — a reader also needs `<tuplet>` start/stop markers in `<notations>` to know which *contiguous run* of notes forms one bracket. Without them, MuseScore couldn't tell that a **tied continuation note** (the second half of one logical note split across a printed-value boundary, e.g. a triplet-quarter tied to a triplet-16th) was still inside the same bracket as the note before it, and reverted that one note to its unscaled face value — throwing the measure's total off by exactly the tuplet's own scaling. Confirmed the mechanism numerically before touching code: `6+6+2+8+3=25` (the last note's plain, unscaled 16th value used instead of its scaled `2`) matched the reported error exactly.
+   - Real fix: added `assignTupletBrackets()` in `to-musicxml.mjs`, which flattens a staff's notes into tied-duration segments first, then does a pass marking the first/last segment of each contiguous same-ratio tuplet run with `start`/`stop`. Also fixed `<note>` child element order while in there — the DTD wants `<staff>` before `<notations>`, which the original code had backwards (harmless for well-formedness, wrong per spec).
+   - **Debugging technique worth repeating**: when a notation program reports a numeric discrepancy like `Found: 25/48`, don't just eyeball the XML — extract the exact note sequence for the flagged measure/staff and brute-force which specific "what if this one value were different" hypothesis reproduces the reported number exactly. That's what pinned this down (see git history around this note for the reproduction script) rather than more rounds of "does this individually look right."
+   - Regression test: `converter/test/to-musicxml.test.mjs`, "every tuplet bracket across every real example and corpus file is properly matched" — a general invariant (every `<time-modification>`-tagged segment sits inside a matched start/stop bracket, per measure per staff) checked against all 29 real/corpus files, not a hand-built synthetic case. Prefer this style of test over a narrow synthetic repro when the triggering fraction arithmetic is fiddly to hand-derive — real files already exercise it.
+4. **Rest extension resolved per row, even within a stack** — not a coding mistake like the others, a genuine gap in the design that the user caught by ear after the tuplet fix above, on the exact same `example-khaek-borathes.txml` measure (s2 measure 3: `<group><note pitch="ฟ"/><rest/><rest/></group>` in one row, `<group><rest/><note pitch="ซ"/><note pitch="ล"/></group>` in the sibling row). ฟ absorbs its own group's trailing rests and, with nothing else written in its own row, used to ring for a full extra beat (5/3 slots) - but the sibling row attacks (ซ) only 1/3 of a slot in. Confirmed with the user this should be a real policy: a `stack` is one physical instrument (see `link` in `group.md`), so a decaying note's relevance ends at *any* row's next attack, not only its own row's. Implemented in `resolve.mjs`: `foldMeasure` takes an optional `siblingAttacks` list and caps a note's `end` there, but *only* when the extension is already open-ended (a rest was absorbed, or the row has nothing left written that measure) - never when the row's own next note follows with zero gap, since that's an explicit, deliberate spacing choice (e.g. one hand holding a note while the other plays a fast independent line) that a sibling's activity must not override. `resolveSection` computes the calling part's stack-mates from `parsed.parts` (matching `stack`, excluding `type="lyric"` per `group.md`'s own rule that a lyric row has no beat position for this to reach) and threads their measures through. Documented in the docs' "Rests" and "Stacked instruments" sections, not just here, since it's a real semantic rule about what a `<rest>` means in a stack, not a converter implementation detail. Regression tests in both `resolve.test.mjs` (the capped case, and a control case proving a non-stacked part is unaffected) and the existing `to-musicxml.test.mjs` real-file stress test.
+
+5. **`isUnpitched` decided per part/group instead of per note** (in `to-midi.mjs`, found the same way as bug 2 - the real-file stress-test loop, this time on `example-lao-duang-duean.txml`): `addNoteEvents` checked `group.members[0].type === "unpitched"` once for the whole group and used that to decide whether *every* note in it should read `.pitch` or `.sound`. `example-lao-duang-duean.txml`'s `khim2`/`khim3` parts (declared plain `type="pitched"`, no `type` attribute at all) each turn out to have a couple of stray `<note sound="x"/>` elements mixed into otherwise normal pitched lines - `resolvePitch(null, ...)` crashed on them. Fixed by deciding pitched-vs-percussion **per note** (`note.sound != null`), with a warning on mismatch rather than a hard failure - consistent with this format's general "soft violations warn, they don't invalidate the document" convention (see note.md's own redundant-octave/discarded-attribute warnings). A mismatched note routes to the percussion channel specifically (channel 9), regardless of its group's own assigned channel, since a percussion note number only means anything there. `resolvePercussionNotes` also had to scan *every* group for `sound`-bearing notes, not just ones whose first member is declared `type="unpitched"`, for the same reason.
+   - **This is very likely a real, previously unnoticed mistake in `example-lao-duang-duean.txml` itself**, not a converter design question - unlike bug 4 above. `khim2`/`khim3` are overwhelmingly normal pitched khim lines (120+ `pitch=` notes each) with just one or two `sound="x"` notes mixed in, which reads like a copy-paste leftover or a placeholder rather than an intentional unpitched effect. Nothing catches this today: `check-corpus.mjs` only runs against `public/corpus/`, not `renderer/examples/`, and there's no automated check that a `sound`-bearing note's containing part actually declares `type="unpitched"`. **Not yet raised with the user or fixed in the source file** - flagged in the same conversation the MIDI writer was built, exact lines: `example-lao-duang-duean.txml:653` and `:784`. Worth either fixing the two notes directly, or - if this kind of check is generally worth having - adding it to `check-corpus.mjs` (though that would need extending to cover `renderer/examples/` too, which it doesn't today).
+
+**Pattern across all of these**: this codebase's tests are only as good as
+the mental model they were hand-derived from. When the mental model itself
+is wrong (or incomplete — see bug 3's first, insufficient fix), tests built
+on it agree with the bug. Real-file conversion (`dump.mjs` output, or
+actually opening generated `.musicxml`/`.mid` in a notation program or DAW)
+is what has caught every real bug so far, including two crashes that only
+one specific real file out of 29 ever exercised — keep doing that before
+trusting a green test suite alone, especially after touching timing/duration
+logic. A green suite after a fix is necessary but not sufficient proof the
+fix is complete — re-test the *original* reported symptom too, not just the
+mechanism you first suspected.
+
+## What's next
+
+Everything else (the MusicXML writer, the MIDI writer, and `convert.mjs`)
+is built and tested. What's left:
+
+- **Task #2, the only remaining implementation gap**: native repeat barlines + volta endings for the simple case (a `<repeat>` wrapping exactly one section, however deeply nested via further repeats around just that section) in `to-musicxml.mjs`. Needs a `<structure>`-tree classifier ("does this repeat wrap one section or several siblings") that doesn't exist yet. Until this lands, MusicXML export always fully unrolls every repeat instead - correct sound, just not native engraving. No example file currently exercises the "wraps several siblings" fallback case either, so that path is still just a documented policy, not implemented or tested.
+- **Not a task, but worth raising with the user**: `example-lao-duang-duean.txml`'s stray `sound="x"` notes (bug 5 above) - a real content mistake in that example file, separate from anything the converter itself needs to handle differently. Exact lines: `:653` and `:784`.
+- `convert.mjs` is a thin CLI over `resolve.mjs` + `to-musicxml.mjs`/`to-midi.mjs`: `--to musicxml|midi` (required), `--out`, `--tuning`, `--split-stacks`, `--instrument-map`/`--percussion-map` (JSON files). Tested via subprocess (`spawnSync`) in `converter/test/convert.test.mjs`, since it calls `process.exit()` on bad input and can't be exercised in-process.
+
+Before touching Task #2, run `node converter/dump.mjs <file>` and/or a full
+test-convert loop (`for f in renderer/examples/*.txml public/corpus/valid/*.txml; do ...`)
+against every real file — see git history around this note for the exact
+one-liner used to catch bugs #2 and #5 above (the same loop caught both,
+just swap which writer it calls).
