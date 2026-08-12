@@ -77,102 +77,49 @@ const ownText = (el) =>
     .map((n) => n.nodeValue)
     .join("");
 
-// ------------------------------------------------------------------ the rules
+// ------------------------------------------------------------------- context
+//
+// The lookups every rule below reads. Built once per document, purely - no
+// validation happens here, only grouping - so a rule never has to re-derive
+// what another rule already worked out, and a duplicate-id in the source
+// document does not change which <part> or <section> a lookup here resolves
+// to (first occurrence wins, silently), leaving duplicate detection itself to
+// checkIdsAndReferences.
 
-function checkRules(doc) {
-  const errors = [];
-  const warnings = [];
-  const err = (m) => errors.push(m);
-  const warn = (m) => warnings.push(m);
-
-  const score = doc.documentElement;
-  if (!score || score.namespaceURI !== NS) {
-    err(`root is not a <thai-score> in ${NS}`);
-    return { errors, warnings };
-  }
-
-  const version = score.getAttribute("version");
-  if (version && version !== "0.1")
-    warn(`version="${version}" does not match the 0.1 namespace`);
-
-  const structure = kid(score, "structure");
-  const ensemble = kid(score, "ensemble");
+function buildContext(score, structure, ensemble) {
   const partDatas = kids(score, "part-data");
-  if (!structure || !ensemble) return { errors, warnings };
-
-  // --- ids and references
-
   const parts = kids(ensemble, "part");
+  const sections = descendants(structure, "section");
+
   const partById = new Map();
   for (const p of parts) {
     const id = p.getAttribute("id");
-    if (partById.has(id)) err(`duplicate part id "${id}"`);
-    else partById.set(id, p);
-  }
-
-  const sections = descendants(structure, "section");
-  const sectionIds = new Set();
-  for (const s of sections) {
-    const id = s.getAttribute("id");
-    if (sectionIds.has(id)) err(`duplicate section id "${id}"`);
-    else sectionIds.add(id);
+    if (!partById.has(id)) partById.set(id, p);
   }
 
   const dataByPart = new Map();
   for (const pd of partDatas) {
     const ref = pd.getAttribute("part");
-    if (!partById.has(ref)) err(`<part-data part="${ref}"> references no <part>`);
-    if (dataByPart.has(ref)) err(`more than one <part-data> for part "${ref}"`);
-    else dataByPart.set(ref, pd);
-  }
-  for (const id of partById.keys())
-    if (!dataByPart.has(id)) err(`part "${id}" has no <part-data>`);
-
-  for (const pd of partDatas) {
-    const seen = new Set();
-    for (const sr of kids(pd, "section-ref")) {
-      const ref = sr.getAttribute("section");
-      if (!sectionIds.has(ref))
-        err(`<section-ref section="${ref}"> references no <section>`);
-      if (seen.has(ref))
-        err(`part "${pd.getAttribute("part")}" references section "${ref}" twice`);
-      seen.add(ref);
-    }
+    if (!dataByPart.has(ref)) dataByPart.set(ref, pd);
   }
 
-  // --- repeats
+  return {
+    score,
+    structure,
+    ensemble,
+    partDatas,
+    parts,
+    sections,
+    partById,
+    dataByPart,
+    stacks: buildStacks(parts),
+    passCount: buildPassCount(structure),
+  };
+}
 
-  for (const rep of descendants(structure, "repeat"))
-    if (descendants(rep, "section").length === 0)
-      err("a <repeat> contains no <section>, so it has nothing to play");
-
-  // A section's total pass count is the product of the times values enclosing it.
-  const passCount = new Map();
-  (function walkPasses(node, factor) {
-    for (const el of els(node)) {
-      if (el.localName === "section") passCount.set(el.getAttribute("id"), factor);
-      else if (el.localName === "repeat") {
-        const t = el.hasAttribute("times") ? num(el, "times") : 1;
-        walkPasses(el, factor * (Number.isFinite(t) && t > 0 ? t : 1));
-      }
-    }
-  })(structure, 1);
-
-  // --- directions
-
-  for (const n of descendants(structure, "nathap")) {
-    const v = n.getAttribute("value");
-    if (!RECOMMENDED_NATHAP.includes(v))
-      warn(`nathap value "${v}" is outside the recommended list`);
-  }
-  const tuning = descendants(score, "tuning")[0];
-  if (tuning && !RECOMMENDED_TUNING.includes(tuning.getAttribute("reference")))
-    warn(
-      `tuning reference "${tuning.getAttribute("reference")}" is outside the recommended list`,
-    );
-
-  // --- stacks
-
+// Parts sharing a <part> stack="", grouped by that name with each member's
+// position in <ensemble> and its own row attribute alongside it.
+function buildStacks(parts) {
   const stacks = new Map();
   parts.forEach((p, index) => {
     if (!p.hasAttribute("stack")) return;
@@ -180,8 +127,97 @@ function checkRules(doc) {
     if (!stacks.has(name)) stacks.set(name, []);
     stacks.get(name).push({ part: p, index, row: num(p, "row") });
   });
+  return stacks;
+}
 
-  for (const [name, members] of stacks) {
+// A section's total pass count is the product of the times values enclosing it.
+function buildPassCount(structure) {
+  const passCount = new Map();
+  (function walk(node, factor) {
+    for (const el of els(node)) {
+      if (el.localName === "section") passCount.set(el.getAttribute("id"), factor);
+      else if (el.localName === "repeat") {
+        const t = el.hasAttribute("times") ? num(el, "times") : 1;
+        walk(el, factor * (Number.isFinite(t) && t > 0 ? t : 1));
+      }
+    }
+  })(structure, 1);
+  return passCount;
+}
+
+// ------------------------------------------------------------------ the rules
+//
+// Each rule is independent: given the shared context, it pushes its own
+// errors and warnings and touches nothing another rule depends on. Order
+// among them does not matter for correctness, only for the order failures
+// print in - run in checkRules() below, in the same order the conformance
+// page collects them.
+
+function checkVersion(score, warn) {
+  const version = score.getAttribute("version");
+  if (version && version !== "0.1")
+    warn(`version="${version}" does not match the 0.1 namespace`);
+}
+
+function checkIdsAndReferences(ctx, err) {
+  const seenPartIds = new Set();
+  for (const p of ctx.parts) {
+    const id = p.getAttribute("id");
+    if (seenPartIds.has(id)) err(`duplicate part id "${id}"`);
+    seenPartIds.add(id);
+  }
+
+  const seenSectionIds = new Set();
+  for (const s of ctx.sections) {
+    const id = s.getAttribute("id");
+    if (seenSectionIds.has(id)) err(`duplicate section id "${id}"`);
+    seenSectionIds.add(id);
+  }
+
+  const seenPartDataRefs = new Set();
+  for (const pd of ctx.partDatas) {
+    const ref = pd.getAttribute("part");
+    if (!ctx.partById.has(ref)) err(`<part-data part="${ref}"> references no <part>`);
+    if (seenPartDataRefs.has(ref)) err(`more than one <part-data> for part "${ref}"`);
+    seenPartDataRefs.add(ref);
+  }
+  for (const id of ctx.partById.keys())
+    if (!ctx.dataByPart.has(id)) err(`part "${id}" has no <part-data>`);
+
+  for (const pd of ctx.partDatas) {
+    const seen = new Set();
+    for (const sr of kids(pd, "section-ref")) {
+      const ref = sr.getAttribute("section");
+      if (!seenSectionIds.has(ref))
+        err(`<section-ref section="${ref}"> references no <section>`);
+      if (seen.has(ref))
+        err(`part "${pd.getAttribute("part")}" references section "${ref}" twice`);
+      seen.add(ref);
+    }
+  }
+}
+
+function checkRepeatsHaveSections(ctx, err) {
+  for (const rep of descendants(ctx.structure, "repeat"))
+    if (descendants(rep, "section").length === 0)
+      err("a <repeat> contains no <section>, so it has nothing to play");
+}
+
+function checkDirections(ctx, err, warn) {
+  for (const n of descendants(ctx.structure, "nathap")) {
+    const v = n.getAttribute("value");
+    if (!RECOMMENDED_NATHAP.includes(v))
+      warn(`nathap value "${v}" is outside the recommended list`);
+  }
+  const tuning = descendants(ctx.score, "tuning")[0];
+  if (tuning && !RECOMMENDED_TUNING.includes(tuning.getAttribute("reference")))
+    warn(
+      `tuning reference "${tuning.getAttribute("reference")}" is outside the recommended list`,
+    );
+}
+
+function checkStacks(ctx, err) {
+  for (const [name, members] of ctx.stacks) {
     if (members.length < 2)
       err(`stack "${name}" has one part; a single-row instrument carries neither stack nor row`);
 
@@ -200,17 +236,17 @@ function checkRules(doc) {
         err(`stack "${name}" parts are not in ascending row order in <ensemble>`);
     }
   }
+}
 
-  // --- line repeats
-
+function checkLineRepeats(ctx, err) {
   const lineCountFor = new Map();
-  for (const pd of partDatas)
+  for (const pd of ctx.partDatas)
     for (const sr of kids(pd, "section-ref")) {
       const ref = sr.getAttribute("section");
       if (!lineCountFor.has(ref)) lineCountFor.set(ref, kids(sr, "line").length);
     }
 
-  for (const section of sections) {
+  for (const section of ctx.sections) {
     const id = section.getAttribute("id");
     const ranges = kids(section, "line-repeat").map((lr) => ({
       first: num(lr, "first"),
@@ -242,11 +278,11 @@ function checkRules(doc) {
           err(`<line-repeat> ranges ${a.first}-${a.last} and ${b.first}-${b.last} in section "${id}" partially overlap`);
       }
   }
+}
 
-  // --- aligned text
-
+function checkAlignedText(ctx, err, warn) {
   for (const name of ["annotation", "composer", "lyricist", "arranger"])
-    for (const parent of descendants(score, name)) {
+    for (const parent of descendants(ctx.score, name)) {
       const runs = kids(parent, "text");
       const seen = new Set();
       for (const t of runs) {
@@ -258,11 +294,13 @@ function checkRules(doc) {
       if (runs.length && ownText(parent).trim())
         warn(`<${name}> has <text> children, so its sibling text is discarded`);
     }
+}
 
-  // --- part data: lines, measures, and what a measure may hold
-
-  for (const pd of partDatas) {
-    const part = partById.get(pd.getAttribute("part"));
+// Lines, measures, and what a measure may hold - the shape a lyric part's
+// data and a notated part's data each have to have.
+function checkPartDataShape(ctx, err, warn) {
+  for (const pd of ctx.partDatas) {
+    const part = ctx.partById.get(pd.getAttribute("part"));
     const type = part?.getAttribute("type") || "pitched";
     const lyric = type === "lyric";
 
@@ -308,7 +346,7 @@ function checkRules(doc) {
         // other row it has to be able to reach.
         if (!part?.hasAttribute("stack")) continue;
         const stack = part.getAttribute("stack");
-        const others = (stacks.get(stack) ?? []).filter((m) => m.part !== part);
+        const others = (ctx.stacks.get(stack) ?? []).filter((m) => m.part !== part);
         const notated = others.some(
           (m) => (m.part.getAttribute("type") || "pitched") !== "lyric",
         );
@@ -317,13 +355,17 @@ function checkRules(doc) {
       }
     }
   }
+}
 
-  // --- endings
-
-  for (const pd of partDatas)
+// Endings, and the bow/parenthesis spans that have to nest and close cleanly
+// within each pass an ending resolves to - both walk the same per-section-ref
+// pass/line/ending values, so they share one rule rather than recomputing them
+// twice.
+function checkEndingsAndSpans(ctx, err) {
+  for (const pd of ctx.partDatas)
     for (const sr of kids(pd, "section-ref")) {
       const sectionId = sr.getAttribute("section");
-      const total = passCount.get(sectionId) ?? 1;
+      const total = ctx.passCount.get(sectionId) ?? 1;
       const lines = kids(sr, "line");
       const byNumber = new Map(lines.map((l) => [num(l, "number"), l]));
       const endings = kids(sr, "ending");
@@ -378,8 +420,7 @@ function checkRules(doc) {
           }
       }
 
-      // --- spans, matched within each resolved pass
-
+      // Spans, matched within each resolved pass.
       for (let pass = 1; pass <= total; pass++) {
         const override = new Map();
         for (const ending of endings) {
@@ -411,12 +452,12 @@ function checkRules(doc) {
         }
       }
     }
+}
 
-  // --- cross-part agreement, per section
-
+function checkCrossPartAgreement(ctx, err) {
   const bySection = new Map();
-  for (const pd of partDatas) {
-    const part = partById.get(pd.getAttribute("part"));
+  for (const pd of ctx.partDatas) {
+    const part = ctx.partById.get(pd.getAttribute("part"));
     const lyric = (part?.getAttribute("type") || "pitched") === "lyric";
     for (const sr of kids(pd, "section-ref")) {
       const id = sr.getAttribute("section");
@@ -453,6 +494,43 @@ function checkRules(doc) {
       });
     }
   }
+}
+
+// Independent of one another - each reads only ctx and its own local state -
+// so this list is the whole of what a document is checked against, run in
+// the order the conformance page collects them.
+const RULES = [
+  checkIdsAndReferences,
+  checkRepeatsHaveSections,
+  checkDirections,
+  checkStacks,
+  checkLineRepeats,
+  checkAlignedText,
+  checkPartDataShape,
+  checkEndingsAndSpans,
+  checkCrossPartAgreement,
+];
+
+function checkRules(doc) {
+  const errors = [];
+  const warnings = [];
+  const err = (m) => errors.push(m);
+  const warn = (m) => warnings.push(m);
+
+  const score = doc.documentElement;
+  if (!score || score.namespaceURI !== NS) {
+    err(`root is not a <thai-score> in ${NS}`);
+    return { errors, warnings };
+  }
+
+  checkVersion(score, warn);
+
+  const structure = kid(score, "structure");
+  const ensemble = kid(score, "ensemble");
+  if (!structure || !ensemble) return { errors, warnings };
+
+  const ctx = buildContext(score, structure, ensemble);
+  for (const rule of RULES) rule(ctx, err, warn);
 
   return { errors, warnings };
 }

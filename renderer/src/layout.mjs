@@ -1158,9 +1158,16 @@ export function layout(score, options = {}) {
         const bottom = run.at(-1).gridBottom;
         const pageIndex = run[0].page;
 
-        pushTo(pageIndex, { kind: "line", x1: bracketX, y1: top, x2: bracketX, y2: bottom });
-        pushTo(pageIndex, { kind: "line", x1: bracketX, y1: top, x2: bracketX - depth, y2: top });
-        pushTo(pageIndex, { kind: "line", x1: bracketX, y1: bottom, x2: bracketX - depth, y2: bottom });
+        pushTo(pageIndex, { kind: "line", x1: bracketX, y1: top, x2: bracketX, y2: bottom, role: "repeat-bracket" });
+        pushTo(pageIndex, { kind: "line", x1: bracketX, y1: top, x2: bracketX - depth, y2: top, role: "repeat-bracket" });
+        pushTo(pageIndex, {
+          kind: "line",
+          x1: bracketX,
+          y1: bottom,
+          x2: bracketX - depth,
+          y2: bottom,
+          role: "repeat-bracket",
+        });
         pushTo(pageIndex, {
           kind: "text",
           x: bracketX + 2,
