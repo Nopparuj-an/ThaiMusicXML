@@ -46,16 +46,16 @@ function resolveProgram(instrumentName, overrides, warn) {
 }
 
 /**
- * Every distinct `sound` code across every group, first-appearance order,
- * mapped to a GM percussion note, overrides checked first. Scans every
- * group regardless of its declared type: a `sound`-bearing note is only
- * supposed to appear on a `type="unpitched"` part (note.md's Conformance),
- * but the converter still needs a note to play if one turns up elsewhere -
- * see the per-note check in addNoteEvents, which is what actually warns.
+ * Every distinct `sound` code across every unpitched-declared group,
+ * first-appearance order, mapped to a GM percussion note, overrides checked
+ * first. Only scans groups declared `type="unpitched"`: a `sound`-bearing
+ * note elsewhere is a type mismatch that addNoteEvents converts to a rest
+ * rather than a percussion hit, so it needs no note number here.
  */
 function resolvePercussionNotes(groups, doc, overrides) {
   const codes = [];
   for (const group of groups) {
+    if (group.members[0].type !== "unpitched") continue;
     for (const member of group.members) {
       for (const note of doc.unroll(member.id).notes) {
         if (!note.rest && note.sound != null && !codes.includes(note.sound)) codes.push(note.sound);
@@ -138,9 +138,10 @@ const textMetaEvent = (type, text) => {
  * `sound`, not by the group's declared type: `sound` is only supposed to
  * appear on a `type="unpitched"` part (note.md's Conformance), but a
  * mismatch is a warning elsewhere in this format, not a hard failure, and a
- * stray one shouldn't crash the whole conversion. A mismatched note still
- * routes to the percussion channel regardless of its group's own channel,
- * since that's the only channel a percussion note number means anything on.
+ * stray one shouldn't crash the whole conversion. A mismatched note carries
+ * no meaning on either channel - not a real pitch, and not a percussion code
+ * on an instrument nobody declared unpitched - so it converts as a rest
+ * (no note event at all) rather than sounding on the wrong kind of channel.
  */
 function addNoteEvents(track, group, channel, doc, tuning, ticksPerSlot, percussionNotes, warn) {
   const isUnpitched = group.members[0].type === "unpitched";
@@ -150,15 +151,15 @@ function addNoteEvents(track, group, channel, doc, tuning, ticksPerSlot, percuss
       const usesSound = note.sound != null;
       if (usesSound !== isUnpitched) {
         warn(
-          `part "${member.id}" (type="${member.type}") has a note that ${usesSound ? "carries sound" : "carries pitch"}, which doesn't match its declared type; treating it as ${usesSound ? "percussion" : "pitched"}`,
+          `part "${member.id}" (type="${member.type}") has a note that ${usesSound ? "carries sound" : "carries pitch"}, which doesn't match its declared type; treating it as a rest`,
         );
+        continue;
       }
       const midi = usesSound ? percussionNotes[note.sound] : resolvePitch(note.pitch, note.octave, tuning).midi;
-      const noteChannel = usesSound ? PERCUSSION_CHANNEL : channel;
       const onsetTicks = ticksFor(note.onset, ticksPerSlot);
       const offTicks = onsetTicks + ticksFor(note.duration, ticksPerSlot);
-      track.add(onsetTicks, [0x90 | noteChannel, midi, 100]);
-      track.add(offTicks, [0x80 | noteChannel, midi, 64]);
+      track.add(onsetTicks, [0x90 | channel, midi, 100]);
+      track.add(offTicks, [0x80 | channel, midi, 64]);
     }
   }
 }

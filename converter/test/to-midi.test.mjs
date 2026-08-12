@@ -278,12 +278,13 @@ test("a lyric part is skipped with a warning rather than exported", () => {
   assert.ok(warnings.some((w) => w.includes("lyric")));
 });
 
-test("a note with sound in a part not declared unpitched still plays, routed to the percussion channel, with a warning", () => {
+test("a note with sound in a part not declared unpitched converts as a rest, with a warning, rather than crashing", () => {
   // Regression: example-lao-duang-duean.txml has a stray <note sound="x"/> in
   // a part with no type="unpitched" (a real, pre-existing inconsistency in
-  // that file). The converter must not crash on this - it should warn and
-  // still produce a playable note, per this format's general "warn on a
-  // soft mismatch, don't hard-fail" convention.
+  // that file). The converter must not crash on this - it warns and treats
+  // the mismatched note as a rest (silence), since it means nothing on
+  // either channel: not a real pitch, and not a percussion code on an
+  // instrument nobody declared unpitched.
   const doc = resolve(
     score(
       `<part-data part="P1"><section-ref section="s1">
@@ -294,10 +295,9 @@ test("a note with sound in a part not declared unpitched still plays, routed to 
   const warnings = [];
   const { tracks } = readMidi(toMidi(doc, { warn: (w) => warnings.push(w) }));
   const ons = tracks[1].filter((e) => e.on);
-  assert.equal(ons.length, 2);
-  assert.equal(ons[0].channel, 9); // routed to the percussion channel despite the part's own channel
-  assert.equal(ons[1].channel, 0); // the normal pitched note keeps the part's own channel
-  assert.ok(warnings.some((w) => w.includes("carries sound") && w.includes("doesn't match its declared type")));
+  assert.equal(ons.length, 1); // the mismatched note produces no event at all
+  assert.equal(ons[0].channel, 0); // the normal pitched note keeps the part's own channel
+  assert.ok(warnings.some((w) => w.includes("carries sound") && w.includes("treating it as a rest")));
 });
 
 test("every real example and corpus file converts to a structurally valid, note-balanced SMF", () => {

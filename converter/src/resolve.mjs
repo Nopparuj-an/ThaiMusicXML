@@ -198,6 +198,64 @@ function foldMeasure(beats, siblingAttacks = []) {
   return kept;
 }
 
+/**
+ * One lyric measure's items (syllable.md's counting rule) as syllable events
+ * with a within-measure onset: item i of n lands at `beatCount * i / n`,
+ * which reduces to the exact beat position when n equals beatCount (the
+ * "match the beat count" case) and spreads evenly across the measure
+ * otherwise (the "centered in the cell" case, given a definite time for
+ * export purposes rather than the purely visual grouping the renderer uses).
+ * `<rest>` items still occupy a slot in that spacing - see "Rests count as
+ * items" - but are dropped from the output, since a rest means no new
+ * syllable begins there.
+ */
+function foldLyricMeasure(items, beatCount) {
+  const n = items.length;
+  if (n === 0) return [];
+  const out = [];
+  items.forEach((item, i) => {
+    if (item.kind !== "syllable") return;
+    out.push({ onset: frac(beatCount * i, n), text: item.text });
+  });
+  return out;
+}
+
+/**
+ * One pass of a lyric part's syllables over the section, using the paired
+ * target part's own line/measure/beat structure for both the beat-grid a
+ * measure's items align against and the cursor advance - the two must agree
+ * exactly with what `resolveSectionPass` computes for that same target part,
+ * since a syllable's onset only means anything alongside the target's own
+ * resolved notes. `lyricSectionMusic` is null when the lyric part has no
+ * content for this section; the cursor still advances by the target's own
+ * length so later sections stay aligned.
+ */
+function resolveLyricSectionPass(lyricSectionMusic, targetSectionMusic, ranges, pass) {
+  const lineCount = targetSectionMusic.lines.length;
+  const order = lineOrder(lineCount, ranges);
+  const syllables = [];
+  let cursor = ZERO;
+  for (const number of order) {
+    const targetOverride = endingFor(targetSectionMusic.endings, number, pass);
+    const targetLine = targetOverride ?? targetSectionMusic.lines.find((l) => l.number === number);
+    const lyricOverride = lyricSectionMusic ? endingFor(lyricSectionMusic.endings, number, pass) : null;
+    const lyricLine = lyricSectionMusic
+      ? (lyricOverride ?? lyricSectionMusic.lines.find((l) => l.number === number))
+      : null;
+    targetLine.measures.forEach((measure, measureIndex) => {
+      const beatCount = measure.beats.length;
+      const lyricMeasure = lyricLine?.measures[measureIndex];
+      if (lyricMeasure) {
+        for (const { onset, text } of foldLyricMeasure(lyricMeasure.items, beatCount)) {
+          syllables.push({ onset: add(cursor, onset), text });
+        }
+      }
+      cursor = add(cursor, frac(beatCount));
+    });
+  }
+  return { syllables, length: cursor };
+}
+
 /** Onsets, local to one measure, of every note (not rest) a stack's sibling row plays there. */
 function siblingAttackOnsets(siblingMeasures) {
   const onsets = [];
@@ -305,5 +363,35 @@ export function resolve(source) {
     return { notes, tempoChanges, chanChanges, measureBoundaries };
   }
 
-  return { ...parsed, playOrder: order, resolveSection, unroll };
+  /**
+   * A lyric part's syllables, paired to `targetPartId` for the beat-grid
+   * each measure aligns against, concatenated across the whole piece in the
+   * same playback order and cursor units as `unroll(targetPartId)` - see
+   * resolveLyricSectionPass. A section the target doesn't have is skipped
+   * with no cursor advance, matching `unroll`'s own handling of that case.
+   */
+  function unrollLyrics(lyricPartId, targetPartId) {
+    const syllables = [];
+    let cursor = ZERO;
+    for (const item of order) {
+      if (item.kind !== "section") continue;
+      const targetSectionMusic = parsed.music[targetPartId]?.[item.id];
+      if (!targetSectionMusic) continue;
+      const lyricSectionMusic = parsed.music[lyricPartId]?.[item.id] ?? null;
+      const ranges = rangesBySection[item.id] ?? [];
+      for (let pass = 1; pass <= item.totalPasses; pass++) {
+        const { syllables: passSyllables, length } = resolveLyricSectionPass(
+          lyricSectionMusic,
+          targetSectionMusic,
+          ranges,
+          pass,
+        );
+        for (const s of passSyllables) syllables.push({ ...s, onset: add(cursor, s.onset) });
+        cursor = add(cursor, length);
+      }
+    }
+    return syllables;
+  }
+
+  return { ...parsed, playOrder: order, resolveSection, unroll, unrollLyrics };
 }

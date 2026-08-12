@@ -18,6 +18,13 @@
 //                              program numbers 1-indexed as GM names them.
 //   --percussion-map <file>   JSON file overriding MIDI percussion notes:
 //                              { "sound code": 38 }.
+//   --no-lyrics                Disable MusicXML lyric export (on by default).
+//   --lyrics-map <file>        JSON file pairing lyric parts to notated ones
+//                              for MusicXML export: { "lyricPartId":
+//                              "notatedPartId" }. With no map, the first
+//                              lyric part (ensemble order) pairs to the first
+//                              notated part/stack; extra lyric parts are
+//                              dropped with a warning. MusicXML only.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -28,7 +35,7 @@ import { toMidi } from "./src/to-midi.mjs";
 function usage(message) {
   if (message) console.error(`error: ${message}\n`);
   console.error(
-    "usage: node converter/convert.mjs <score.txml> --to musicxml|midi [--out <path>] [--tuning <reference>] [--split-stacks] [--instrument-map <file>] [--percussion-map <file>]",
+    "usage: node converter/convert.mjs <score.txml> --to musicxml|midi [--out <path>] [--tuning <reference>] [--split-stacks] [--instrument-map <file>] [--percussion-map <file>] [--no-lyrics] [--lyrics-map <file>]",
   );
   process.exit(2);
 }
@@ -57,6 +64,12 @@ function parseArgs(argv) {
       case "--percussion-map":
         options.percussionMap = JSON.parse(readFileSync(argv[++i], "utf8"));
         break;
+      case "--no-lyrics":
+        options.lyrics = false;
+        break;
+      case "--lyrics-map":
+        options.lyricsMap = JSON.parse(readFileSync(argv[++i], "utf8"));
+        break;
       default:
         if (arg.startsWith("--")) usage(`unrecognized option "${arg}"`);
         else if (input) usage(`unexpected extra argument "${arg}"`);
@@ -79,9 +92,18 @@ const defaultOut = path.join(dir, `${name}.${options.to === "musicxml" ? "musicx
 const out = options.out ?? defaultOut;
 
 if (options.to === "musicxml") {
-  const xml = toMusicXml(doc, { tuning: options.tuning, splitStacks: options.splitStacks, warn });
+  const xml = toMusicXml(doc, {
+    tuning: options.tuning,
+    splitStacks: options.splitStacks,
+    lyrics: options.lyrics,
+    lyricsMap: options.lyricsMap,
+    warn,
+  });
   writeFileSync(out, xml, "utf8");
 } else {
+  if (options.lyrics === false || options.lyricsMap) {
+    warn("--no-lyrics/--lyrics-map only apply to --to musicxml; MIDI export doesn't carry lyrics in v0.1");
+  }
   const buf = toMidi(doc, {
     tuning: options.tuning,
     splitStacks: options.splitStacks,

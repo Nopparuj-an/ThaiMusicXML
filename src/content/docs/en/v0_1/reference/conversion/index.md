@@ -23,6 +23,8 @@ Both targets fit a fixed-rate slot grid with no notated sustain into a model bui
 | `<repeat>`, `<line-repeat>`, `<ending>` in MIDI | Unrolled into one linear sequence of events | [MIDI: repeats and endings](#repeats-and-endings-1) |
 | Stacked instrument rows (`stack`/`row`) | Merged: one MusicXML part with one staff per row, one MIDI track/channel for the whole stack; a command-line option splits each row out on its own | [Stacked instruments](#stacked-instruments) |
 | `<parenthesis>` (cued passage) in MIDI | Audible by default; `mute="true"` silences it | [MIDI: cued passages](#cued-passages) |
+| A `pitch`/`sound` value that doesn't match its part's declared type | Converts as a rest, with a warning, rather than sounding on the wrong kind of channel or notehead | [Unpitched and lyric parts](#unpitched-and-lyric-parts) |
+| Lyric part pairing to a notated part (MusicXML only) | The first lyric part (ensemble order) pairs to the first notated part or stack; a command-line option states an explicit pairing, or turns lyric export off entirely | [Unpitched and lyric parts](#unpitched-and-lyric-parts) |
 
 ## Pitch
 
@@ -78,7 +80,13 @@ This native encoding only represents structures where a `<repeat>` wraps exactly
 
 A `sound` value on an unpitched [`<note>`](/en/v0_1/reference/elements/note/) is instrument-specific and has no defined mapping to a MusicXML notehead; a converter writes one unpitched notehead per distinct code appearing in the part and carries whatever [`<annotation>`](/en/v0_1/reference/elements/annotation/) explains the codes as a legend.
 
-A [lyric part](/en/v0_1/reference/elements/part/#part-types) converts to MusicXML `<lyric>` elements attached to whichever notated part it is paired with. ThaiMusicXML keeps lyrics as an independent part rather than attached to one, so pairing is left to the same means as any other cross-part relationship in the document, an [`<annotation>`](/en/v0_1/reference/elements/annotation/) or the arranger's own knowledge of the score, not something the format states structurally.
+A `pitch` or `sound` value that doesn't match its part's declared type - a `sound`-bearing note in a part not declared `type="unpitched"`, or the reverse - is invalid per [`<note>`'s Conformance](/en/v0_1/reference/elements/note/#conformance), but a converter still has to do something with it rather than fail the whole document. It means nothing on either reading: not a real pitch, and not a percussion code on an instrument nobody declared unpitched. A converter converts it as a rest instead, with a warning, the same soft-violation handling this format uses elsewhere.
+
+A [lyric part](/en/v0_1/reference/elements/part/#part-types) converts to MusicXML `<lyric>` elements attached to whichever notated part it is paired with. ThaiMusicXML keeps lyrics as an independent part rather than attached to one, so the format itself states no pairing; a converter has to pick one. Each syllable attaches to whichever note is actually sounding at its position first - not necessarily one that starts exactly there, since a decaying note can still be ringing (see [Rests](#rests)). Failing that (the syllable falls on real silence), it attaches to the nearest note before it instead, the same reasoning as a written-out rest: the words belong to whatever was last played. Failing that too (nothing has played yet), it falls back to the nearest note after it. Only a target part with no note anywhere leaves a syllable with nothing to attach to, dropped with a warning.
+
+**Pairing.** With no further input, the first lyric part in ensemble order pairs to the first notated part or stack; any further lyric part is dropped, with a warning, since guessing a second pairing has no better basis than guessing the first. A command-line option (`--lyrics-map`) states an explicit pairing instead - by part id, or, for a paired stack, a specific row's id - and replaces the default guess entirely rather than adding to it. `--no-lyrics` turns lyric export off. This applies to MusicXML only; MIDI export does not carry lyrics in v0.1.
+
+**Timing.** A syllable's position within its measure follows [`<syllable>`'s counting rule](/en/v0_1/reference/elements/syllable/#counting): item *i* of *n* lands at `beat count × i ÷ n`, which is exactly beat *i* when the item count matches the beat count, and spreads the items evenly across the measure otherwise - a defined time is needed either way for something to attach a `<lyric>` to, even where the source measure was written free of the beat grid. A `<rest>` in the lyric measure (เอื้อน: the vowel already being sung carries on) still occupies a slot in that spacing but contributes no `<lyric>` element of its own.
 
 ## MIDI export
 

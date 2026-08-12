@@ -176,11 +176,34 @@ test("a <group> in a stack's second row alone still sizes the piece's divisions"
   assert.equal(xml.getElementsByTagName("time-modification").length, 3);
 });
 
-test("a lyric part is skipped with a warning rather than exported", () => {
+test("a lyric part pairs to the first notated part by default and prints one syllable per matching beat", () => {
   const doc = resolve(
     score(
       `<part-data part="P1"><section-ref section="s1">
         <line number="1"><measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure></line>
+      </section-ref></part-data>
+      <part-data part="P2"><section-ref section="s1">
+        <line number="1"><measure number="1"><rest/><syllable>เพลง</syllable><rest/><syllable>ไทย</syllable></measure></line>
+      </section-ref></part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>Melody</instrument-name></part><part id="P2" type="lyric"><instrument-name>Lyrics</instrument-name></part>`,
+      },
+    ),
+  );
+  const warnings = [];
+  const xml = parseXml(toMusicXml(doc, { warn: (w) => warnings.push(w) }));
+  assert.equal(xml.getElementsByTagName("part").length, 1); // the lyric part contributes no part of its own
+  const notes = xml.getElementsByTagName("note");
+  const texts = Array.from(notes).map((n) => n.getElementsByTagName("text")[0]?.textContent ?? null);
+  // 4 items in a 4-beat measure: aligned, so beat 2 (ร) and beat 4 (ซ) carry the syllables.
+  assert.deepEqual(texts, [null, "เพลง", null, "ไทย"]);
+});
+
+test("--no-lyrics disables lyric export entirely", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
       </section-ref></part-data>
       <part-data part="P2"><section-ref section="s1">
         <line number="1"><measure number="1"><syllable>เพลง</syllable></measure></line>
@@ -190,10 +213,161 @@ test("a lyric part is skipped with a warning rather than exported", () => {
       },
     ),
   );
+  const xml = parseXml(toMusicXml(doc, { lyrics: false }));
+  assert.equal(xml.getElementsByTagName("lyric").length, 0);
+});
+
+test("a second lyric part is dropped with a warning unless --lyrics-map names it", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      </section-ref></part-data>
+      <part-data part="P2"><section-ref section="s1">
+        <line number="1"><measure number="1"><note pitch="ร"/></measure></line>
+      </section-ref></part-data>
+      <part-data part="V1"><section-ref section="s1">
+        <line number="1"><measure number="1"><syllable>หนึ่ง</syllable></measure></line>
+      </section-ref></part-data>
+      <part-data part="V2"><section-ref section="s1">
+        <line number="1"><measure number="1"><syllable>สอง</syllable></measure></line>
+      </section-ref></part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>A</instrument-name></part><part id="P2"><instrument-name>B</instrument-name></part><part id="V1" type="lyric"><instrument-name>Lyrics 1</instrument-name></part><part id="V2" type="lyric"><instrument-name>Lyrics 2</instrument-name></part>`,
+      },
+    ),
+  );
+
   const warnings = [];
   const xml = parseXml(toMusicXml(doc, { warn: (w) => warnings.push(w) }));
-  assert.equal(xml.getElementsByTagName("part").length, 1);
-  assert.ok(warnings.some((w) => w.includes("lyric")));
+  const texts = Array.from(xml.getElementsByTagName("text")).map((t) => t.textContent);
+  assert.deepEqual(texts, ["หนึ่ง"]); // only V1, paired to the first output group (P1)
+  assert.ok(warnings.some((w) => w.includes("V2") && w.includes("--lyrics-map")));
+
+  const mapped = parseXml(toMusicXml(doc, { lyricsMap: { V2: "P2" } }));
+  const mappedTexts = Array.from(mapped.getElementsByTagName("text")).map((t) => t.textContent);
+  assert.deepEqual(mappedTexts, ["สอง"]); // explicit map replaces the default pairing entirely
+});
+
+test("a lyric measure whose item count doesn't match the beat count spreads evenly across the measure", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1"><measure number="1"><note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/><note pitch="ร"/></measure></line>
+      </section-ref></part-data>
+      <part-data part="P2"><section-ref section="s1">
+        <line number="1"><measure number="1"><syllable>ดวง</syllable><rest/><syllable>เดือน</syllable></measure></line>
+      </section-ref></part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>Melody</instrument-name></part><part id="P2" type="lyric"><instrument-name>Lyrics</instrument-name></part>`,
+      },
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc));
+  const notes = xml.getElementsByTagName("note");
+  const texts = Array.from(notes).map((n) => n.getElementsByTagName("text")[0]?.textContent ?? null);
+  // 3 items over 4 beats: item i lands at onset 4*i/3 - "ดวง" at 0 (ล), "เดือน"
+  // at 8/3, inside ม's [2,3) window.
+  assert.deepEqual(texts, ["ดวง", null, "เดือน", null]);
+});
+
+test("a syllable landing on real silence attaches to the nearest note before it", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><note pitch="ด"/><rest/><rest/><rest/></measure>
+          <measure number="2"><rest/><rest/><note pitch="ร"/><rest/></measure>
+        </line>
+      </section-ref></part-data>
+      <part-data part="P2"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><rest/><rest/><rest/><rest/></measure>
+          <measure number="2"><syllable>หนึ่ง</syllable><rest/><syllable>สอง</syllable><rest/></measure>
+        </line>
+      </section-ref></part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>Melody</instrument-name></part><part id="P2" type="lyric"><instrument-name>Lyrics</instrument-name></part>`,
+      },
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc));
+  const notes = xml.getElementsByTagName("note");
+  const texts = Array.from(notes).map((n) => n.getElementsByTagName("text")[0]?.textContent ?? null);
+  // ด rings through measure 1 only (extension stops at its own measure's
+  // end); measure 2 opens with two individually-real-silence rests (each its
+  // own kept event) before its own first note. "หนึ่ง" (measure 2's first
+  // beat) has nothing sounding there and falls back to the nearest note
+  // before it (ด, still the very first <note> in the output). "สอง" lands
+  // exactly on ร, an ordinary sounding-note match.
+  assert.deepEqual(texts, ["หนึ่ง", null, null, "สอง"]);
+});
+
+test("a syllable before the target's first note attaches to the nearest note after it", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><rest/><rest/><rest/><rest/></measure>
+          <measure number="2"><note pitch="ร"/><rest/><rest/><rest/></measure>
+        </line>
+      </section-ref></part-data>
+      <part-data part="P2"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><syllable>ก่อน</syllable><rest/><rest/><rest/></measure>
+          <measure number="2"><rest/><rest/><rest/><rest/></measure>
+        </line>
+      </section-ref></part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>Melody</instrument-name></part><part id="P2" type="lyric"><instrument-name>Lyrics</instrument-name></part>`,
+      },
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc));
+  const notes = xml.getElementsByTagName("note");
+  const texts = Array.from(notes).map((n) => n.getElementsByTagName("text")[0]?.textContent ?? null);
+  // Measure 1 is 4 individually-real-silence rests (nothing ever sounds
+  // there); ร (measure 2's only note - its own trailing rests get absorbed)
+  // is the sole candidate, so "ก่อน" falls back to it as the nearest note
+  // after, there being none before.
+  assert.deepEqual(texts, [null, null, null, null, "ก่อน"]);
+});
+
+test("a syllable is dropped with a warning when the target part has no note at all", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1"><measure number="1"><rest/><rest/><rest/><rest/></measure></line>
+      </section-ref></part-data>
+      <part-data part="P2"><section-ref section="s1">
+        <line number="1"><measure number="1"><syllable>เพลง</syllable><rest/><rest/><rest/></measure></line>
+      </section-ref></part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>Melody</instrument-name></part><part id="P2" type="lyric"><instrument-name>Lyrics</instrument-name></part>`,
+      },
+    ),
+  );
+  const warnings = [];
+  const xml = parseXml(toMusicXml(doc, { warn: (w) => warnings.push(w) }));
+  assert.equal(xml.getElementsByTagName("lyric").length, 0);
+  assert.ok(warnings.some((w) => w.includes("เพลง") && w.includes("no note at all")));
+});
+
+test("a note with sound in a part not declared unpitched converts as a rest in MusicXML too", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1"><measure number="1"><note sound="x"/><note pitch="ร"/></measure></line>
+      </section-ref></part-data>`,
+    ),
+  );
+  const warnings = [];
+  const xml = parseXml(toMusicXml(doc, { warn: (w) => warnings.push(w) }));
+  const notes = xml.getElementsByTagName("note");
+  assert.equal(notes.length, 2);
+  assert.equal(notes[0].getElementsByTagName("rest").length, 1);
+  assert.equal(notes[1].getElementsByTagName("step")[0].textContent, "D");
+  assert.ok(warnings.some((w) => w.includes("carries sound") && w.includes("treating it as a rest")));
 });
 
 test("an unrecognized or missing tuning falls back to c-major with a warning", () => {
