@@ -45,14 +45,14 @@ const timeModification = (tuplet) =>
  * - the same "soft violation, still produce a playable/printable file"
  * degrade the MIDI writer uses for the same case.
  */
-function describeNote(note, tuning, slotTicks, divisions, isUnpitched, warn) {
+function describeNote(note, tuning, slotTicks, divisions, isUnpitched, memberId, warn) {
   const segments = encodeDuration(note.duration, slotTicks, divisions);
   if (note.rest) return { head: "<rest/>", segments };
 
   const usesSound = note.sound !== null && note.sound !== undefined;
   if (usesSound !== isUnpitched) {
     warn(
-      `a note ${usesSound ? "carries sound" : "carries pitch"}, which doesn't match its part's declared type; treating it as a rest`,
+      `part "${memberId}" (type="${isUnpitched ? "unpitched" : "pitched"}") line ${note.line} measure ${note.measure}: a note ${usesSound ? "carries sound" : "carries pitch"}, which doesn't match its declared type; treating it as a rest`,
     );
     return { head: "<rest/>", segments };
   }
@@ -76,10 +76,10 @@ function describeNote(note, tuning, slotTicks, divisions, isUnpitched, warn) {
  * resolveLyricAssignments); it's attached only to a note's first segment,
  * never a tied continuation, since the syllable is sung on the attack.
  */
-function flattenSegments(notes, tuning, slotTicks, divisions, isUnpitched, warn, lyricTexts) {
+function flattenSegments(notes, tuning, slotTicks, divisions, isUnpitched, memberId, warn, lyricTexts) {
   const items = [];
   for (const note of notes) {
-    const { head, segments } = describeNote(note, tuning, slotTicks, divisions, isUnpitched, warn);
+    const { head, segments } = describeNote(note, tuning, slotTicks, divisions, isUnpitched, memberId, warn);
     const lyric = !note.rest && lyricTexts ? lyricTexts.get(onsetKey(note.onset)) : undefined;
     segments.forEach(({ ticks, type, dots, tuplet }, i) => {
       items.push({
@@ -241,10 +241,12 @@ function resolveLyricTexts(doc, lyricId, memberId, warn) {
   const syllables = doc.unrollLyrics(lyricId, memberId);
   const targetNotes = doc.unroll(memberId).notes.filter((n) => !n.rest);
   const texts = new Map();
-  for (const { onset, text } of syllables) {
+  for (const { onset, text, line, measure } of syllables) {
     const note = attachTarget(targetNotes, onset);
     if (!note) {
-      warn(`lyric part "${lyricId}": syllable "${text}" has no note at all in "${memberId}" to attach to`);
+      warn(
+        `lyric part "${lyricId}" line ${line} measure ${measure}: syllable "${text}" has no note at all in "${memberId}" to attach to`,
+      );
       continue;
     }
     const key = onsetKey(note.onset);
@@ -294,10 +296,11 @@ function convertPart(doc, group, tuning, slotTicks, divisions, warn, lyricAssign
     }
     perMemberMeasures.forEach((measures, staffIndex) => {
       if (staffIndex > 0) xml += `<backup><duration>${measureTicks}</duration></backup>`;
-      const memberIsUnpitched = group.members[staffIndex].type === "unpitched";
+      const member = group.members[staffIndex];
+      const memberIsUnpitched = member.type === "unpitched";
       const lyricTexts = lyricAssignment?.staffIndex === staffIndex ? lyricAssignment.texts : null;
       const items = assignTupletBrackets(
-        flattenSegments(measures[m] ?? [], tuning, slotTicks, divisions, memberIsUnpitched, warn, lyricTexts),
+        flattenSegments(measures[m] ?? [], tuning, slotTicks, divisions, memberIsUnpitched, member.id, warn, lyricTexts),
       );
       for (const item of items) xml += renderSegment(item, staves > 1 ? staffIndex + 1 : null);
     });

@@ -866,6 +866,16 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     color: var(--sl-color-orange, #b7791f);
   }
 
+  .warnings-group-label {
+    list-style: none;
+    margin-left: -1.25rem;
+    font-weight: 600;
+  }
+
+  .warnings-group-label:not(:first-child) {
+    margin-top: 0.4rem;
+  }
+
   .status-bar:not(.open) .warnings-list {
     display: none;
   }
@@ -2518,6 +2528,10 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   let lastWidth = 0;
   let lastHeight = 0;
   let lastSvgs: string[] = [];
+  // Which `lastSvgs` reference was last actually committed to
+  // thaimusicxmlView's DOM - compared by identity, not content, so a
+  // no-op re-render (same array instance) never re-triggers a repaint.
+  let paintedSvgs: string[] | null = null;
 
   // The converter pipeline's own equivalents, populated by
   // convertAndRenderMusicXml() below - independent of the renderer's, since
@@ -2679,6 +2693,20 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     };
   });
 
+  // Commits the last-computed SVGs to thaimusicxmlView's DOM - the one part
+  // of the ThaiMusicXML pipeline actually worth gating behind currentView,
+  // since building the SVG strings in renderPreview() below is cheap (no
+  // DOM), but committing hundreds of nodes via innerHTML while that view
+  // isn't even visible is pure waste. Called both right after a successful
+  // renderPreview() (a no-op there if the other view is showing) and when
+  // switching into this view (a no-op there if already painted).
+  function paintThaiMusicXmlIfNeeded(): void {
+    if (currentView !== "thaimusicxml") return;
+    if (paintedSvgs === lastSvgs) return;
+    thaimusicxmlView.innerHTML = lastSvgs.join("");
+    paintedSvgs = lastSvgs;
+  }
+
   function renderPreview() {
     const source = editor.getValue();
     const options = buildOptions(RENDERER_REGISTRY.overrides);
@@ -2694,13 +2722,13 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
           options,
         ),
       );
-      thaimusicxmlView.innerHTML = svgs.join("");
       rendererError = null;
       if (currentView === "thaimusicxml") statusEl.textContent = "";
       lastSource = source;
       lastWidth = laidOut.width;
       lastHeight = laidOut.height;
       lastSvgs = svgs;
+      paintThaiMusicXmlIfNeeded();
       setRendererExportEnabled(true);
     } catch (err) {
       rendererError = err instanceof Error ? err.message : String(err);
@@ -2709,27 +2737,48 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     }
   }
 
-  // --- Warnings: non-fatal messages from the converter's warn() callback
-  // (a dropped lyric part, a tuning fallback...), sharing #status-bar's one
-  // row with #status, which stays reserved for a fatal error from either
-  // pipeline - the bar itself collapses to nothing when both are empty (see
-  // .status-bar's :has() rule), so a clean render costs no vertical space. ---
-  function renderWarnings(warnings: string[]): void {
+  // --- Warnings: non-fatal messages from toMusicXml()/toMidi()'s warn()
+  // callbacks (a dropped lyric part, a tuning fallback...), sharing
+  // #status-bar's one row with #status, which stays reserved for a fatal
+  // error from either pipeline - the bar itself collapses to nothing when
+  // both are empty (see .status-bar's :has() rule), so a clean render costs
+  // no vertical space.
+  //
+  // Grouped by which converter target produced each message, under its own
+  // heading, rather than merged into one flat list: toMusicXml() and
+  // toMidi() each walk the same resolved document and flag the same
+  // underlying data problem independently (a note whose sound/pitch
+  // mismatches its part's declared type, say), in their own wording - a
+  // merged list reads as if the converter glitched and repeated itself,
+  // when really it's two different exports agreeing there's a problem. ---
+  interface WarningGroup {
+    label: string;
+    warnings: string[];
+  }
+
+  function renderWarnings(groups: WarningGroup[]): void {
     warningsList.innerHTML = "";
-    for (const w of warnings) {
-      const li = document.createElement("li");
-      li.textContent = w;
-      warningsList.appendChild(li);
+    let total = 0;
+    for (const { label, warnings } of groups) {
+      if (warnings.length === 0) continue;
+      total += warnings.length;
+      const heading = document.createElement("li");
+      heading.className = "warnings-group-label";
+      heading.textContent = label;
+      warningsList.appendChild(heading);
+      for (const w of warnings) {
+        const li = document.createElement("li");
+        li.textContent = w;
+        warningsList.appendChild(li);
+      }
     }
-    warningsToggle.hidden = warnings.length === 0;
-    if (warnings.length === 0) {
+    warningsToggle.hidden = total === 0;
+    if (total === 0) {
       statusBar.classList.remove("open");
       return;
     }
-    warningsToggle.textContent = `${warnings.length} ${t(
-      warnings.length === 1
-        ? { en: "warning", th: "คำเตือน" }
-        : { en: "warnings", th: "คำเตือน" },
+    warningsToggle.textContent = `${total} ${t(
+      total === 1 ? { en: "warning", th: "คำเตือน" } : { en: "warnings", th: "คำเตือน" },
     )} ▾`;
   }
 
@@ -2837,8 +2886,8 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
 
   function convertAndRenderMusicXml(): void {
     const source = editor.getValue();
-    const warnings: string[] = [];
-    const warn = (m: string) => warnings.push(m);
+    const mxmlWarnings: string[] = [];
+    const midiWarnings: string[] = [];
     try {
       const doc = resolve(source);
       const tuningOverride = CONVERTER_REGISTRY.overrides.tuning;
@@ -2868,14 +2917,14 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
         splitStacks,
         lyrics: lyricsEnabled,
         lyricsMap,
-        warn,
+        warn: (m: string) => mxmlWarnings.push(m),
       });
       const midi = toMidi(doc, {
         tuning,
         splitStacks,
         instrumentMap,
         percussionMap,
-        warn,
+        warn: (m: string) => midiWarnings.push(m),
       });
 
       lastMusicXml = xml;
@@ -2884,7 +2933,10 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       converterError = null;
       if (currentView === "musicxml") statusEl.textContent = "";
       setConverterExportEnabled(true);
-      renderWarnings(warnings);
+      renderWarnings([
+        { label: "MusicXML", warnings: mxmlWarnings },
+        { label: "MIDI", warnings: midiWarnings },
+      ]);
       refreshDynamicConverterRowsIfVisible();
       if (currentView === "musicxml") void renderMusicXmlView();
     } catch (err) {
@@ -3007,6 +3059,7 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     currentView = view;
     thaimusicxmlView.hidden = view !== "thaimusicxml";
     musicxmlView.hidden = view !== "musicxml";
+    paintThaiMusicXmlIfNeeded();
     viewThaiMusicXmlButton.setAttribute(
       "aria-pressed",
       String(view === "thaimusicxml"),

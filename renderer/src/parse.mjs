@@ -192,8 +192,28 @@ function resolveSpans(lineEls) {
   return { bowSpans, parenSpans };
 }
 
+/**
+ * A browser's native DOMParser never throws on malformed XML (unlike
+ * Node's xmldom, which throws directly from parseFromString) - it silently
+ * returns a document whose root is a <parsererror> element instead, in a
+ * shape that differs per browser (Chrome nests it under a <div>, Firefox
+ * puts it at the document root directly), so searching for `<parsererror>`
+ * by tag name anywhere in the tree is the one check that works across all
+ * of them. Without this, the code below assumes a real <thai-score> root
+ * and fails a few calls later on some unrelated null, with no indication
+ * the actual problem was upstream, in the XML itself.
+ */
+function parserErrorMessage(doc) {
+  const errorEl = doc.getElementsByTagName("parsererror")[0];
+  if (!errorEl) return null;
+  return errorEl.textContent.trim().replace(/\s+/g, " ");
+}
+
 export function parse(source) {
   const doc = new DOMParser().parseFromString(source, "text/xml");
+  const parseError = parserErrorMessage(doc);
+  if (parseError) throw new Error(`the XML is not well-formed: ${parseError}`);
+  if (!doc.documentElement) throw new Error("the XML is not well-formed: no root element");
   const score = doc.documentElement;
 
   const header = el(score, "header");

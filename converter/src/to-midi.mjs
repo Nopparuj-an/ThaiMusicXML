@@ -6,10 +6,11 @@
 //
 // Repeats are always fully unrolled here (Standard MIDI has no native
 // repeat concept, unlike the MusicXML writer's native-barline goal), lyric
-// parts are skipped (no defined pairing to a notated part), and <annotation>
-// text/<nathap> aren't carried into meta events yet - resolve.mjs's
-// playOrder doesn't capture their content, only <chan>'s value and <bpm>. See
-// HANDOFF.md.
+// parts are always skipped (Standard MIDI text meta events have no notion of
+// syllable-to-note pairing, unlike to-musicxml.mjs's <lyric> elements), and
+// <annotation> text/<nathap> aren't carried into meta events yet -
+// resolve.mjs's playOrder doesn't capture their content, only <chan>'s value
+// and <bpm>. See HANDOFF.md.
 //
 // toMidi() returns a Node Buffer under Node, a Uint8Array in the browser -
 // both are byte-addressable and work with writeFileSync/Blob respectively.
@@ -154,7 +155,7 @@ function addNoteEvents(track, group, channel, doc, tuning, ticksPerSlot, percuss
       const usesSound = note.sound != null;
       if (usesSound !== isUnpitched) {
         warn(
-          `part "${member.id}" (type="${member.type}") has a note that ${usesSound ? "carries sound" : "carries pitch"}, which doesn't match its declared type; treating it as a rest`,
+          `part "${member.id}" (type="${member.type}") line ${note.line} measure ${note.measure}: a note ${usesSound ? "carries sound" : "carries pitch"}, which doesn't match its declared type; treating it as a rest`,
         );
         continue;
       }
@@ -187,7 +188,7 @@ export function toMidi(doc, options = {}) {
     options.splitStacks,
   );
   if (doc.parts.some((p) => p.type === "lyric")) {
-    warn("lyric parts have no defined pairing to a notated part in v0.1 and are not exported");
+    warn("Standard MIDI has no lyric pairing in v0.1; lyric parts are not carried into this file");
   }
 
   const unrolledByGroup = groups.map((g) => g.members.map((m) => doc.unroll(m.id)));

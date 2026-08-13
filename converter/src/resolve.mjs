@@ -21,6 +21,24 @@ const els = (node, name) =>
   Array.from(node.getElementsByTagNameNS(NS, name)).filter((el) => el.parentNode === node);
 
 /**
+ * Runs `fn`, rethrowing anything it throws with `context` prepended. Applied
+ * at nested granularities (part, then section+pass, then line) so an
+ * otherwise-opaque crash deep in resolution - an undefined access, a bad
+ * assumption about document shape - comes out naming exactly which part,
+ * section, pass, and line it happened in, layer by layer, instead of a bare
+ * "Cannot read properties of undefined" with no way to find the offending
+ * XML.
+ */
+function withContext(context, fn) {
+  try {
+    return fn();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`${context}: ${message}`, { cause: err });
+  }
+}
+
+/**
  * <structure> walked depth-first, multiplying <repeat times> as it descends.
  * Unlike parse.mjs's `structure`, this keeps one entry per <section>
  * occurrence with its total pass count, and drops into nested <repeat>
@@ -141,10 +159,28 @@ function endingFor(endings, lineNumber, pass) {
 function effectiveLine(sectionMusic, number, pass, isLyric) {
   const base = sectionMusic.lines.find((l) => l.number === number);
   const override = endingFor(sectionMusic.endings, number, pass);
-  if (!override || isLyric) return override ?? base;
+  if (!override || isLyric) {
+    const line = override ?? base;
+    if (!line) throw new Error(`line ${number} is referenced but this part's section has no such line notated`);
+    return line;
+  }
   return {
     ...override,
-    measures: override.measures.map((m, i) => (m.beats.length === 0 ? base.measures[i] : m)),
+    measures: override.measures.map((m, i) => {
+      if (m.beats.length !== 0) return m;
+      if (!base) {
+        throw new Error(
+          `line ${number}, measure ${i + 1}: <ending> leaves this measure empty to mean "unchanged", but this part's section has no line ${number} to inherit from`,
+        );
+      }
+      const baseMeasure = base.measures[i];
+      if (!baseMeasure) {
+        throw new Error(
+          `line ${number}, measure ${i + 1}: <ending> leaves this measure empty to mean "unchanged", but line ${number}'s own base has no measure ${i + 1}`,
+        );
+      }
+      return baseMeasure;
+    }),
   };
 }
 
@@ -259,14 +295,16 @@ function resolveLyricSectionPass(lyricSectionMusic, targetSectionMusic, ranges, 
     const targetLine = effectiveLine(targetSectionMusic, number, pass, false);
     const lyricLine = lyricSectionMusic ? effectiveLine(lyricSectionMusic, number, pass, true) : null;
     targetLine.measures.forEach((measure, measureIndex) => {
-      const beatCount = measure.beats.length;
-      const lyricMeasure = lyricLine?.measures[measureIndex];
-      if (lyricMeasure) {
-        for (const { onset, text } of foldLyricMeasure(lyricMeasure.items, beatCount)) {
-          syllables.push({ onset: add(cursor, onset), text });
+      withContext(`line ${number} measure ${measure.number}`, () => {
+        const beatCount = measure.beats.length;
+        const lyricMeasure = lyricLine?.measures[measureIndex];
+        if (lyricMeasure) {
+          for (const { onset, text } of foldLyricMeasure(lyricMeasure.items, beatCount)) {
+            syllables.push({ onset: add(cursor, onset), text, line: number, measure: measure.number });
+          }
         }
-      }
-      cursor = add(cursor, frac(beatCount));
+        cursor = add(cursor, frac(beatCount));
+      });
     });
   }
   return { syllables, length: cursor };
@@ -301,18 +339,24 @@ function resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics = [
   const measureBoundaries = [];
   let cursor = ZERO;
   for (const number of order) {
+    // effectiveLine's own errors already name the line (and, where relevant,
+    // the measure) they came from - no need to re-wrap those. The measure
+    // loop below needs its own wrap, since foldMeasure/siblingAttackOnsets
+    // know neither.
     const line = effectiveLine(sectionMusic, number, pass, isLyric);
     // A stack's sibling rows are always notated (siblingIdsOf excludes
     // type="lyric"), so their own ending substitutions get the same
     // inherit-empty-measures treatment regardless of the calling part's type.
     const siblingLines = siblingSectionMusics.map((sm) => effectiveLine(sm, number, pass, false));
     line.measures.forEach((measure, measureIndex) => {
-      const siblingAttacks = siblingAttackOnsets(siblingLines.map((sl) => sl?.measures[measureIndex]));
-      for (const note of foldMeasure(measure.beats, siblingAttacks)) {
-        notes.push({ ...note, onset: add(cursor, note.onset), line: number, measure: measure.number });
-      }
-      cursor = add(cursor, measureLength(measure.beats));
-      measureBoundaries.push(cursor);
+      withContext(`line ${number} measure ${measure.number}`, () => {
+        const siblingAttacks = siblingAttackOnsets(siblingLines.map((sl) => sl?.measures[measureIndex]));
+        for (const note of foldMeasure(measure.beats, siblingAttacks)) {
+          notes.push({ ...note, onset: add(cursor, note.onset), line: number, measure: measure.number });
+        }
+        cursor = add(cursor, measureLength(measure.beats));
+        measureBoundaries.push(cursor);
+      });
     });
   }
   return { notes, length: cursor, measureBoundaries };
@@ -347,7 +391,12 @@ export function resolve(source) {
       .filter(Boolean);
     const passes = [];
     for (let pass = 1; pass <= totalPasses; pass++) {
-      passes.push({ pass, ...resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics, isLyric) });
+      passes.push({
+        pass,
+        ...withContext(`part "${partId}" section "${sectionId}" pass ${pass}`, () =>
+          resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics, isLyric),
+        ),
+      });
     }
     return { sectionId, totalPasses, passes };
   }
@@ -396,11 +445,9 @@ export function resolve(source) {
       const lyricSectionMusic = parsed.music[lyricPartId]?.[item.id] ?? null;
       const ranges = rangesBySection[item.id] ?? [];
       for (let pass = 1; pass <= item.totalPasses; pass++) {
-        const { syllables: passSyllables, length } = resolveLyricSectionPass(
-          lyricSectionMusic,
-          targetSectionMusic,
-          ranges,
-          pass,
+        const { syllables: passSyllables, length } = withContext(
+          `lyric part "${lyricPartId}" (paired to "${targetPartId}") section "${item.id}" pass ${pass}`,
+          () => resolveLyricSectionPass(lyricSectionMusic, targetSectionMusic, ranges, pass),
         );
         for (const s of passSyllables) syllables.push({ ...s, onset: add(cursor, s.onset) });
         cursor = add(cursor, length);
