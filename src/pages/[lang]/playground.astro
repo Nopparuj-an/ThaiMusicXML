@@ -537,9 +537,23 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   /* OSMD owns #musicxml-view directly (load()/render() draw into it in
      place) rather than having its innerHTML replaced like the ThaiMusicXML
      view - min-height keeps the pane from collapsing to nothing before the
-     first successful render lands. */
+     first successful render lands.
+
+     OSMD draws the whole score as one giant SVG (thousands of path/text
+     nodes for noteheads, staff lines, rests...). Without containment, any
+     layout-forcing read anywhere on the page - and Monaco's own scroll
+     rendering does plenty of those every frame - has to flush pending
+     layout for the *entire* document, including this subtree, even though
+     nothing in it changed. That's what was stalling editor scroll to a
+     crawl while this view was open. contain: layout paint style scopes
+     layout/style/paint to this element alone, so an unrelated read
+     elsewhere no longer has to re-lay-out the score. (content-visibility:
+     auto looked like the more modern fit, but measured worse in practice -
+     its own off-screen tracking adds cost of its own on a pane this size -
+     so plain static containment it is.) */
   #musicxml-view {
     min-height: 100%;
+    contain: layout paint style;
   }
 
   .divider {
@@ -2887,6 +2901,7 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   let osmd: OSMDType | null = null;
   let osmdRenderToken = 0;
   let osmdRenderedXml: string | null = null;
+  let osmdResizeTimer: ReturnType<typeof setTimeout> | undefined;
 
   async function renderMusicXmlView(): Promise<void> {
     if (lastMusicXml === null) return;
@@ -2896,10 +2911,27 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     try {
       const { OpenSheetMusicDisplay } = await loadOsmd();
       if (token !== osmdRenderToken) return; // a newer render started meanwhile
-      osmd ??= new OpenSheetMusicDisplay(musicxmlView, {
-        autoResize: true,
-        drawTitle: true,
-      });
+      if (!osmd) {
+        osmd = new OpenSheetMusicDisplay(musicxmlView, {
+          autoResize: false,
+          drawTitle: true,
+        });
+        // autoResize's own ResizeObserver re-renders - rebuilding this
+        // view's thousands of SVG nodes from scratch - on every tick with
+        // no throttling, which competes for the main thread with anything
+        // else reacting to the same layout change (Monaco's own
+        // automaticLayout observer, in particular, since both watch
+        // elements in the same flex row). Driving resize ourselves,
+        // coalesced to one re-render per pause, avoids that.
+        const instance = osmd;
+        new ResizeObserver(() => {
+          if (osmdRenderedXml === null) return;
+          clearTimeout(osmdResizeTimer);
+          osmdResizeTimer = setTimeout(() => {
+            if (currentView === "musicxml") instance.render();
+          }, 300);
+        }).observe(musicxmlView);
+      }
       await osmd.load(xml);
       if (token !== osmdRenderToken) return;
       // load() resets zoom to 1 internally, so this has to happen after it,
