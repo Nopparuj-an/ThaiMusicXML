@@ -114,16 +114,50 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
           {t({ en: "Save As", th: "บันทึกเป็น" })}
         </button>
         <span class="file-status" id="file-status"></span>
-        <!-- </div>
+      </div>
 
-      <div class="toolbar-right"> -->
+      <div class="toolbar-right">
+        <div
+          class="segmented-switch view-switch"
+          id="view-switch"
+          role="group"
+          aria-label={t({ en: "Score view", th: "มุมมองโน้ต" })}
+        >
+          <button
+            type="button"
+            class="segmented-switch-button"
+            id="view-thaimusicxml"
+            aria-pressed="true"
+          >
+            ThaiMusicXML
+          </button>
+          <button
+            type="button"
+            class="segmented-switch-button"
+            id="view-musicxml"
+            aria-pressed="false"
+          >
+            MusicXML
+          </button>
+        </div>
+
         <details class="toolbar-export" id="export-details">
           <summary>{t({ en: "Export", th: "ส่งออก" })} ▾</summary>
           <div class="export-panel">
-            <button type="button" id="export-svg">SVG</button>
-            <button type="button" id="export-png">PNG</button>
-            <button type="button" id="export-pdf">
+            <button type="button" id="export-svg" data-view="thaimusicxml">
+              SVG
+            </button>
+            <button type="button" id="export-png" data-view="thaimusicxml">
+              PNG
+            </button>
+            <button type="button" id="export-pdf" data-view="thaimusicxml">
               {t({ en: "PDF (print)", th: "PDF (พิมพ์)" })}
+            </button>
+            <button type="button" id="export-musicxml" data-view="musicxml">
+              MusicXML
+            </button>
+            <button type="button" id="export-midi" data-view="musicxml">
+              MIDI
             </button>
           </div>
         </details>
@@ -143,6 +177,33 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       <div class="pane editor-pane" id="editor-pane">
         <div class="settings-overlay" id="settings-overlay" hidden>
           <div class="settings-header">
+            <span class="settings-header-spacer" aria-hidden="true"></span>
+            <div
+              class="segmented-switch settings-source-switch"
+              id="settings-source-switch"
+              role="group"
+              aria-label={t({
+                en: "Settings category",
+                th: "หมวดการตั้งค่า",
+              })}
+            >
+              <button
+                type="button"
+                class="segmented-switch-button"
+                id="settings-source-renderer"
+                aria-pressed="true"
+              >
+                {t({ en: "Renderer settings", th: "ตั้งค่าการแสดงผล" })}
+              </button>
+              <button
+                type="button"
+                class="segmented-switch-button"
+                id="settings-source-converter"
+                aria-pressed="false"
+              >
+                {t({ en: "Converter settings", th: "ตั้งค่าการแปลงไฟล์" })}
+              </button>
+            </div>
             <button
               type="button"
               class="settings-close"
@@ -188,10 +249,25 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
         })}
       >
       </div>
-      <div class="pane preview-pane" id="preview-pane"></div>
+      <div class="pane preview-pane" id="preview-pane">
+        <div id="thaimusicxml-view"></div>
+        <div id="musicxml-view" hidden></div>
+      </div>
     </div>
 
-    <p class="status" id="status" role="status"></p>
+    <div class="status-bar" id="status-bar">
+      <div class="status-row">
+        <p class="status" id="status" role="status"></p>
+        <button
+          type="button"
+          class="warnings-toggle"
+          id="warnings-toggle"
+          hidden
+          aria-expanded="false"
+        ></button>
+      </div>
+      <ul class="warnings-list" id="warnings-list"></ul>
+    </div>
   </div>
 </StarlightPage>
 
@@ -315,6 +391,39 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     color: var(--sl-color-gray-3, #888);
   }
 
+  /* Shared segmented two-button control: the toolbar's view switch and the
+     settings overlay's source switch both use this, so a viewer only has to
+     learn the "pressed = active" convention once. */
+  .segmented-switch {
+    display: flex;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.25rem;
+    overflow: hidden;
+  }
+
+  .segmented-switch-button {
+    font: inherit;
+    padding: 0.25rem 0.75rem;
+    border: none;
+    background: transparent;
+    color: var(--sl-color-text);
+    cursor: pointer;
+  }
+
+  .segmented-switch-button + .segmented-switch-button {
+    border-left: 1px solid var(--sl-color-hairline);
+  }
+
+  .segmented-switch-button:hover {
+    color: var(--sl-color-text-accent);
+  }
+
+  .segmented-switch-button[aria-pressed="true"] {
+    background: var(--sl-color-gray-6, rgba(128, 128, 128, 0.15));
+    color: var(--sl-color-text-accent);
+    font-weight: 600;
+  }
+
   /* Export used to be a <details> that pushed the toolbar row taller when
      opened; the panel floats over the page instead, so opening it never
      shifts the toolbar or the panes below it. */
@@ -376,6 +485,19 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     cursor: not-allowed;
   }
 
+  /* Only the buttons relevant to the currently active view are shown - SVG/
+     PNG/PDF export the ThaiMusicXML render, MusicXML/MIDI download the
+     converter's output, and neither makes sense while the other view is
+     showing. setActiveView() sets this dataset attribute. */
+  .export-panel [data-view] {
+    display: none;
+  }
+
+  .export-panel[data-active-view="thaimusicxml"] [data-view="thaimusicxml"],
+  .export-panel[data-active-view="musicxml"] [data-view="musicxml"] {
+    display: block;
+  }
+
   .split {
     flex: 1 1 auto;
     min-height: 0;
@@ -405,11 +527,19 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     padding: 0.75rem;
   }
 
-  .preview-pane :global(svg) {
+  #thaimusicxml-view :global(svg) {
     display: block;
     width: 100%;
     height: auto;
     margin-bottom: 0.75rem;
+  }
+
+  /* OSMD owns #musicxml-view directly (load()/render() draw into it in
+     place) rather than having its innerHTML replaced like the ThaiMusicXML
+     view - min-height keeps the pane from collapsing to nothing before the
+     first successful render lands. */
+  #musicxml-view {
+    min-height: 100%;
   }
 
   .divider {
@@ -439,11 +569,33 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     }
   }
 
-  .status {
+  /* Collapses to nothing when there's neither a fatal error nor a warning
+     to show, rather than reserving a blank row at all times - status and
+     warnings share one bar instead of stacking two, so a clean render costs
+     no vertical space at all. */
+  .status-bar {
+    display: none;
     flex: none;
-    margin: 0;
-    min-height: 1.5em;
+    flex-direction: column;
     padding: 0 1rem;
+  }
+
+  .status-bar:has(.status:not(:empty)),
+  .status-bar:has(.warnings-toggle:not([hidden])) {
+    display: flex;
+  }
+
+  .status-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .status {
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 0.25rem 0;
     color: var(--sl-color-red, #c53030);
     white-space: pre-wrap;
     font-family: var(--__sl-font-mono, monospace);
@@ -475,8 +627,18 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   .settings-header {
     flex: none;
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     padding: 0.5rem 0.5rem 0;
+  }
+
+  /* Balances .settings-close's own width so .settings-source-switch reads
+     as centered in the header, not just left-aligned next to the close
+     button. */
+  .settings-header-spacer {
+    width: 2rem;
   }
 
   .settings-close {
@@ -649,6 +811,42 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     width: 3rem;
     height: 1.75rem;
   }
+
+  /* A dynamic group's own caption (e.g. "affects the MIDI download only"),
+     appended by renderExtra alongside its label/control pairs - spans every
+     column the grid currently has instead of sitting in just the first. */
+  .settings-grid :global(.settings-note) {
+    grid-column: 1 / -1;
+    margin: 0.25rem 0 0;
+    font-size: 0.8rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  /* --- Warnings: non-fatal converter messages (a dropped lyric part, a
+     tuning fallback...), sharing .status-bar's one row with the fatal
+     .status message rather than stacking a second bar underneath it. --- */
+  .warnings-toggle {
+    flex: none;
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+    border: none;
+    background: transparent;
+    color: var(--sl-color-orange, #b7791f);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .warnings-list {
+    margin: 0 0 0.5rem;
+    padding-left: 1.25rem;
+    font-size: 0.8rem;
+    color: var(--sl-color-orange, #b7791f);
+  }
+
+  .status-bar:not(.open) .warnings-list {
+    display: none;
+  }
 </style>
 
 <script>
@@ -673,6 +871,16 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   import { draw } from "../../../renderer/src/draw.mjs";
   import { ready } from "../../../renderer/src/ready.mjs";
   import { defaults } from "../../../renderer/src/settings.mjs";
+  import { resolve } from "../../../converter/src/resolve.mjs";
+  import { toMusicXml } from "../../../converter/src/to-musicxml.mjs";
+  import { toMidi } from "../../../converter/src/to-midi.mjs";
+  import { groupParts } from "../../../converter/src/ensemble-groups.mjs";
+  import { TUNING_REFERENCES } from "../../../converter/src/pitch.mjs";
+  import {
+    GM_INSTRUMENT_FAMILIES,
+    GM_PERCUSSION_NOTES,
+  } from "../../../converter/src/gm-names.mjs";
+  import type { OpenSheetMusicDisplay as OSMDType } from "opensheetmusicdisplay";
 
   type Lang = "en" | "th";
   // Starlight sets <html lang> per URL locale (see Page.astro), so this
@@ -713,6 +921,8 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
 
   const editorPane = document.getElementById("editor-pane")!;
   const previewPane = document.getElementById("preview-pane")!;
+  const thaimusicxmlView = document.getElementById("thaimusicxml-view")!;
+  const musicxmlView = document.getElementById("musicxml-view")!;
   const statusEl = document.getElementById("status")!;
   const templateSelect = document.getElementById(
     "template-select",
@@ -737,6 +947,18 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   const settingsResetButton = document.getElementById(
     "settings-reset",
   ) as HTMLButtonElement;
+  const settingsSourceRendererButton = document.getElementById(
+    "settings-source-renderer",
+  ) as HTMLButtonElement;
+  const settingsSourceConverterButton = document.getElementById(
+    "settings-source-converter",
+  ) as HTMLButtonElement;
+  const viewThaiMusicXmlButton = document.getElementById(
+    "view-thaimusicxml",
+  ) as HTMLButtonElement;
+  const viewMusicXmlButton = document.getElementById(
+    "view-musicxml",
+  ) as HTMLButtonElement;
   const exportSvgButton = document.getElementById(
     "export-svg",
   ) as HTMLButtonElement;
@@ -746,6 +968,17 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   const exportPdfButton = document.getElementById(
     "export-pdf",
   ) as HTMLButtonElement;
+  const exportMusicXmlButton = document.getElementById(
+    "export-musicxml",
+  ) as HTMLButtonElement;
+  const exportMidiButton = document.getElementById(
+    "export-midi",
+  ) as HTMLButtonElement;
+  const statusBar = document.getElementById("status-bar")!;
+  const warningsToggle = document.getElementById(
+    "warnings-toggle",
+  ) as HTMLButtonElement;
+  const warningsList = document.getElementById("warnings-list")!;
   const importButton = document.getElementById(
     "import-button",
   ) as HTMLButtonElement;
@@ -797,6 +1030,12 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     key: string;
     tier: Tier;
     label: Record<Lang, string>;
+    // Called right after a group's own FieldDefs are laid out onto `grid`,
+    // for content no static field can express - options computed from the
+    // current document rather than a fixed schema. Appends more label/
+    // control pairs the same way buildFieldRow does, so dynamic rows share
+    // the static ones' exact grid shape.
+    renderExtra?: (grid: HTMLElement) => void;
   }
 
   const TIERS: Tier[] = ["common", "details", "advanced"];
@@ -1427,20 +1666,28 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
 
   const STORAGE_KEY = "thaimusicxml-playground-settings";
 
-  function loadOverrides(): Record<string, unknown> {
+  // Shared by both the renderer's settings and the converter's: reads a
+  // field's saved value out of localStorage, falling back to `defaultsFor`
+  // (renderer/src/settings.mjs's `defaults` for the renderer registry, a
+  // small literal object for the converter one, which has no such module).
+  function loadOverrides(
+    fields: FieldDef[],
+    storageKey: string,
+    defaultsFor: Record<string, unknown>,
+  ): Record<string, unknown> {
     const overrides: Record<string, unknown> = {};
-    for (const field of FIELDS)
-      overrides[field.path] = getPath(defaults, field.path);
+    for (const field of fields)
+      overrides[field.path] = getPath(defaultsFor, field.path);
 
     let saved: unknown;
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(storageKey);
       if (raw) saved = JSON.parse(raw);
     } catch {
       saved = undefined;
     }
     if (saved && typeof saved === "object") {
-      for (const field of FIELDS) {
+      for (const field of fields) {
         const value = (saved as Record<string, unknown>)[field.path];
         if (value === undefined) continue;
         const ok = field.validate
@@ -1452,9 +1699,12 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     return overrides;
   }
 
-  function saveOverrides(overrides: Record<string, unknown>): void {
+  function saveOverrides(
+    overrides: Record<string, unknown>,
+    storageKey: string,
+  ): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+      localStorage.setItem(storageKey, JSON.stringify(overrides));
     } catch {
       // Storage full or unavailable (private browsing) - settings just
       // won't persist; nothing else on the page depends on it.
@@ -1474,7 +1724,379 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     return options;
   }
 
-  const overrides = loadOverrides();
+  // --- Converter settings: tuning (a 12-TET transpose), splitStacks,
+  // lyrics export on/off, plus three dynamic mapping sections
+  // (lyricsMap/instrumentMap/percussionMap) whose rows and options depend on
+  // the current document, not a fixed schema - too dynamic for a FieldDef,
+  // so they're appended via each group's renderExtra instead. See
+  // convertAndRenderMusicXml() further below for how all of this actually
+  // reaches toMusicXml()/toMidi(). ---
+
+  const CONVERTER_STORAGE_KEY = "thaimusicxml-playground-converter-settings";
+  const CONVERTER_MAPS_STORAGE_KEY = "thaimusicxml-playground-converter-maps";
+  const CONVERTER_TIERS: Tier[] = ["common"];
+
+  const CONVERTER_DEFAULTS: Record<string, unknown> = {
+    tuning: "auto",
+    splitStacks: false,
+    lyrics: true,
+  };
+
+  // Display labels for pitch.mjs's TUNING_REFERENCES - hand-mapped rather
+  // than derived from the reference string, since a trailing "b" is
+  // ambiguous (an accidental in "bb-major", but the tonic letter itself in
+  // "b-major").
+  const TUNING_LABELS: Record<string, string> = {
+    "c-major": "C major",
+    "db-major": "D♭ major",
+    "d-major": "D major",
+    "eb-major": "E♭ major",
+    "e-major": "E major",
+    "f-major": "F major",
+    "gb-major": "G♭ major",
+    "g-major": "G major",
+    "ab-major": "A♭ major",
+    "a-major": "A major",
+    "bb-major": "B♭ major",
+    "b-major": "B major",
+  };
+
+  // lyricsMap/instrumentMap/percussionMap choices persist separately from
+  // the FieldDef-driven `overrides` above: their keys are document content
+  // (a lyric part id, an instrument name, a sound code), not a fixed field
+  // path, so they don't fit loadOverrides/saveOverrides' per-field
+  // validation. "drop"/"auto" mean "not in the map" - see
+  // buildLyricsMap/buildInstrumentMap/buildPercussionMap.
+  let lyricsMapChoices: Record<string, string> = {};
+  let instrumentMapChoices: Record<string, string> = {};
+  let percussionMapChoices: Record<string, string> = {};
+
+  function loadConverterMaps(): void {
+    try {
+      const raw = localStorage.getItem(CONVERTER_MAPS_STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved && typeof saved === "object") {
+        lyricsMapChoices = saved.lyricsMapChoices ?? {};
+        instrumentMapChoices = saved.instrumentMapChoices ?? {};
+        percussionMapChoices = saved.percussionMapChoices ?? {};
+      }
+    } catch {
+      // Corrupt or unavailable storage - start from empty maps.
+    }
+  }
+
+  function saveConverterMaps(): void {
+    try {
+      localStorage.setItem(
+        CONVERTER_MAPS_STORAGE_KEY,
+        JSON.stringify({
+          lyricsMapChoices,
+          instrumentMapChoices,
+          percussionMapChoices,
+        }),
+      );
+    } catch {
+      // Storage full or unavailable - just won't persist.
+    }
+  }
+
+  loadConverterMaps();
+
+  const CONVERTER_FIELDS: FieldDef[] = [
+    {
+      path: "tuning",
+      tier: "common",
+      group: "tuning",
+      type: "select",
+      label: { en: "Tuning (transpose)", th: "การตั้งเสียง (ทรานสโพส)" },
+      options: [
+        {
+          value: "auto",
+          label: {
+            en: "Auto (use the file's own <tuning>)",
+            th: "อัตโนมัติ (ใช้ <tuning> ของไฟล์)",
+          },
+        },
+        ...TUNING_REFERENCES.map((ref) => ({
+          value: ref,
+          label: { en: TUNING_LABELS[ref], th: TUNING_LABELS[ref] },
+        })),
+      ],
+    },
+    {
+      path: "splitStacks",
+      tier: "common",
+      group: "tuning",
+      type: "checkbox",
+      label: {
+        en: "Split stacked rows into separate parts/tracks",
+        th: "แยกแถวที่ซ้อนกันเป็นส่วนแยกกัน",
+      },
+    },
+    {
+      path: "lyrics",
+      tier: "common",
+      group: "lyrics",
+      type: "checkbox",
+      label: { en: "Export lyrics", th: "ส่งออกเนื้อร้อง" },
+    },
+  ];
+
+  // targetExists/currentLyricChoice also back buildLyricsMap() further
+  // below - a saved choice survives an edit or a splitStacks toggle only if
+  // it still names something in the current document.
+  function targetExists(groups: any[], targetId: string): boolean {
+    return groups.some(
+      (g) =>
+        g.id === targetId ||
+        g.members.some((m: any) => m.id === targetId),
+    );
+  }
+
+  function currentLyricChoice(
+    groups: any[],
+    lyricPartId: string,
+    index: number,
+  ): string {
+    const saved = lyricsMapChoices[lyricPartId];
+    if (saved !== undefined && (saved === "drop" || targetExists(groups, saved)))
+      return saved;
+    // The converter's own implicit default: the first lyric part (ensemble
+    // order) pairs to the first notated group, every other one drops.
+    return index === 0 && groups.length > 0 ? groups[0].id : "drop";
+  }
+
+  function renderLyricsMapRows(grid: HTMLElement): void {
+    if (!lastResolvedDoc) return;
+    const doc = lastResolvedDoc;
+    const splitStacks = Boolean(CONVERTER_REGISTRY.overrides.splitStacks);
+    const lyricParts = doc.parts.filter((p: any) => p.type === "lyric");
+    if (lyricParts.length === 0) return;
+    const groups = groupParts(
+      doc.parts.filter((p: any) => p.type !== "lyric"),
+      splitStacks,
+    );
+
+    const note = document.createElement("p");
+    note.className = "settings-note";
+    note.textContent = t({
+      en: "Pair each lyric part to the notated part or stack row it's sung over.",
+      th: "จับคู่เนื้อร้องแต่ละส่วนกับเครื่องดนตรีหรือแถวที่ขับร้องทับ",
+    });
+    grid.appendChild(note);
+
+    lyricParts.forEach((part: any, i: number) => {
+      const id = `converter-lyrics-map-${part.id}`;
+      const label = document.createElement("label");
+      label.htmlFor = id;
+      label.textContent = part.name || part.id;
+      grid.appendChild(label);
+
+      const select = document.createElement("select");
+      select.id = id;
+      const dropOption = document.createElement("option");
+      dropOption.value = "drop";
+      dropOption.textContent = t({
+        en: "Drop (not exported)",
+        th: "ไม่ส่งออก",
+      });
+      select.appendChild(dropOption);
+      for (const g of groups) {
+        const opt = document.createElement("option");
+        opt.value = g.id;
+        opt.textContent = g.name;
+        select.appendChild(opt);
+        if (g.members.length > 1) {
+          for (const member of g.members) {
+            const memberOpt = document.createElement("option");
+            memberOpt.value = member.id;
+            memberOpt.textContent = `${g.name} — ${member.name || member.id}`;
+            select.appendChild(memberOpt);
+          }
+        }
+      }
+      select.value = currentLyricChoice(groups, part.id, i);
+      select.addEventListener("change", () => {
+        lyricsMapChoices[part.id] = select.value;
+        saveConverterMaps();
+        scheduleConverterRender();
+      });
+      grid.appendChild(select);
+    });
+  }
+
+  function renderMidiMapRows(grid: HTMLElement): void {
+    const note = document.createElement("p");
+    note.className = "settings-note";
+    note.textContent = t({
+      en: "These settings only affect the downloaded MIDI file, not the MusicXML view.",
+      th: "การตั้งค่านี้มีผลต่อไฟล์ MIDI ที่ดาวน์โหลดเท่านั้น ไม่มีผลต่อมุมมอง MusicXML",
+    });
+    grid.appendChild(note);
+
+    if (!lastResolvedDoc) return;
+    const doc = lastResolvedDoc;
+    const splitStacks = Boolean(CONVERTER_REGISTRY.overrides.splitStacks);
+    const groups = groupParts(
+      doc.parts.filter((p: any) => p.type !== "lyric"),
+      splitStacks,
+    );
+
+    const instrumentNames: string[] = [];
+    for (const g of groups) {
+      if (g.members[0].type === "unpitched") continue;
+      if (!instrumentNames.includes(g.members[0].name))
+        instrumentNames.push(g.members[0].name);
+    }
+    for (const name of instrumentNames) {
+      const id = `converter-instrument-map-${name}`;
+      const label = document.createElement("label");
+      label.htmlFor = id;
+      label.textContent = name;
+      grid.appendChild(label);
+
+      const select = document.createElement("select");
+      select.id = id;
+      const autoOption = document.createElement("option");
+      autoOption.value = "auto";
+      autoOption.textContent = t({ en: "Auto", th: "อัตโนมัติ" });
+      select.appendChild(autoOption);
+      for (const family of GM_INSTRUMENT_FAMILIES) {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = family.family;
+        for (const instrument of family.instruments) {
+          const opt = document.createElement("option");
+          opt.value = String(instrument.program);
+          opt.textContent = instrument.name;
+          optgroup.appendChild(opt);
+        }
+        select.appendChild(optgroup);
+      }
+      select.value = instrumentMapChoices[name] ?? "auto";
+      select.addEventListener("change", () => {
+        instrumentMapChoices[name] = select.value;
+        saveConverterMaps();
+        scheduleConverterRender();
+      });
+      grid.appendChild(select);
+    }
+
+    const soundCodes: string[] = [];
+    for (const g of groups) {
+      if (g.members[0].type !== "unpitched") continue;
+      for (const member of g.members) {
+        for (const n of doc.unroll(member.id).notes) {
+          if (!n.rest && n.sound != null && !soundCodes.includes(n.sound))
+            soundCodes.push(n.sound);
+        }
+      }
+    }
+    for (const code of soundCodes) {
+      const id = `converter-percussion-map-${code}`;
+      const label = document.createElement("label");
+      label.htmlFor = id;
+      label.textContent = code;
+      grid.appendChild(label);
+
+      const select = document.createElement("select");
+      select.id = id;
+      const autoOption = document.createElement("option");
+      autoOption.value = "auto";
+      autoOption.textContent = t({ en: "Auto", th: "อัตโนมัติ" });
+      select.appendChild(autoOption);
+      for (const p of GM_PERCUSSION_NOTES) {
+        const opt = document.createElement("option");
+        opt.value = String(p.note);
+        opt.textContent = p.name;
+        select.appendChild(opt);
+      }
+      select.value = percussionMapChoices[code] ?? "auto";
+      select.addEventListener("change", () => {
+        percussionMapChoices[code] = select.value;
+        saveConverterMaps();
+        scheduleConverterRender();
+      });
+      grid.appendChild(select);
+    }
+  }
+
+  const CONVERTER_GROUPS: GroupDef[] = [
+    {
+      key: "tuning",
+      tier: "common",
+      label: { en: "Tuning & instruments", th: "การตั้งเสียงและเครื่องดนตรี" },
+    },
+    {
+      key: "lyrics",
+      tier: "common",
+      label: { en: "Lyrics", th: "เนื้อร้อง" },
+      renderExtra: renderLyricsMapRows,
+    },
+    {
+      key: "midi",
+      tier: "common",
+      label: { en: "MIDI mapping", th: "การจับคู่ MIDI" },
+      renderExtra: renderMidiMapRows,
+    },
+  ];
+
+  // --- The two settings registries, and the machinery both share. Each
+  // wraps its own FieldDefs/GroupDefs/Tiers, its own persisted overrides,
+  // and its own reaction to a value changing - the renderer schedules its
+  // ThaiMusicXML redraw, the converter schedules resolve()+toMusicXml()+
+  // toMidi(). Everything below (buildFieldRow, renderNav, renderFields,
+  // the reset button) reads through whichever registry is `activeRegistry`
+  // rather than a hard-coded one, so the settings overlay works the same
+  // way regardless of which source is selected. ---
+
+  interface Registry {
+    fields: FieldDef[];
+    groups: GroupDef[];
+    tiers: Tier[];
+    storageKey: string;
+    defaultsFor: Record<string, unknown>;
+    overrides: Record<string, unknown>;
+    activeGroupKey: string;
+    onSettingChange: () => void;
+  }
+
+  const RENDERER_REGISTRY: Registry = {
+    fields: FIELDS,
+    groups: GROUPS,
+    tiers: TIERS,
+    storageKey: STORAGE_KEY,
+    defaultsFor: defaults,
+    overrides: loadOverrides(FIELDS, STORAGE_KEY, defaults),
+    activeGroupKey: "notation",
+    onSettingChange: () => {
+      saveOverrides(RENDERER_REGISTRY.overrides, RENDERER_REGISTRY.storageKey);
+      scheduleRender();
+    },
+  };
+
+  const CONVERTER_REGISTRY: Registry = {
+    fields: CONVERTER_FIELDS,
+    groups: CONVERTER_GROUPS,
+    tiers: CONVERTER_TIERS,
+    storageKey: CONVERTER_STORAGE_KEY,
+    defaultsFor: CONVERTER_DEFAULTS,
+    overrides: loadOverrides(
+      CONVERTER_FIELDS,
+      CONVERTER_STORAGE_KEY,
+      CONVERTER_DEFAULTS,
+    ),
+    activeGroupKey: "tuning",
+    onSettingChange: () => {
+      saveOverrides(
+        CONVERTER_REGISTRY.overrides,
+        CONVERTER_REGISTRY.storageKey,
+      );
+      scheduleConverterRender();
+    },
+  };
+
+  let activeRegistry: Registry = RENDERER_REGISTRY;
 
   // Appends a label and its control as two direct children of `grid` - not
   // wrapped in a row div - since .settings-grid's two-column template lays
@@ -1482,7 +2104,7 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   function buildFieldRow(
     grid: HTMLElement,
     field: FieldDef,
-    onChange: () => void,
+    registry: Registry,
   ): void {
     const id = `setting-${field.path.replace(/\./g, "-")}`;
 
@@ -1491,7 +2113,7 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     label.textContent = field.label[lang];
     grid.appendChild(label);
 
-    const current = overrides[field.path];
+    const current = registry.overrides[field.path];
     let el: HTMLInputElement | HTMLSelectElement;
 
     if (field.type === "select") {
@@ -1505,10 +2127,10 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       }
       select.value = field.encode ? field.encode(current) : String(current);
       select.addEventListener("change", () => {
-        overrides[field.path] = field.decode
+        registry.overrides[field.path] = field.decode
           ? field.decode(select.value)
           : select.value;
-        onChange();
+        registry.onSettingChange();
       });
       el = select;
     } else {
@@ -1527,13 +2149,13 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       }
       const eventName = field.type === "checkbox" ? "change" : "input";
       input.addEventListener(eventName, () => {
-        overrides[field.path] =
+        registry.overrides[field.path] =
           field.type === "checkbox"
             ? input.checked
             : field.type === "number"
               ? Number(input.value)
               : input.value;
-        onChange();
+        registry.onSettingChange();
       });
       el = input;
     }
@@ -1547,40 +2169,49 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     renderTimer = setTimeout(renderPreview, 400);
   };
 
-  const onSettingChange = () => {
-    saveOverrides(overrides);
-    scheduleRender();
-  };
+  let converterRenderTimer: ReturnType<typeof setTimeout> | undefined;
+  function scheduleConverterRender(): void {
+    clearTimeout(converterRenderTimer);
+    converterRenderTimer = setTimeout(convertAndRenderMusicXml, 400);
+  }
 
   // --- Settings overlay: two-level category nav + a single field grid for
   // whichever category is currently selected, instead of one long scrolling
-  // list of every field at once. ---
-  let activeGroupKey = "notation";
+  // list of every field at once. Both registries share this. ---
 
   function renderFields(): void {
     settingsFieldsGrid.innerHTML = "";
-    for (const field of FIELDS.filter((f) => f.group === activeGroupKey))
-      buildFieldRow(settingsFieldsGrid, field, onSettingChange);
+    const group = activeRegistry.groups.find(
+      (g) => g.key === activeRegistry.activeGroupKey,
+    );
+    for (const field of activeRegistry.fields.filter(
+      (f) => f.group === activeRegistry.activeGroupKey,
+    ))
+      buildFieldRow(settingsFieldsGrid, field, activeRegistry);
+    group?.renderExtra?.(settingsFieldsGrid);
   }
 
   function updateNavActiveState(): void {
     for (const button of settingsNav.querySelectorAll("button"))
       button.setAttribute(
         "aria-current",
-        String((button as HTMLElement).dataset.group === activeGroupKey),
+        String(
+          (button as HTMLElement).dataset.group ===
+            activeRegistry.activeGroupKey,
+        ),
       );
   }
 
   function selectGroup(key: string): void {
-    activeGroupKey = key;
+    activeRegistry.activeGroupKey = key;
     renderFields();
     updateNavActiveState();
   }
 
   function renderNav(): void {
     settingsNav.innerHTML = "";
-    for (const tier of TIERS) {
-      const tierGroups = GROUPS.filter((g) => g.tier === tier);
+    for (const tier of activeRegistry.tiers) {
+      const tierGroups = activeRegistry.groups.filter((g) => g.tier === tier);
       if (tierGroups.length === 0) continue;
       const heading = document.createElement("div");
       heading.className = "settings-nav-tier";
@@ -1602,13 +2233,38 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   renderFields();
 
   settingsResetButton.addEventListener("click", () => {
-    localStorage.removeItem(STORAGE_KEY);
-    for (const field of FIELDS)
-      overrides[field.path] = getPath(defaults, field.path);
-    saveOverrides(overrides);
+    localStorage.removeItem(activeRegistry.storageKey);
+    for (const field of activeRegistry.fields)
+      activeRegistry.overrides[field.path] = getPath(
+        activeRegistry.defaultsFor,
+        field.path,
+      );
+    saveOverrides(activeRegistry.overrides, activeRegistry.storageKey);
     renderFields();
-    scheduleRender();
+    if (activeRegistry === RENDERER_REGISTRY) scheduleRender();
+    else scheduleConverterRender();
   });
+
+  function setActiveSettingsSource(registry: Registry, isRenderer: boolean): void {
+    activeRegistry = registry;
+    settingsSourceRendererButton.setAttribute(
+      "aria-pressed",
+      String(isRenderer),
+    );
+    settingsSourceConverterButton.setAttribute(
+      "aria-pressed",
+      String(!isRenderer),
+    );
+    renderNav();
+    renderFields();
+  }
+
+  settingsSourceRendererButton.addEventListener("click", () =>
+    setActiveSettingsSource(RENDERER_REGISTRY, true),
+  );
+  settingsSourceConverterButton.addEventListener("click", () =>
+    setActiveSettingsSource(CONVERTER_REGISTRY, false),
+  );
 
   function setSettingsOpen(open: boolean): void {
     settingsOverlay.hidden = !open;
@@ -1706,6 +2362,7 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
 
   editor.onDidChangeModelContent(() => {
     scheduleRender();
+    scheduleConverterRender();
     markDirty();
   });
 
@@ -1837,11 +2494,32 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   let lastHeight = 0;
   let lastSvgs: string[] = [];
 
-  const setExportEnabled = (enabled: boolean) => {
+  // The converter pipeline's own equivalents, populated by
+  // convertAndRenderMusicXml() below - independent of the renderer's, since
+  // the two pipelines succeed or fail on their own.
+  let lastMusicXml: string | null = null;
+  let lastMidiBytes: Uint8Array | null = null;
+  let lastResolvedDoc: any = null;
+
+  const setRendererExportEnabled = (enabled: boolean) => {
     for (const button of [exportSvgButton, exportPngButton, exportPdfButton])
       button.disabled = !enabled;
   };
-  setExportEnabled(false);
+  const setConverterExportEnabled = (enabled: boolean) => {
+    for (const button of [exportMusicXmlButton, exportMidiButton])
+      button.disabled = !enabled;
+  };
+  setRendererExportEnabled(false);
+  setConverterExportEnabled(false);
+
+  // Which view is showing, and each pipeline's own last error (or null on
+  // success) - #status is shared between the two pipelines, so it always
+  // shows whichever one belongs to the currently active view, both right
+  // after that pipeline runs and when the user switches views.
+  type ViewName = "thaimusicxml" | "musicxml";
+  let currentView: ViewName = "thaimusicxml";
+  let rendererError: string | null = null;
+  let converterError: string | null = null;
 
   // A source's own <title>, filesystem-safe: strip characters no target
   // platform's filesystem accepts, since a title is free text and Thai
@@ -1978,7 +2656,7 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
 
   function renderPreview() {
     const source = editor.getValue();
-    const options = buildOptions(overrides);
+    const options = buildOptions(RENDERER_REGISTRY.overrides);
     try {
       const laidOut = layout(parse(source), options);
       const svgs = laidOut.pages.map((page: { elements: unknown }) =>
@@ -1991,18 +2669,289 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
           options,
         ),
       );
-      previewPane.innerHTML = svgs.join("");
-      statusEl.textContent = "";
+      thaimusicxmlView.innerHTML = svgs.join("");
+      rendererError = null;
+      if (currentView === "thaimusicxml") statusEl.textContent = "";
       lastSource = source;
       lastWidth = laidOut.width;
       lastHeight = laidOut.height;
       lastSvgs = svgs;
-      setExportEnabled(true);
+      setRendererExportEnabled(true);
     } catch (err) {
-      statusEl.textContent = err instanceof Error ? err.message : String(err);
-      setExportEnabled(false);
+      rendererError = err instanceof Error ? err.message : String(err);
+      if (currentView === "thaimusicxml") statusEl.textContent = rendererError;
+      setRendererExportEnabled(false);
     }
   }
+
+  // --- Warnings: non-fatal messages from the converter's warn() callback
+  // (a dropped lyric part, a tuning fallback...), sharing #status-bar's one
+  // row with #status, which stays reserved for a fatal error from either
+  // pipeline - the bar itself collapses to nothing when both are empty (see
+  // .status-bar's :has() rule), so a clean render costs no vertical space. ---
+  function renderWarnings(warnings: string[]): void {
+    warningsList.innerHTML = "";
+    for (const w of warnings) {
+      const li = document.createElement("li");
+      li.textContent = w;
+      warningsList.appendChild(li);
+    }
+    warningsToggle.hidden = warnings.length === 0;
+    if (warnings.length === 0) {
+      statusBar.classList.remove("open");
+      return;
+    }
+    warningsToggle.textContent = `${warnings.length} ${t(
+      warnings.length === 1
+        ? { en: "warning", th: "คำเตือน" }
+        : { en: "warnings", th: "คำเตือน" },
+    )} ▾`;
+  }
+
+  warningsToggle.addEventListener("click", () => {
+    const open = statusBar.classList.toggle("open");
+    warningsToggle.setAttribute("aria-expanded", String(open));
+  });
+
+  // --- Converter pipeline: resolve() -> toMusicXml()/toMidi(), independent
+  // of and parallel to the ThaiMusicXML renderer above. lyricsMap/
+  // instrumentMap/percussionMap are built fresh from the current document
+  // and the user's persisted per-item choices every run - see
+  // buildLyricsMap/buildInstrumentMap/buildPercussionMap and
+  // renderLyricsMapRows/renderMidiMapRows further up for the UI side of the
+  // same data. ---
+
+  // Once the lyricsMap UI exists, resolveLyricPairs' own semantics (a
+  // supplied lyricsMap fully replaces the default pairing, not adds to it)
+  // mean this always has to be passed explicitly - never undefined - or the
+  // UI and the actual export would silently diverge.
+  function buildLyricsMap(doc: any, groups: any[]): Record<string, string> {
+    const lyricParts = doc.parts.filter((p: any) => p.type === "lyric");
+    const map: Record<string, string> = {};
+    lyricParts.forEach((p: any, i: number) => {
+      const choice = currentLyricChoice(groups, p.id, i);
+      if (choice !== "drop") map[p.id] = choice;
+    });
+    return map;
+  }
+
+  // Sparse, unlike lyricsMap: only a non-"auto" row is included, so an
+  // unmapped name/code still falls through to to-midi.mjs's own built-in
+  // table/auto-cycle, matching its existing "overrides checked first, table
+  // otherwise" semantics.
+  function buildInstrumentMap(pitchedGroups: any[]): Record<string, number> {
+    const map: Record<string, number> = {};
+    const seen = new Set<string>();
+    for (const g of pitchedGroups) {
+      const name = g.members[0].name;
+      if (seen.has(name)) continue;
+      seen.add(name);
+      const choice = instrumentMapChoices[name];
+      if (choice !== undefined && choice !== "auto") map[name] = Number(choice);
+    }
+    return map;
+  }
+
+  function buildPercussionMap(doc: any, unpitchedGroups: any[]): Record<string, number> {
+    const map: Record<string, number> = {};
+    const seen = new Set<string>();
+    for (const g of unpitchedGroups) {
+      for (const member of g.members) {
+        for (const note of doc.unroll(member.id).notes) {
+          if (note.rest || note.sound == null || seen.has(note.sound)) continue;
+          seen.add(note.sound);
+          const choice = percussionMapChoices[note.sound];
+          if (choice !== undefined && choice !== "auto") map[note.sound] = Number(choice);
+        }
+      }
+    }
+    return map;
+  }
+
+  // Drops a persisted choice once its key (a lyric part id, instrument
+  // name, or sound code) no longer appears in the current document, so
+  // storage doesn't grow unbounded across edits.
+  function pruneConverterMapChoices(
+    doc: any,
+    pitchedGroups: any[],
+    unpitchedGroups: any[],
+  ): void {
+    const lyricIds = new Set(
+      doc.parts.filter((p: any) => p.type === "lyric").map((p: any) => p.id),
+    );
+    for (const key of Object.keys(lyricsMapChoices))
+      if (!lyricIds.has(key)) delete lyricsMapChoices[key];
+
+    const instrumentNames = new Set(pitchedGroups.map((g) => g.members[0].name));
+    for (const key of Object.keys(instrumentMapChoices))
+      if (!instrumentNames.has(key)) delete instrumentMapChoices[key];
+
+    const soundCodes = new Set<string>();
+    for (const g of unpitchedGroups)
+      for (const m of g.members)
+        for (const n of doc.unroll(m.id).notes)
+          if (!n.rest && n.sound != null) soundCodes.add(n.sound);
+    for (const key of Object.keys(percussionMapChoices))
+      if (!soundCodes.has(key)) delete percussionMapChoices[key];
+
+    saveConverterMaps();
+  }
+
+  // Re-renders the settings grid only when a converter mapping group is the
+  // one currently open, so a source edit or a splitStacks toggle rebuilds
+  // the lyricsMap/instrumentMap/percussionMap row lists (not just their
+  // selected values) without the settings overlay even needing to be open.
+  function refreshDynamicConverterRowsIfVisible(): void {
+    if (activeRegistry !== CONVERTER_REGISTRY) return;
+    if (
+      activeRegistry.activeGroupKey === "lyrics" ||
+      activeRegistry.activeGroupKey === "midi"
+    )
+      renderFields();
+  }
+
+  function convertAndRenderMusicXml(): void {
+    const source = editor.getValue();
+    const warnings: string[] = [];
+    const warn = (m: string) => warnings.push(m);
+    try {
+      const doc = resolve(source);
+      const tuningOverride = CONVERTER_REGISTRY.overrides.tuning;
+      const tuning =
+        tuningOverride === "auto" ? undefined : (tuningOverride as string);
+      const splitStacks = Boolean(CONVERTER_REGISTRY.overrides.splitStacks);
+      const lyricsEnabled = Boolean(CONVERTER_REGISTRY.overrides.lyrics);
+
+      const notatedGroups = groupParts(
+        doc.parts.filter((p: any) => p.type !== "lyric"),
+        splitStacks,
+      );
+      const pitchedGroups = notatedGroups.filter(
+        (g: any) => g.members[0].type !== "unpitched",
+      );
+      const unpitchedGroups = notatedGroups.filter(
+        (g: any) => g.members[0].type === "unpitched",
+      );
+      pruneConverterMapChoices(doc, pitchedGroups, unpitchedGroups);
+
+      const lyricsMap = buildLyricsMap(doc, notatedGroups);
+      const instrumentMap = buildInstrumentMap(pitchedGroups);
+      const percussionMap = buildPercussionMap(doc, unpitchedGroups);
+
+      const xml = toMusicXml(doc, {
+        tuning,
+        splitStacks,
+        lyrics: lyricsEnabled,
+        lyricsMap,
+        warn,
+      });
+      const midi = toMidi(doc, {
+        tuning,
+        splitStacks,
+        instrumentMap,
+        percussionMap,
+        warn,
+      });
+
+      lastMusicXml = xml;
+      lastMidiBytes = midi;
+      lastResolvedDoc = doc;
+      converterError = null;
+      if (currentView === "musicxml") statusEl.textContent = "";
+      setConverterExportEnabled(true);
+      renderWarnings(warnings);
+      refreshDynamicConverterRowsIfVisible();
+      if (currentView === "musicxml") void renderMusicXmlView();
+    } catch (err) {
+      lastMusicXml = null;
+      lastMidiBytes = null;
+      lastResolvedDoc = null;
+      converterError = err instanceof Error ? err.message : String(err);
+      if (currentView === "musicxml") statusEl.textContent = converterError;
+      setConverterExportEnabled(false);
+      renderWarnings([]);
+    }
+  }
+
+  // --- MusicXML view: OpenSheetMusicDisplay, dynamically imported the first
+  // time it's actually needed - it pulls in a multi-MB dependency tree most
+  // playground visits (anyone just looking at the ThaiMusicXML render)
+  // never touch. ---
+  let osmdModulePromise: Promise<typeof import("opensheetmusicdisplay")> | null =
+    null;
+  function loadOsmd() {
+    osmdModulePromise ??= import("opensheetmusicdisplay");
+    return osmdModulePromise;
+  }
+
+  let osmd: OSMDType | null = null;
+  let osmdRenderToken = 0;
+  let osmdRenderedXml: string | null = null;
+
+  async function renderMusicXmlView(): Promise<void> {
+    if (lastMusicXml === null) return;
+    if (osmd && osmdRenderedXml === lastMusicXml) return;
+    const token = ++osmdRenderToken;
+    const xml = lastMusicXml;
+    try {
+      const { OpenSheetMusicDisplay } = await loadOsmd();
+      if (token !== osmdRenderToken) return; // a newer render started meanwhile
+      osmd ??= new OpenSheetMusicDisplay(musicxmlView, {
+        autoResize: true,
+        drawTitle: true,
+      });
+      await osmd.load(xml);
+      if (token !== osmdRenderToken) return;
+      // load() resets zoom to 1 internally, so this has to happen after it,
+      // not before - the engraving defaults otherwise read as a full-size
+      // printed part, way too large for a preview pane. Half size fits far
+      // more of the score at once.
+      osmd.zoom = 0.5;
+      osmd.render();
+      osmdRenderedXml = xml;
+    } catch (err) {
+      if (token !== osmdRenderToken) return;
+      converterError = err instanceof Error ? err.message : String(err);
+      if (currentView === "musicxml") statusEl.textContent = converterError;
+    }
+  }
+
+  function setActiveView(view: ViewName): void {
+    currentView = view;
+    thaimusicxmlView.hidden = view !== "thaimusicxml";
+    musicxmlView.hidden = view !== "musicxml";
+    viewThaiMusicXmlButton.setAttribute(
+      "aria-pressed",
+      String(view === "thaimusicxml"),
+    );
+    viewMusicXmlButton.setAttribute(
+      "aria-pressed",
+      String(view === "musicxml"),
+    );
+    exportPanel.dataset.activeView = view;
+    statusEl.textContent =
+      (view === "thaimusicxml" ? rendererError : converterError) ?? "";
+    if (view === "musicxml") void renderMusicXmlView();
+  }
+
+  viewThaiMusicXmlButton.addEventListener("click", () =>
+    setActiveView("thaimusicxml"),
+  );
+  viewMusicXmlButton.addEventListener("click", () => setActiveView("musicxml"));
+
+  exportMusicXmlButton.addEventListener("click", () => {
+    if (!lastMusicXml) return;
+    const blob = new Blob([lastMusicXml], {
+      type: "application/vnd.recordare.musicxml+xml",
+    });
+    triggerDownload(blob, `${exportBaseName()}.musicxml`);
+  });
+
+  exportMidiButton.addEventListener("click", () => {
+    if (!lastMidiBytes) return;
+    const blob = new Blob([lastMidiBytes], { type: "audio/midi" });
+    triggerDownload(blob, `${exportBaseName()}.mid`);
+  });
 
   // --- Draggable divider: splits horizontally while the panes sit side by
   // side, vertically once they stack. ---
@@ -2039,6 +2988,9 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   divider.addEventListener("pointerup", stopDrag);
   divider.addEventListener("pointercancel", stopDrag);
 
+  setActiveView("thaimusicxml");
+
   await ready();
   renderPreview();
+  convertAndRenderMusicXml();
 </script>

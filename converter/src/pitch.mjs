@@ -11,35 +11,65 @@
 import { NIKHAHIT, PINTHU, DEGREE_BY_SPELLING } from "../../renderer/src/geometry.mjs";
 
 // ด/1/D through ท/7/T, spelled per reference.reference-major, with each
-// degree's semitone offset from C4 (MIDI 60) at octave attribute 0. bb-major
-// shifts every degree down a whole step from c-major, so its tonic (Bb)
-// lands below the C that follows it - a real major scale read up from its
-// own tonic, not seven notes pinned to one fixed octave.
-const TUNINGS = {
-  "c-major": [
-    { step: "C", alter: 0, semitone: 0 },
-    { step: "D", alter: 0, semitone: 2 },
-    { step: "E", alter: 0, semitone: 4 },
-    { step: "F", alter: 0, semitone: 5 },
-    { step: "G", alter: 0, semitone: 7 },
-    { step: "A", alter: 0, semitone: 9 },
-    { step: "B", alter: 0, semitone: 11 },
-  ],
-  "bb-major": [
-    { step: "B", alter: -1, semitone: -2 },
-    { step: "C", alter: 0, semitone: 0 },
-    { step: "D", alter: 0, semitone: 2 },
-    { step: "E", alter: -1, semitone: 3 },
-    { step: "F", alter: 0, semitone: 5 },
-    { step: "G", alter: 0, semitone: 7 },
-    { step: "A", alter: 0, semitone: 9 },
-  ],
+// degree's semitone offset from C4 (MIDI 60) at octave attribute 0. Every
+// tuning shifts the same diatonic pattern to a different tonic, so its own
+// ด lands at or below the C that follows it - a real major scale read up
+// from its own tonic, not seven notes pinned to one fixed octave. bb-major
+// (tonic Bb, one whole step below c-major) is the reference case this
+// generalizes from.
+//
+// One tuning per chromatic tonic, spelled as a real major key rather than
+// hand-picked note names: each of the 12 tonics below is a (letter,
+// accidental) pair, and buildMajorScale walks the 7 letters starting at that
+// tonic's own letter - a major scale always uses each of the 7 letter names
+// exactly once - choosing each degree's alteration so its pitch matches the
+// major-scale interval pattern. Black-key tonics are spelled as flats
+// (db/eb/gb/ab/bb), consistent with bb-major, never as sharps.
+const LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
+const NATURAL_SEMITONE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
+
+const TONICS = {
+  "c-major": ["C", 0],
+  "db-major": ["D", -1],
+  "d-major": ["D", 0],
+  "eb-major": ["E", -1],
+  "e-major": ["E", 0],
+  "f-major": ["F", 0],
+  "gb-major": ["G", -1],
+  "g-major": ["G", 0],
+  "ab-major": ["A", -1],
+  "a-major": ["A", 0],
+  "bb-major": ["B", -1],
+  "b-major": ["B", 0],
 };
 
+/** A tonic's 7-degree major scale, tonic placed at or below C4 (see TONICS above for why). */
+function buildMajorScale(letter, tonicAlter) {
+  const tonicPitchClass = (((NATURAL_SEMITONE[letter] + tonicAlter) % 12) + 12) % 12;
+  const tonicOffset = tonicPitchClass === 0 ? 0 : tonicPitchClass - 12;
+  const letterIndex = LETTERS.indexOf(letter);
+  return MAJOR_INTERVALS.map((interval, degree) => {
+    const step = LETTERS[(letterIndex + degree) % 7];
+    const semitone = tonicOffset + interval;
+    const natural = NATURAL_SEMITONE[step];
+    const alter = ((((semitone - natural + 6) % 12) + 12) % 12) - 6;
+    return { step, alter, semitone };
+  });
+}
+
+const TUNINGS = Object.fromEntries(
+  Object.entries(TONICS).map(([name, [letter, tonicAlter]]) => [name, buildMajorScale(letter, tonicAlter)]),
+);
+
+/** Every tuning reference the converter can resolve a pitch against - the playground's transpose selector reads this. */
+export const TUNING_REFERENCES = Object.keys(TUNINGS);
+
 /**
- * Resolve `<tuning reference>` to one of the two defined mappings, falling
- * back to c-major with a warning for anything else - including a missing
- * `<tuning>` altogether. See reference/conversion's "Pitch".
+ * Resolve `<tuning reference>` to one of the twelve defined major-key
+ * mappings, falling back to c-major with a warning for anything else -
+ * including a missing `<tuning>` altogether. See reference/conversion's
+ * "Pitch".
  */
 export function resolveTuning(reference, warn = () => {}) {
   if (reference && TUNINGS[reference]) return reference;

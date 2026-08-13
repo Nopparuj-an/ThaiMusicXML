@@ -10,6 +10,9 @@
 // text/<nathap> aren't carried into meta events yet - resolve.mjs's
 // playOrder doesn't capture their content, only <chan>'s value and <bpm>. See
 // HANDOFF.md.
+//
+// toMidi() returns a Node Buffer under Node, a Uint8Array in the browser -
+// both are byte-addressable and work with writeFileSync/Blob respectively.
 
 import { resolvePitch, resolveTuning } from "./pitch.mjs";
 import { lcm } from "./fraction.mjs";
@@ -128,7 +131,7 @@ class Track {
 }
 
 const textMetaEvent = (type, text) => {
-  const bytes = Array.from(Buffer.from(text, "utf8"));
+  const bytes = Array.from(new TextEncoder().encode(text));
   return [0xff, type, ...variableLengthQuantity(bytes.length), ...bytes];
 };
 
@@ -259,5 +262,6 @@ export function toMidi(doc, options = {}) {
     (division >>> 8) & 0xff,
     division & 0xff,
   ];
-  return Buffer.from([...header, ...allTracks.flatMap((t) => t.toBytes())]);
+  const bytes = [...header, ...allTracks.flatMap((t) => t.toBytes())];
+  return typeof Buffer !== "undefined" ? Buffer.from(bytes) : new Uint8Array(bytes);
 }
