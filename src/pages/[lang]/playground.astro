@@ -251,7 +251,12 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       </div>
       <div class="pane preview-pane" id="preview-pane">
         <div id="thaimusicxml-view"></div>
-        <div id="musicxml-view" hidden></div>
+        <div id="musicxml-view" hidden>
+          <iframe
+            id="musicxml-frame"
+            title={t({ en: "MusicXML score", th: "โน้ต MusicXML" })}
+          ></iframe>
+        </div>
       </div>
     </div>
 
@@ -534,26 +539,29 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     margin-bottom: 0.75rem;
   }
 
-  /* OSMD owns #musicxml-view directly (load()/render() draw into it in
-     place) rather than having its innerHTML replaced like the ThaiMusicXML
-     view - min-height keeps the pane from collapsing to nothing before the
-     first successful render lands.
-
-     OSMD draws the whole score as one giant SVG (thousands of path/text
-     nodes for noteheads, staff lines, rests...). Without containment, any
-     layout-forcing read anywhere on the page - and Monaco's own scroll
-     rendering does plenty of those every frame - has to flush pending
-     layout for the *entire* document, including this subtree, even though
-     nothing in it changed. That's what was stalling editor scroll to a
-     crawl while this view was open. contain: layout paint style scopes
-     layout/style/paint to this element alone, so an unrelated read
-     elsewhere no longer has to re-lay-out the score. (content-visibility:
-     auto looked like the more modern fit, but measured worse in practice -
-     its own off-screen tracking adds cost of its own on a pane this size -
-     so plain static containment it is.) */
+  /* min-height keeps the pane from collapsing to nothing before the first
+     successful render lands (the iframe below starts at 0 height, sized to
+     its content only after OSMD actually draws something into it). */
   #musicxml-view {
     min-height: 100%;
-    contain: layout paint style;
+  }
+
+  /* OSMD draws the whole score as one giant SVG - tens of thousands of
+     path/text nodes for a real score. Measured directly: with that SVG
+     living in the main document, every Monaco render while this view was
+     open cost ~155ms (vs ~16ms normally) - a 60fps editor dropping to
+     roughly 6fps, exactly the crawl this was built to fix. CSS containment
+     (contain: layout/style/paint/strict) measured no improvement at all;
+     what actually fixed it, confirmed the same way, is a real <iframe>
+     boundary - a genuinely separate document, layout tree, and paint/
+     compositing/hit-test tree, which contain: can't fully substitute for
+     when the walled-off content is this SVG-heavy. Height is synced to the
+     iframe's own content after each render (see syncMusicXmlFrameHeight in
+     the script) so the pane still has one scrollbar, not a nested one. */
+  #musicxml-frame {
+    display: block;
+    width: 100%;
+    border: 0;
   }
 
   .divider {
@@ -937,6 +945,9 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   const previewPane = document.getElementById("preview-pane")!;
   const thaimusicxmlView = document.getElementById("thaimusicxml-view")!;
   const musicxmlView = document.getElementById("musicxml-view")!;
+  const musicxmlFrame = document.getElementById(
+    "musicxml-frame",
+  ) as HTMLIFrameElement;
   const statusEl = document.getElementById("status")!;
   const templateSelect = document.getElementById(
     "template-select",
@@ -2890,12 +2901,47 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   // --- MusicXML view: OpenSheetMusicDisplay, dynamically imported the first
   // time it's actually needed - it pulls in a multi-MB dependency tree most
   // playground visits (anyone just looking at the ThaiMusicXML render)
-  // never touch. ---
+  // never touch.
+  //
+  // Rendered inside #musicxml-frame, a real <iframe>, not directly in this
+  // document. Measured directly (Monaco's own render(true) timed before/
+  // after, 30-40 calls averaged): with OSMD's SVG - tens of thousands of
+  // path/text nodes for a real score - living in the main document, every
+  // Monaco render while this view was open cost ~155ms versus ~16ms
+  // normally, a 60fps editor dropping to roughly 6fps. CSS containment
+  // (contain: layout/style/paint, even contain: strict) measured zero
+  // improvement. Moving the exact same OSMD instance into an iframe measured
+  // back at ~9ms - a real document boundary isolates layout/style/paint/
+  // hit-testing in a way same-document containment doesn't, at least for
+  // content this SVG-heavy. ---
   let osmdModulePromise: Promise<typeof import("opensheetmusicdisplay")> | null =
     null;
   function loadOsmd() {
     osmdModulePromise ??= import("opensheetmusicdisplay");
     return osmdModulePromise;
+  }
+
+  // The iframe has no src/srcdoc, so it's already "complete" (about:blank)
+  // by the time this normally runs - this only matters for the rare case
+  // where it isn't yet.
+  function waitForMusicxmlFrame(): Promise<void> {
+    return new Promise((resolve) => {
+      if (musicxmlFrame.contentDocument?.readyState === "complete") {
+        resolve();
+        return;
+      }
+      musicxmlFrame.addEventListener("load", () => resolve(), { once: true });
+    });
+  }
+
+  // The iframe has no intrinsic height (empty document, no CSS of its own) -
+  // sized to its actual rendered content after every render, so
+  // #preview-pane's own scrollbar keeps covering the whole score instead of
+  // the iframe growing a second, nested one.
+  function syncMusicxmlFrameHeight(): void {
+    const doc = musicxmlFrame.contentDocument;
+    if (!doc?.documentElement) return;
+    musicxmlFrame.style.height = `${doc.documentElement.scrollHeight}px`;
   }
 
   let osmd: OSMDType | null = null;
@@ -2912,25 +2958,33 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       const { OpenSheetMusicDisplay } = await loadOsmd();
       if (token !== osmdRenderToken) return; // a newer render started meanwhile
       if (!osmd) {
-        osmd = new OpenSheetMusicDisplay(musicxmlView, {
+        await waitForMusicxmlFrame();
+        if (token !== osmdRenderToken) return;
+        const frameDoc = musicxmlFrame.contentDocument!;
+        frameDoc.body.style.margin = "0";
+        frameDoc.body.style.background = "#fff";
+        const container = frameDoc.createElement("div");
+        frameDoc.body.appendChild(container);
+        osmd = new OpenSheetMusicDisplay(container, {
           autoResize: false,
           drawTitle: true,
         });
         // autoResize's own ResizeObserver re-renders - rebuilding this
         // view's thousands of SVG nodes from scratch - on every tick with
-        // no throttling, which competes for the main thread with anything
-        // else reacting to the same layout change (Monaco's own
-        // automaticLayout observer, in particular, since both watch
-        // elements in the same flex row). Driving resize ourselves,
-        // coalesced to one re-render per pause, avoids that.
+        // no throttling. Driving resize ourselves, coalesced to one
+        // re-render per pause, avoids that; observing the iframe's own box
+        // from this document works fine across the frame boundary.
         const instance = osmd;
         new ResizeObserver(() => {
           if (osmdRenderedXml === null) return;
           clearTimeout(osmdResizeTimer);
           osmdResizeTimer = setTimeout(() => {
-            if (currentView === "musicxml") instance.render();
+            if (currentView === "musicxml") {
+              instance.render();
+              syncMusicxmlFrameHeight();
+            }
           }, 300);
-        }).observe(musicxmlView);
+        }).observe(musicxmlFrame);
       }
       await osmd.load(xml);
       if (token !== osmdRenderToken) return;
@@ -2940,6 +2994,7 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       // more of the score at once.
       osmd.zoom = 0.5;
       osmd.render();
+      syncMusicxmlFrameHeight();
       osmdRenderedXml = xml;
     } catch (err) {
       if (token !== osmdRenderToken) return;
