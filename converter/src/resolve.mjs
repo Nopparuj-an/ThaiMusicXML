@@ -420,7 +420,8 @@ export function resolve(source) {
       const resolved = resolveSection(partId, item.id, item.totalPasses);
       if (!resolved) continue;
       for (const { notes: passNotes, length, measureBoundaries: passBoundaries } of resolved.passes) {
-        for (const note of passNotes) notes.push({ ...note, onset: add(cursor, note.onset) });
+        for (const note of passNotes)
+          notes.push({ ...note, onset: add(cursor, note.onset), section: resolved.sectionId });
         for (const b of passBoundaries) measureBoundaries.push(add(cursor, b));
         cursor = add(cursor, length);
       }

@@ -37,6 +37,18 @@ const timeModification = (tuplet) =>
     : "";
 
 /**
+ * Where a resolved note came from in the source, for a warning message: its
+ * part, section, and written line/measure. A `<repeat>` or `<line-repeat>`
+ * can replay that same written line/measure several times over the course
+ * of the piece - `dedupeWarn` (below) is what collapses those replays back
+ * down to the one warning the single underlying source note deserves, not
+ * this label, which stays the same across every replay on purpose.
+ */
+function noteLocation(memberId, note) {
+  return `part "${memberId}" section "${note.section}" line ${note.line} measure ${note.measure}`;
+}
+
+/**
  * One resolved note or rest as its head markup (null for a rest) plus its
  * tied MusicXML duration segments, in order. `isUnpitched` is the note's own
  * part's declared type; a note whose `sound`/`pitch` doesn't match it (a
@@ -51,8 +63,9 @@ function describeNote(note, tuning, slotTicks, divisions, isUnpitched, memberId,
 
   const usesSound = note.sound !== null && note.sound !== undefined;
   if (usesSound !== isUnpitched) {
+    const value = usesSound ? `sound "${note.sound}"` : `pitch "${note.pitch}${note.octave ?? ""}"`;
     warn(
-      `part "${memberId}" (type="${isUnpitched ? "unpitched" : "pitched"}") line ${note.line} measure ${note.measure}: a note ${usesSound ? "carries sound" : "carries pitch"}, which doesn't match its declared type; treating it as a rest`,
+      `${noteLocation(memberId, note)} (part type="${isUnpitched ? "unpitched" : "pitched"}"): a note carries ${value}, which doesn't match its declared type; treating it as a rest`,
     );
     return { head: "<rest/>", segments };
   }
@@ -310,6 +323,23 @@ function convertPart(doc, group, tuning, slotTicks, divisions, warn, lyricAssign
 }
 
 /**
+ * Wraps `warn` so the exact same message never prints twice in one
+ * conversion. A `<repeat>` or `<line-repeat>` replays the same written
+ * line/measure as many times as it plays, and each replay of a bad note
+ * hits the same warning site with the same message - one warning per
+ * distinct source problem is what's useful; one per playback of it just
+ * reads as the converter stuttering.
+ */
+function dedupeWarn(warn) {
+  const seen = new Set();
+  return (message) => {
+    if (seen.has(message)) return;
+    seen.add(message);
+    warn(message);
+  };
+}
+
+/**
  * Convert a resolved ThaiMusicXML document (from resolve.mjs) to a MusicXML
  * string. `options.tuning` overrides <tuning> or its absence; `options.splitStacks`
  * gives each stacked row its own part instead of merging them.
@@ -319,7 +349,7 @@ function convertPart(doc, group, tuning, slotTicks, divisions, warn, lyricAssign
  * first-to-first default - see resolveLyricPairs.
  */
 export function toMusicXml(doc, options = {}) {
-  const warn = options.warn ?? (() => {});
+  const warn = dedupeWarn(options.warn ?? (() => {}));
   const tuning = resolveTuning(options.tuning ?? doc.tuning, warn);
   const lyricsEnabled = options.lyrics ?? true;
 
