@@ -18,6 +18,9 @@ Both targets fit a fixed-rate slot grid with no notated sustain into a model bui
 | MIDI patch for a pitched part | Lookup by `instrument-name` against a known-name table, generic patch on no match | [MIDI: instrument patches](#instrument-patches) |
 | MIDI note for an unpitched `sound` code | Auto-assigned from a General MIDI percussion note, in order of first appearance; configurable | [MIDI: percussion](#percussion) |
 | Time signature (MusicXML) | 2/4, one note slot per eighth note | [MusicXML: rhythm](#rhythm) |
+| Silence in a MusicXML measure | One rest per stretch of it, broken where the beat falls; a measure nothing sounds in gets a single whole-measure rest | [MusicXML: rhythm](#rhythm) |
+| Where a Thai measure's counted beat lands (MusicXML) | On the next measure's first beat: the music moves one note slot later, the barlines stay put; a command-line option leaves it where the source has it | [MusicXML: the counted beat](#the-counted-beat) |
+| Measures at the front of a piece that no part plays in (MusicXML) | Kept; a command-line option drops them | [MusicXML: empty measures at the front](#empty-measures-at-the-front) |
 | `<bow>` direction (`in`/`out`) in MusicXML | Dropped; only the slur itself carries over | [MusicXML: bowing](#bowing) |
 | `<repeat>`, `<line-repeat>`, `<ending>` in MusicXML | Native MusicXML repeat barlines and endings; falls back to unrolling where a `<repeat>` wraps more than one section | [MusicXML: repeats and endings](#repeats-and-endings) |
 | `<repeat>`, `<line-repeat>`, `<ending>` in MIDI | Unrolled into one linear sequence of events | [MIDI: repeats and endings](#repeats-and-endings-1) |
@@ -59,6 +62,24 @@ A command-line option splits a stack's rows into separate parts or tracks instea
 Every measure converts to 2/4 time, and every note slot, the unit [`<bpm>`](/en/v0_1/reference/elements/bpm/) counts two of to the beat, becomes one eighth note.
 
 A converted note's duration always reaches to the next attack rather than a fixed share of its own beat. [Rests](#rests) already needs this to fold a decaying instrument's silence into the note before it, and a [`<group>`](/en/v0_1/reference/elements/group/#where-the-children-fall) needs the same rule for a different reason: a beat arrives on its last slot, so a group's last member lands exactly where a plain note at that beat would, the same position the renderer's own page layout gives it, and the earlier members lead up to it, drawing their time from whatever preceded the group rather than from an equal share of the group's own beat. A group of *k* members therefore converts to *k* notes of unequal duration, not a Western tuplet of *k* equal ones: the members before the last one are short, spaced `1/k` of a beat apart, and the last one rings for as long as nothing else attacks, which can be a full beat or more.
+
+**Every measure is written full.** Silence left over after the notes in it - before a part's first note, where a decay was cut short by [another row of the same stack](#stacked-instruments), or wherever a written [`<rest>`](/en/v0_1/reference/elements/rest/) had nothing before it to extend - becomes rests, so that a measure's contents add up to its own length. A stretch of silence is one rest of that length, not one rest per slot: the slot grid is how the source counts time, not how a rest is written. The one place a stretch does break is where the output's own beat falls, since a rest that straddles two beats hides where the second one starts - three slots of silence beginning on a bar's second eighth are an eighth rest and then a quarter rest, not one dotted quarter rest. A measure nothing sounds in at all is written as one whole-measure rest, the way an empty bar is normally engraved, rather than as whatever written values its length happens to decompose into.
+
+Notes are not broken at the beat the way rests are: a note is written as the single value that fits it wherever one exists, dotted where that helps, and tied only where no single value will do - or where it crosses a barline, which the [counted beat](#the-counted-beat) shift can make happen to a note that fit inside its measure in the source.
+
+### The counted beat
+
+Thai music counts to the last beat of a measure; Western notation counts from the first. The same phrase therefore sits differently on the page in the two systems, and a measure-for-measure transcription puts the beat a Thai musician hears as the arrival on the weakest position of the Western bar.
+
+A converter shifts the music one note slot later to correct this, so that each measure's last beat becomes the first beat of the next Western measure. The barlines don't move; everything written between them does. Three things follow from that: the first measure opens with an eighth rest, where the shift moved the music off; a note that reached its own barline in the source now crosses one, and is written as tied notes on either side of it; and the piece's own last counted beat needs one more measure to land in. That extra measure appears only when a note is actually struck on that beat - a note still ringing across the final barline is cut off there instead, exactly as a decay is already cut off at every other barline (see [Rests](#rests)), rather than buying a whole measure for a tie nobody plays.
+
+This is on by default, since a printed Western score is what the export is for. A command-line option (`--no-downbeat-shift`) writes the music where the source puts it, for reading an export against its source measure by measure, or for a piece whose notation is already counted the Western way.
+
+### Empty measures at the front
+
+Measures at the front of a piece that no part plays a note in are kept, since they are in the source and may well be deliberate - a count-in, or an alignment with some other score. A command-line option (`--trim-leading-empty-measures`) drops them.
+
+The count is taken across the whole ensemble, never part by part: the leading run of measures in which *nothing anywhere* sounds. Every part then loses the same measures and the parts stay aligned with each other, which is what makes this safe to do at all - a part that rests for its first eight measures while another plays through them keeps every one of them. Only the front of the piece is affected; an empty measure anywhere else is part of the music.
 
 ### Bowing
 

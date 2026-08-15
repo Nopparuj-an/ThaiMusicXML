@@ -13,6 +13,17 @@
 //                              bb-major), regardless of what the file declares.
 //   --split-stacks            Give each stacked row its own part/track
 //                              instead of merging them into one.
+//   --no-downbeat-shift       Keep the music where the source puts it. By
+//                              default MusicXML export moves every note one
+//                              note slot (an eighth) later, so that a Thai
+//                              measure's last beat - the beat the music is
+//                              counted to - becomes a Western measure's
+//                              first. MusicXML only.
+//   --trim-leading-empty-measures
+//                              Drop the measures at the front of the piece
+//                              that no part plays a note in. Off by default,
+//                              and measured across the whole ensemble, so
+//                              the parts stay aligned. MusicXML only.
 //   --instrument-map <file>   JSON file overriding MIDI General MIDI patch
 //                              lookup: { "substring of instrument-name": 41 },
 //                              program numbers 1-indexed as GM names them.
@@ -35,7 +46,7 @@ import { toMidi } from "./src/to-midi.mjs";
 function usage(message) {
   if (message) console.error(`error: ${message}\n`);
   console.error(
-    "usage: node converter/convert.mjs <score.txml> --to musicxml|midi [--out <path>] [--tuning <reference>] [--split-stacks] [--instrument-map <file>] [--percussion-map <file>] [--no-lyrics] [--lyrics-map <file>]",
+    "usage: node converter/convert.mjs <score.txml> --to musicxml|midi [--out <path>] [--tuning <reference>] [--split-stacks] [--no-downbeat-shift] [--trim-leading-empty-measures] [--instrument-map <file>] [--percussion-map <file>] [--no-lyrics] [--lyrics-map <file>]",
   );
   process.exit(2);
 }
@@ -57,6 +68,12 @@ function parseArgs(argv) {
         break;
       case "--split-stacks":
         options.splitStacks = true;
+        break;
+      case "--no-downbeat-shift":
+        options.downbeatShift = false;
+        break;
+      case "--trim-leading-empty-measures":
+        options.trimLeadingEmptyMeasures = true;
         break;
       case "--instrument-map":
         options.instrumentMap = JSON.parse(readFileSync(argv[++i], "utf8"));
@@ -95,6 +112,8 @@ if (options.to === "musicxml") {
   const xml = toMusicXml(doc, {
     tuning: options.tuning,
     splitStacks: options.splitStacks,
+    downbeatShift: options.downbeatShift,
+    trimLeadingEmptyMeasures: options.trimLeadingEmptyMeasures,
     lyrics: options.lyrics,
     lyricsMap: options.lyricsMap,
     warn,
@@ -103,6 +122,11 @@ if (options.to === "musicxml") {
 } else {
   if (options.lyrics === false || options.lyricsMap) {
     warn("--no-lyrics/--lyrics-map only apply to --to musicxml; MIDI export doesn't carry lyrics in v0.1");
+  }
+  if (options.downbeatShift === false || options.trimLeadingEmptyMeasures) {
+    warn(
+      "--no-downbeat-shift/--trim-leading-empty-measures only apply to --to musicxml; both are about how a score is written out, which MIDI has no notion of",
+    );
   }
   const buf = toMidi(doc, {
     tuning: options.tuning,

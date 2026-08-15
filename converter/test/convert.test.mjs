@@ -82,3 +82,28 @@ test("prints warnings to stderr with a warning: prefix", () => {
   assert.equal(result.status, 0);
   assert.match(result.stderr, /warning: no <tuning>/);
 });
+
+test("--no-downbeat-shift and --trim-leading-empty-measures reach the MusicXML writer", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "txml-cli-"));
+  const countMeasures = (args) => {
+    const outPath = path.join(dir, `${args.join("-") || "default"}.musicxml`);
+    const result = run([fixture, "--to", "musicxml", "--out", outPath, ...args]);
+    assert.equal(result.status, 0, result.stderr);
+    return readFileSync(outPath, "utf8").match(/<measure number=/g).length;
+  };
+  // minimal.txml ends on its last beat, so the shift (on by default) buys it
+  // one more measure to land that beat in.
+  assert.equal(countMeasures([]), countMeasures(["--no-downbeat-shift"]) + 1);
+  // It has nothing empty in front, so trimming is a no-op here - what's under
+  // test is that the flag is accepted and plumbed through, not the trim rule
+  // itself (to-musicxml.test.mjs covers that).
+  assert.equal(countMeasures(["--trim-leading-empty-measures"]), countMeasures([]));
+});
+
+test("--no-downbeat-shift and --trim-leading-empty-measures warn when given to --to midi", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "txml-cli-"));
+  const outPath = path.join(dir, "out.mid");
+  const result = run([fixture, "--to", "midi", "--no-downbeat-shift", "--out", outPath]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stderr, /only apply to --to musicxml/);
+});

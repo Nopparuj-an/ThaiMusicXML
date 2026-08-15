@@ -1759,8 +1759,10 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
     return options;
   }
 
-  // --- Converter settings: tuning (a 12-TET transpose), splitStacks,
-  // lyrics export on/off, plus three dynamic mapping sections
+  // --- Converter settings: tuning (a 12-TET transpose), splitStacks, the
+  // two MusicXML score-shaping options (downbeatShift,
+  // trimLeadingEmptyMeasures), lyrics export on/off, plus three dynamic
+  // mapping sections
   // (lyricsMap/instrumentMap/percussionMap) whose rows and options depend on
   // the current document, not a fixed schema - too dynamic for a FieldDef,
   // so they're appended via each group's renderExtra instead. See
@@ -1774,6 +1776,8 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
   const CONVERTER_DEFAULTS: Record<string, unknown> = {
     tuning: "auto",
     splitStacks: false,
+    downbeatShift: true,
+    trimLeadingEmptyMeasures: false,
     lyrics: true,
   };
 
@@ -1867,6 +1871,26 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       label: {
         en: "Split stacked rows into separate parts/tracks",
         th: "แยกแถวที่ซ้อนกันเป็นส่วนแยกกัน",
+      },
+    },
+    {
+      path: "downbeatShift",
+      tier: "common",
+      group: "musicxml",
+      type: "checkbox",
+      label: {
+        en: "Land the Thai last beat on the Western downbeat",
+        th: "ให้จังหวะสุดท้ายของไทยตกที่จังหวะแรกแบบสากล",
+      },
+    },
+    {
+      path: "trimLeadingEmptyMeasures",
+      tier: "common",
+      group: "musicxml",
+      type: "checkbox",
+      label: {
+        en: "Trim empty measures at the start",
+        th: "ตัดห้องว่างที่อยู่ต้นเพลงออก",
       },
     },
     {
@@ -2061,6 +2085,11 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       key: "tuning",
       tier: "common",
       label: { en: "Tuning & instruments", th: "การตั้งเสียงและเครื่องดนตรี" },
+    },
+    {
+      key: "musicxml",
+      tier: "common",
+      label: { en: "MusicXML score", th: "โน้ต MusicXML" },
     },
     {
       key: "lyrics",
@@ -2915,6 +2944,10 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       const xml = toMusicXml(doc, {
         tuning,
         splitStacks,
+        downbeatShift: Boolean(CONVERTER_REGISTRY.overrides.downbeatShift),
+        trimLeadingEmptyMeasures: Boolean(
+          CONVERTER_REGISTRY.overrides.trimLeadingEmptyMeasures,
+        ),
         lyrics: lyricsEnabled,
         lyricsMap,
         warn: (m: string) => mxmlWarnings.push(m),

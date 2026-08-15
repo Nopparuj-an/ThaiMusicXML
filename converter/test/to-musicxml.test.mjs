@@ -35,6 +35,15 @@ const parseXml = (xml) => {
   return doc;
 };
 
+/**
+ * Most tests below state their expectations in the source document's own
+ * measure positions, so they turn the downbeat shift off. It moves every note
+ * a slot later (see "the downbeat shift..." tests further down), which is
+ * right for a printed score and pure noise for a test about pitch, ties, or
+ * lyric attachment.
+ */
+const unshifted = (options = {}) => ({ downbeatShift: false, ...options });
+
 test("a simple score produces well-formed MusicXML with matching pitch and duration", () => {
   const doc = resolve(
     score(
@@ -43,7 +52,7 @@ test("a simple score produces well-formed MusicXML with matching pitch and durat
       </section-ref></part-data>`,
     ),
   );
-  const xml = parseXml(toMusicXml(doc));
+  const xml = parseXml(toMusicXml(doc, unshifted()));
   const notes = xml.getElementsByTagName("note");
   assert.equal(notes.length, 4);
   const steps = Array.from(notes).map((n) => n.getElementsByTagName("step")[0].textContent);
@@ -86,7 +95,7 @@ test("a kept rest inside a group's tuplet bracket still carries a <time-modifica
       </section-ref></part-data>`,
     ),
   );
-  const xml = parseXml(toMusicXml(doc));
+  const xml = parseXml(toMusicXml(doc, unshifted()));
   const rests = Array.from(xml.getElementsByTagName("note")).filter((n) => n.getElementsByTagName("rest").length);
   const tupletRest = rests.find((n) => n.getElementsByTagName("time-modification").length);
   assert.ok(tupletRest, "the group's own rest member should carry a <time-modification>");
@@ -98,6 +107,152 @@ test("a kept rest inside a group's tuplet bracket still carries a <time-modifica
   assert.equal(durations.reduce((a, b) => a + b, 0), divisions);
 });
 
+test("a run of real silence prints as one rest, broken only where the beat is", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1"><measure number="1"><rest/><rest/><rest/><note pitch="ด"/></measure></line>
+      </section-ref></part-data>`,
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc, unshifted()));
+  const notes = Array.from(xml.getElementsByTagName("note"));
+  const divisions = Number(xml.getElementsByTagName("divisions")[0].textContent);
+  const described = notes.map((n) => [
+    n.getElementsByTagName("rest").length ? "rest" : "note",
+    n.getElementsByTagName("type")[0].textContent,
+    Number(n.getElementsByTagName("duration")[0].textContent),
+  ]);
+  // Three slots of silence are one rest, not three: but written as a quarter
+  // rest on beat 1 and an eighth rest opening beat 2, since a single dotted
+  // quarter rest across both would hide where the beat falls.
+  assert.deepEqual(described, [
+    ["rest", "quarter", divisions],
+    ["rest", "eighth", divisions / 2],
+    ["note", "eighth", divisions / 2],
+  ]);
+});
+
+test("a measure nothing sounds in prints as a single whole-measure rest", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><note pitch="ด"/><rest/><rest/><rest/></measure>
+          <measure number="2"><rest/><rest/><rest/><rest/></measure>
+        </line>
+      </section-ref></part-data>`,
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc, unshifted()));
+  const second = xml.getElementsByTagName("measure")[1];
+  const notes = second.getElementsByTagName("note");
+  assert.equal(notes.length, 1);
+  assert.equal(notes[0].getElementsByTagName("rest")[0].getAttribute("measure"), "yes");
+  assert.equal(notes[0].getElementsByTagName("type").length, 0, "a whole-measure rest has no written value");
+  const divisions = Number(xml.getElementsByTagName("divisions")[0].textContent);
+  assert.equal(Number(notes[0].getElementsByTagName("duration")[0].textContent), divisions * 2);
+});
+
+test("the downbeat shift moves every note a slot later, so a Thai last beat lands on a Western first", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure>
+          <measure number="2"><note pitch="ล"/><note pitch="ท"/><note pitch="ด" octave="1"/><note pitch="ร" octave="1"/></measure>
+        </line>
+      </section-ref></part-data>`,
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc));
+  const measures = Array.from(xml.getElementsByTagName("measure"));
+  const stepsOf = (measure) =>
+    Array.from(measure.getElementsByTagName("note")).map((n) =>
+      n.getElementsByTagName("rest").length ? "rest" : n.getElementsByTagName("step")[0].textContent,
+    );
+  // Measure 1's own last beat (ซ) opens measure 2, which is what the setting
+  // is for; the eighth the music moved off leaves a rest at the very front.
+  assert.deepEqual(stepsOf(measures[0]), ["rest", "C", "D", "E"]);
+  assert.deepEqual(stepsOf(measures[1]), ["G", "A", "B", "C"]);
+  // The last beat needs one more measure to land in; the rest of that
+  // measure is silence, written to the beat (an eighth, then a quarter).
+  assert.equal(measures.length, 3);
+  assert.deepEqual(stepsOf(measures[2]), ["D", "rest", "rest"]);
+});
+
+test("the shift adds no trailing measure when nothing would land past the last barline", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1"><measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><rest/></measure></line>
+      </section-ref></part-data>`,
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc));
+  // ม absorbs the trailing rest and so already ends at the barline; shifted,
+  // it rings one slot past it, but nothing is struck there, so the piece ends
+  // at the barline with ม clipped rather than buying a measure for a decay.
+  assert.equal(xml.getElementsByTagName("measure").length, 1);
+  assert.equal(xml.getElementsByTagName("tie").length, 0);
+});
+
+test("a note the shift pushes across a barline is split and tied, not moved whole", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><note pitch="ด"/><note pitch="ร"/><rest/><rest/></measure>
+          <measure number="2"><note pitch="ม"/><rest/><rest/><rest/></measure>
+        </line>
+      </section-ref></part-data>`,
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc));
+  const measures = Array.from(xml.getElementsByTagName("measure"));
+  const last = (measure) => Array.from(measure.getElementsByTagName("note")).at(-1);
+  const first = (measure) => measure.getElementsByTagName("note")[0];
+  // ร absorbs two rests and reaches its own barline; shifted, its last slot
+  // falls in the next measure.
+  assert.equal(last(measures[0]).getElementsByTagName("tie")[0].getAttribute("type"), "start");
+  assert.equal(first(measures[1]).getElementsByTagName("tie")[0].getAttribute("type"), "stop");
+  assert.equal(first(measures[1]).getElementsByTagName("step")[0].textContent, "D");
+});
+
+test("--trim-leading-empty-measures drops the silent measures in front, and is off by default", () => {
+  const source = score(
+    `<part-data part="P1"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><rest/><rest/><rest/><rest/></measure>
+          <measure number="2"><rest/><rest/><rest/><rest/></measure>
+          <measure number="3"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure>
+        </line>
+      </section-ref></part-data>
+      <part-data part="P2"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><rest/><rest/><rest/><rest/></measure>
+          <measure number="2"><rest/><rest/><rest/><note pitch="ล"/></measure>
+          <measure number="3"><note pitch="ท"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/></measure>
+        </line>
+      </section-ref></part-data>`,
+    {
+      ensemble: `<part id="P1"><instrument-name>A</instrument-name></part><part id="P2"><instrument-name>B</instrument-name></part>`,
+    },
+  );
+  const doc = resolve(source);
+  assert.equal(parseXml(toMusicXml(doc, unshifted())).getElementsByTagName("measure").length / 2, 3);
+
+  const trimmed = parseXml(toMusicXml(doc, unshifted({ trimLeadingEmptyMeasures: true })));
+  const parts = Array.from(trimmed.getElementsByTagName("part"));
+  // Only measure 1 goes: P2 plays in measure 2, and the trim is measured
+  // across the whole ensemble so the parts stay aligned with each other.
+  assert.deepEqual(
+    parts.map((p) => p.getElementsByTagName("measure").length),
+    [2, 2],
+  );
+  assert.equal(parts[0].getElementsByTagName("rest")[0].getAttribute("measure"), "yes");
+});
+
 test("a repeated section is unrolled into its own plain measures", () => {
   const doc = resolve(
     score(
@@ -107,7 +262,7 @@ test("a repeated section is unrolled into its own plain measures", () => {
       { structure: `<repeat times="3"><section id="s1"/></repeat>` },
     ),
   );
-  const xml = parseXml(toMusicXml(doc));
+  const xml = parseXml(toMusicXml(doc, unshifted()));
   assert.equal(xml.getElementsByTagName("measure").length, 3);
   assert.equal(xml.getElementsByTagName("note").length, 12);
 });
@@ -126,15 +281,18 @@ test("stacked rows merge into one part with one staff per row", () => {
       },
     ),
   );
-  const xml = parseXml(toMusicXml(doc));
+  const xml = parseXml(toMusicXml(doc, unshifted()));
   assert.equal(xml.getElementsByTagName("part").length, 1);
   assert.equal(xml.getElementsByTagName("staves")[0].textContent, "2");
   assert.equal(xml.getElementsByTagName("backup").length, 1);
   const staffTags = Array.from(xml.getElementsByTagName("staff")).map((s) => s.textContent);
-  // row 2's four rests stay four separate real silences: nothing ever sounds
-  // to absorb them, so none merge, matching "a rest before any note is a
-  // real silence" (resolve.test.mjs).
-  assert.deepEqual(staffTags, ["1", "1", "1", "1", "2", "2", "2", "2"]);
+  // Row 2's four rests are four separate real silences in the resolved
+  // timeline - nothing ever sounds to absorb them, matching "a rest before
+  // any note is a real silence" (resolve.test.mjs) - but they print as the
+  // one whole-measure rest a reader expects to see there.
+  assert.deepEqual(staffTags, ["1", "1", "1", "1", "2"]);
+  const staffTwoRest = Array.from(xml.getElementsByTagName("rest")).at(-1);
+  assert.equal(staffTwoRest.getAttribute("measure"), "yes");
 });
 
 test("--split-stacks gives each row its own part instead", () => {
@@ -151,7 +309,7 @@ test("--split-stacks gives each row its own part instead", () => {
       },
     ),
   );
-  const xml = parseXml(toMusicXml(doc, { splitStacks: true }));
+  const xml = parseXml(toMusicXml(doc, unshifted({ splitStacks: true })));
   assert.equal(xml.getElementsByTagName("part").length, 2);
   assert.equal(xml.getElementsByTagName("staves").length, 0);
 });
@@ -172,7 +330,7 @@ test("a <group> in a stack's second row alone still sizes the piece's divisions"
       },
     ),
   );
-  const xml = parseXml(toMusicXml(doc));
+  const xml = parseXml(toMusicXml(doc, unshifted()));
   assert.equal(xml.getElementsByTagName("time-modification").length, 3);
 });
 
@@ -191,7 +349,7 @@ test("a lyric part pairs to the first notated part by default and prints one syl
     ),
   );
   const warnings = [];
-  const xml = parseXml(toMusicXml(doc, { warn: (w) => warnings.push(w) }));
+  const xml = parseXml(toMusicXml(doc, unshifted({ warn: (w) => warnings.push(w) })));
   assert.equal(xml.getElementsByTagName("part").length, 1); // the lyric part contributes no part of its own
   const notes = xml.getElementsByTagName("note");
   const texts = Array.from(notes).map((n) => n.getElementsByTagName("text")[0]?.textContent ?? null);
@@ -213,7 +371,7 @@ test("--no-lyrics disables lyric export entirely", () => {
       },
     ),
   );
-  const xml = parseXml(toMusicXml(doc, { lyrics: false }));
+  const xml = parseXml(toMusicXml(doc, unshifted({ lyrics: false })));
   assert.equal(xml.getElementsByTagName("lyric").length, 0);
 });
 
@@ -239,12 +397,12 @@ test("a second lyric part is dropped with a warning unless --lyrics-map names it
   );
 
   const warnings = [];
-  const xml = parseXml(toMusicXml(doc, { warn: (w) => warnings.push(w) }));
+  const xml = parseXml(toMusicXml(doc, unshifted({ warn: (w) => warnings.push(w) })));
   const texts = Array.from(xml.getElementsByTagName("text")).map((t) => t.textContent);
   assert.deepEqual(texts, ["หนึ่ง"]); // only V1, paired to the first output group (P1)
   assert.ok(warnings.some((w) => w.includes("V2") && w.includes("--lyrics-map")));
 
-  const mapped = parseXml(toMusicXml(doc, { lyricsMap: { V2: "P2" } }));
+  const mapped = parseXml(toMusicXml(doc, unshifted({ lyricsMap: { V2: "P2" } })));
   const mappedTexts = Array.from(mapped.getElementsByTagName("text")).map((t) => t.textContent);
   assert.deepEqual(mappedTexts, ["สอง"]); // explicit map replaces the default pairing entirely
 });
@@ -263,7 +421,7 @@ test("a lyric measure whose item count doesn't match the beat count spreads even
       },
     ),
   );
-  const xml = parseXml(toMusicXml(doc));
+  const xml = parseXml(toMusicXml(doc, unshifted()));
   const notes = xml.getElementsByTagName("note");
   const texts = Array.from(notes).map((n) => n.getElementsByTagName("text")[0]?.textContent ?? null);
   // 3 items over 4 beats: item i lands at onset 4*i/3 - "ดวง" at 0 (ล), "เดือน"
@@ -291,16 +449,17 @@ test("a syllable landing on real silence attaches to the nearest note before it"
       },
     ),
   );
-  const xml = parseXml(toMusicXml(doc));
+  const xml = parseXml(toMusicXml(doc, unshifted()));
   const notes = xml.getElementsByTagName("note");
   const texts = Array.from(notes).map((n) => n.getElementsByTagName("text")[0]?.textContent ?? null);
   // ด rings through measure 1 only (extension stops at its own measure's
   // end); measure 2 opens with two individually-real-silence rests (each its
-  // own kept event) before its own first note. "หนึ่ง" (measure 2's first
-  // beat) has nothing sounding there and falls back to the nearest note
-  // before it (ด, still the very first <note> in the output). "สอง" lands
-  // exactly on ร, an ordinary sounding-note match.
-  assert.deepEqual(texts, ["หนึ่ง", null, null, "สอง"]);
+  // own kept event, printed as the one quarter rest they add up to) before
+  // its own first note. "หนึ่ง" (measure 2's first beat) has nothing sounding
+  // there and falls back to the nearest note before it (ด, still the very
+  // first <note> in the output). "สอง" lands exactly on ร, an ordinary
+  // sounding-note match.
+  assert.deepEqual(texts, ["หนึ่ง", null, "สอง"]);
 });
 
 test("a syllable before the target's first note attaches to the nearest note after it", () => {
@@ -323,14 +482,14 @@ test("a syllable before the target's first note attaches to the nearest note aft
       },
     ),
   );
-  const xml = parseXml(toMusicXml(doc));
+  const xml = parseXml(toMusicXml(doc, unshifted()));
   const notes = xml.getElementsByTagName("note");
   const texts = Array.from(notes).map((n) => n.getElementsByTagName("text")[0]?.textContent ?? null);
   // Measure 1 is 4 individually-real-silence rests (nothing ever sounds
-  // there); ร (measure 2's only note - its own trailing rests get absorbed)
-  // is the sole candidate, so "ก่อน" falls back to it as the nearest note
-  // after, there being none before.
-  assert.deepEqual(texts, [null, null, null, null, "ก่อน"]);
+  // there), printed as one whole-measure rest; ร (measure 2's only note -
+  // its own trailing rests get absorbed) is the sole candidate, so "ก่อน"
+  // falls back to it as the nearest note after, there being none before.
+  assert.deepEqual(texts, [null, "ก่อน"]);
 });
 
 test("a syllable is dropped with a warning when the target part has no note at all", () => {
@@ -348,7 +507,7 @@ test("a syllable is dropped with a warning when the target part has no note at a
     ),
   );
   const warnings = [];
-  const xml = parseXml(toMusicXml(doc, { warn: (w) => warnings.push(w) }));
+  const xml = parseXml(toMusicXml(doc, unshifted({ warn: (w) => warnings.push(w) })));
   assert.equal(xml.getElementsByTagName("lyric").length, 0);
   assert.ok(warnings.some((w) => w.includes("เพลง") && w.includes("no note at all")));
 });
@@ -362,7 +521,7 @@ test("a note with sound in a part not declared unpitched converts as a rest in M
     ),
   );
   const warnings = [];
-  const xml = parseXml(toMusicXml(doc, { warn: (w) => warnings.push(w) }));
+  const xml = parseXml(toMusicXml(doc, unshifted({ warn: (w) => warnings.push(w) })));
   const notes = xml.getElementsByTagName("note");
   assert.equal(notes.length, 2);
   assert.equal(notes[0].getElementsByTagName("rest").length, 1);
@@ -379,7 +538,7 @@ test("an unrecognized or missing tuning falls back to c-major with a warning", (
     ),
   );
   const warnings = [];
-  const xml = parseXml(toMusicXml(doc, { warn: (w) => warnings.push(w) }));
+  const xml = parseXml(toMusicXml(doc, unshifted({ warn: (w) => warnings.push(w) })));
   assert.equal(xml.getElementsByTagName("step")[0].textContent, "C");
   assert.ok(warnings.some((w) => w.includes("no <tuning>")));
 });
@@ -434,5 +593,66 @@ test("every tuplet bracket across every real example and corpus file is properly
     const doc = resolve(readFileSync(file, "utf8"));
     const xml = toMusicXml(doc, { warn: () => {} });
     assertTupletBracketsAreMatched(xml, path.basename(file));
+  }
+});
+
+/**
+ * Every staff of every measure must be filled edge to edge, and every tie
+ * must have both ends. Regression: before rests were merged and gaps filled,
+ * a staff that simply ran out of written notes part-way through a measure -
+ * a stacked row shorter than its sibling, a note whose decay a sibling's
+ * attack cut short - left that measure short of its own length, which a
+ * reader shows as an incomplete measure. `<duration>` totals per staff are
+ * the direct check: they must agree with each other and with the `<backup>`
+ * the writer uses to rewind between them.
+ */
+function assertMeasuresAreFilled(xml, label) {
+  const backupRe = /<backup><duration>(\d+)<\/duration><\/backup>/;
+  const partRe = /<part id="([^"]*)">([\s\S]*?)<\/part>/g;
+  let pm;
+  while ((pm = partRe.exec(xml))) {
+    const measureRe = /<measure number="(\d+)">([\s\S]*?)<\/measure>/g;
+    const open = {};
+    let mm;
+    while ((mm = measureRe.exec(pm[2]))) {
+      const where = `${label} part ${pm[1]} measure ${mm[1]}`;
+      const pieces = mm[2].split(new RegExp(backupRe.source, "g"));
+      const staves = pieces.filter((_, i) => i % 2 === 0);
+      const backups = pieces.filter((_, i) => i % 2 === 1).map(Number);
+      const totals = staves.map((staff) =>
+        [...staff.matchAll(/<duration>(\d+)<\/duration>/g)].reduce((sum, d) => sum + Number(d[1]), 0),
+      );
+      assert.equal(new Set(totals).size, 1, `${where}: staves disagree on how full the measure is (${totals})`);
+      backups.forEach((backup, i) =>
+        assert.equal(backup, totals[i], `${where}: <backup> rewinds ${backup}, but staff ${i + 1} wrote ${totals[i]}`),
+      );
+      staves.forEach((staff, staffIndex) => {
+        for (const note of staff.matchAll(/<note>([\s\S]*?)<\/note>/g)) {
+          const ties = [...note[1].matchAll(/<tie type="(start|stop)"\/>/g)].map((t) => t[1]);
+          const tied = [...note[1].matchAll(/<tied type="(start|stop)"\/>/g)].map((t) => t[1]);
+          assert.deepEqual(tied, ties, `${where}: <tie> and <tied> disagree`);
+          assert.ok(!(ties.length && /<rest/.test(note[1])), `${where}: a rest carries a tie`);
+          for (const tie of ties) {
+            if (tie === "start") {
+              assert.ok(!open[staffIndex], `${where}: a tie starts while one is already open`);
+              open[staffIndex] = true;
+            } else {
+              assert.ok(open[staffIndex], `${where}: a tie stops with none open`);
+              open[staffIndex] = false;
+            }
+          }
+        }
+      });
+    }
+    for (const [staffIndex, stillOpen] of Object.entries(open))
+      assert.ok(!stillOpen, `${label} part ${pm[1]} staff ${Number(staffIndex) + 1}: a tie is left hanging`);
+  }
+}
+
+test("every measure of every real example and corpus file is filled, with every tie closed", () => {
+  for (const file of realFiles) {
+    const doc = resolve(readFileSync(file, "utf8"));
+    for (const options of [{}, { downbeatShift: false }, { trimLeadingEmptyMeasures: true }, { splitStacks: true }])
+      assertMeasuresAreFilled(toMusicXml(doc, { warn: () => {}, ...options }), path.basename(file));
   }
 });
