@@ -214,6 +214,64 @@ function splitRestsAtBeats(items, measureStart) {
 }
 
 /**
+ * Let a note `resolve.mjs` marked `openEnded` (nothing - not even a sibling -
+ * capped it short of its own source measure's end) claim the room the
+ * downbeat shift opens up for it, rather than ringing for a bare fraction of
+ * a beat and leaving the rest of what it visually now occupies as silence.
+ *
+ * `resolve.mjs` deliberately takes no position on this - it doesn't know a
+ * shift is coming - so it stops the note dead at the barline and leaves the
+ * flag for whoever does. Here, that barline has already moved: the shift
+ * pushes the note's onset one slot later, and since its resolved `duration`
+ * is untouched, its written end moves the same slot later with it - meaning
+ * it now starts *inside* the next output measure rather than ending exactly
+ * on the one before it (that's what the shift is for: a Thai measure's last
+ * counted beat becomes the next measure's own first beat). Extending it to
+ * fill that measure, capped by whichever comes first - the next real attack
+ * in this same row, or that measure's own end - is applying the documented
+ * "extend to the end of its own measure" rule a second time, to the measure
+ * the note is now actually written in.
+ *
+ * Deliberately narrow: this reaches at most one measure past where the note
+ * already stopped, never further, matching the shift's own one-slot move -
+ * a note that finds nothing there either stays exactly as short as
+ * `resolve.mjs` left it, rather than hunting arbitrarily far ahead for the
+ * next attack. It also only ever looks at this row's own later events, not
+ * a stack sibling's - unlike the sibling capping `resolve.mjs` already does
+ * within a single measure, extending a sibling's cap into a *second* row's
+ * *next* measure isn't done here; a stacked open-ended note can currently
+ * claim room a sibling would have capped it out of, had that sibling's own
+ * next attack fallen inside the newly-claimed measure.
+ *
+ * A no-op when the shift is off: an unshifted note that reached its own
+ * measure's end already sits exactly at that measure's own boundary, so the
+ * "next measure" this looks at can never hold anything earlier than where
+ * the note already stops - see the regression test for why this holds by
+ * construction, not by an explicit shift check here.
+ */
+function extendOpenEnded(notes, boundaries) {
+  const sorted = [...notes].sort((a, b) => compare(a.onset, b.onset));
+  return sorted.map((note, i) => {
+    if (!note.openEnded) return note;
+    // The measure this note's own natural (shifted, still-uncapped) end
+    // falls into - not the measure its onset falls into, which for a note
+    // whose own resolved duration was already more than the shift's one
+    // slot (it absorbed several rests, say) would find the wrong, too-early
+    // measure and cap the note short of where it already legitimately reached.
+    const naturalEnd = add(note.onset, note.duration);
+    const m = boundaries.findIndex((b) => compare(naturalEnd, b) <= 0);
+    if (m === -1) return note; // shifted past every boundary this grid has - nothing to extend into
+    let cap = boundaries[m];
+    for (let j = i + 1; j < sorted.length; j++) {
+      if (sorted[j].rest) continue;
+      if (compare(sorted[j].onset, cap) < 0) cap = sorted[j].onset;
+      break;
+    }
+    return { ...note, duration: subtract(cap, note.onset) };
+  });
+}
+
+/**
  * One member's flat unrolled notes re-cut against the output's measure grid:
  * one array of printable events per measure, each measure filled edge to
  * edge. Four things happen here that the resolved timeline doesn't do on its
@@ -464,7 +522,10 @@ function prepareGroup(group, unrolled, trim, shift, tail, warn) {
   const offset = subtract(shift, trimmed);
   const measures = members.map(({ notes }) =>
     recut(
-      notes.map((note) => ({ ...note, onset: add(note.onset, offset) })),
+      extendOpenEnded(
+        notes.map((note) => ({ ...note, onset: add(note.onset, offset) })),
+        boundaries,
+      ),
       boundaries,
     ),
   );

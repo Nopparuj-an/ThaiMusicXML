@@ -175,10 +175,13 @@ test("the downbeat shift moves every note a slot later, so a Thai last beat land
   // is for; the eighth the music moved off leaves a rest at the very front.
   assert.deepEqual(stepsOf(measures[0]), ["rest", "C", "D", "E"]);
   assert.deepEqual(stepsOf(measures[1]), ["G", "A", "B", "C"]);
-  // The last beat needs one more measure to land in; the rest of that
-  // measure is silence, written to the beat (an eighth, then a quarter).
+  // The last beat needs one more measure to land in; ร was the last thing
+  // written in its own row with nothing after it anywhere, so it claims the
+  // whole measure it now opens rather than ringing for a bare eighth with
+  // silence padded in behind it (see extendOpenEnded in to-musicxml.mjs).
   assert.equal(measures.length, 3);
-  assert.deepEqual(stepsOf(measures[2]), ["D", "rest", "rest"]);
+  assert.deepEqual(stepsOf(measures[2]), ["D"]);
+  assert.equal(measures[2].getElementsByTagName("duration")[0].textContent, "4");
 });
 
 test("the shift adds no trailing measure when nothing would land past the last barline", () => {
@@ -217,6 +220,37 @@ test("a note the shift pushes across a barline is split and tied, not moved whol
   assert.equal(last(measures[0]).getElementsByTagName("tie")[0].getAttribute("type"), "start");
   assert.equal(first(measures[1]).getElementsByTagName("tie")[0].getAttribute("type"), "stop");
   assert.equal(first(measures[1]).getElementsByTagName("step")[0].textContent, "D");
+});
+
+test("an open-ended note under the shift claims a whole measure of real silence past its own barline, not just the shift's one slot", () => {
+  // ด is the last thing written in its row for measure 1, with nothing to
+  // cap it - openEnded. Measure 2 is real silence throughout (nothing in
+  // this row ever sounds there); ร doesn't attack until measure 3. Before
+  // extendOpenEnded, the shift alone only ever moves a note one slot -
+  // ด would print as a bare eighth on measure 2's downbeat, followed by
+  // rests it had every reason to keep ringing through. It should instead
+  // fill measure 2 entirely, since nothing else claims that room.
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><rest/><rest/><rest/><note pitch="ด"/></measure>
+          <measure number="2"><rest/><rest/><rest/><rest/></measure>
+          <measure number="3"><note pitch="ร"/><rest/><rest/><rest/></measure>
+        </line>
+      </section-ref></part-data>`,
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc));
+  const measures = Array.from(xml.getElementsByTagName("measure"));
+  assert.equal(measures.length, 3);
+  const notesOf = (measure) => Array.from(measure.getElementsByTagName("note"));
+  assert.deepEqual(
+    notesOf(measures[1]).map((n) => n.getElementsByTagName("rest").length ? "rest" : n.getElementsByTagName("step")[0].textContent),
+    ["C"], // ด, filling all four slots as a single half note - not split, no tie needed
+  );
+  assert.equal(notesOf(measures[1])[0].getElementsByTagName("duration")[0].textContent, "4");
+  assert.equal(notesOf(measures[1])[0].getElementsByTagName("tie").length, 0);
 });
 
 test("--trim-leading-empty-measures drops the silent measures in front, and is off by default", () => {

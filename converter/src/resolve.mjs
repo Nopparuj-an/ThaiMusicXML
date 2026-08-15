@@ -225,6 +225,14 @@ function flattenBeats(beats) {
  * which is an explicit choice a sibling's activity shouldn't override (that
  * would flatten deliberate interlocking, one hand holding while the other
  * moves, into a single shared grain).
+ *
+ * A note that reaches this measure's own end with nothing - not even a
+ * sibling - left to cap it is marked `openEnded`. Its `duration` still stops
+ * dead at the barline here, same as always: this function has no idea
+ * whether the output will move anything relative to that barline. It's
+ * `openEnded` that lets a consumer which *does* know that (`to-musicxml.mjs`,
+ * under the downbeat shift) decide the note may claim more of what it now
+ * visually occupies, without this module taking a position on it.
  */
 function foldMeasure(beats, siblingAttacks = []) {
   const flat = flattenBeats(beats);
@@ -249,6 +257,7 @@ function foldMeasure(beats, siblingAttacks = []) {
       }
     }
     note.duration = subtract(cappedEnd, note.onset);
+    if (!note.rest && idx === kept.length - 1 && compare(cappedEnd, end) === 0) note.openEnded = true;
     delete note.flatIndex;
   });
   return kept;

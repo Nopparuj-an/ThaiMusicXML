@@ -154,6 +154,56 @@ test("note extension does not cross a measure boundary", () => {
   assert.equal(notes[2].pitch, "ร");
 });
 
+test("a note is marked openEnded only when nothing - not even a sibling - capped it short of its own measure's end", () => {
+  const doc = resolve(
+    score(
+      `<line number="1"><measure number="1">
+        <note pitch="ด"/><note pitch="ร"/><rest/><rest/>
+      </measure></line>`,
+    ),
+  );
+  const notes = doc.resolveSection("P1", "s1", 1).passes[0].notes;
+  // ด's own row closes it immediately (ร follows with no gap) - not open-ended,
+  // regardless of what resolve.mjs's own duration math says about it.
+  assert.equal(notes[0].pitch, "ด");
+  assert.ok(!notes[0].openEnded);
+  // ร absorbs the trailing rests and reaches the barline with nothing left
+  // to cap it - this is exactly the note a downbeat-shifted export might let
+  // claim more room; resolve.mjs itself still stops its duration dead at the
+  // barline (4), leaving the decision to whoever applies the shift.
+  assert.equal(notes[1].pitch, "ร");
+  assert.equal(notes[1].openEnded, true);
+  assert.equal(num(notes[1].duration), 3);
+});
+
+test("a sibling attack still closes an otherwise open-ended note, so it isn't marked openEnded", () => {
+  const doc = resolve(
+    `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble>
+    <part id="P1" stack="k" row="1"/>
+    <part id="P2" stack="k" row="2"/>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1"><line number="1"><measure number="1">
+      <note pitch="ฟ"/><rest/><rest/><rest/>
+    </measure></line></section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1"><line number="1"><measure number="1">
+      <rest/><rest/><note pitch="ซ"/><rest/>
+    </measure></line></section-ref>
+  </part-data>
+</thai-score>`,
+  );
+  const notes = doc.resolveSection("P1", "s1", 1).passes[0].notes;
+  assert.equal(notes[0].pitch, "ฟ");
+  assert.equal(num(notes[0].duration), 2); // capped at ซ's attack, not the barline
+  assert.ok(!notes[0].openEnded); // a real cap, not an open-ended ring resolve.mjs merely stopped at the barline
+});
+
 test("a <group>'s last member lands on the beat; earlier members lead up to it", () => {
   // "ด (ร ม ซ)": the group replaces beat 2, so ซ (its last member) falls
   // where a plain note at beat 2 would, and ร, ม run up to it beforehand -
