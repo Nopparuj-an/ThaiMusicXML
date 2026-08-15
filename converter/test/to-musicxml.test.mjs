@@ -253,6 +253,85 @@ test("--trim-leading-empty-measures drops the silent measures in front, and is o
   assert.equal(parts[0].getElementsByTagName("rest")[0].getAttribute("measure"), "yes");
 });
 
+test("a part that leaves out a whole section stays aligned with a part that plays it", () => {
+  // P2 has no <section-ref> for s1 - a documented-valid way to sit a section
+  // out entirely (section-ref.md). Before this was fixed, P2's own measure
+  // grid simply never grew for s1, so its s2 content printed starting at
+  // measure 1 - overlapping P1's own s1, not P1's s2 - rather than a rest
+  // measure for s1 followed by s2 in the right place.
+  const doc = resolve(
+    score(
+      `<part-data part="P1">
+        <section-ref section="s1"><line number="1"><measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure></line></section-ref>
+        <section-ref section="s2"><line number="1"><measure number="1"><note pitch="ล"/><note pitch="ท"/><note pitch="ด" octave="1"/><note pitch="ร" octave="1"/></measure></line></section-ref>
+      </part-data>
+      <part-data part="P2">
+        <section-ref section="s2"><line number="1"><measure number="1"><note pitch="ท"/><note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/></measure></line></section-ref>
+      </part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>A</instrument-name></part><part id="P2"><instrument-name>B</instrument-name></part>`,
+        structure: `<section id="s1"/><section id="s2"/>`,
+      },
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc, unshifted()));
+  const parts = Array.from(xml.getElementsByTagName("part"));
+  assert.deepEqual(
+    parts.map((p) => p.getElementsByTagName("measure").length),
+    [2, 2],
+  );
+  const p2Measures = Array.from(parts[1].getElementsByTagName("measure"));
+  assert.equal(p2Measures[0].getElementsByTagName("rest")[0]?.getAttribute("measure"), "yes");
+  const p2M2Notes = Array.from(p2Measures[1].getElementsByTagName("note"));
+  assert.deepEqual(
+    p2M2Notes.map((n) => n.getElementsByTagName("step")[0].textContent),
+    ["B", "A", "G", "E"], // ท ล ซ ม, P2's own s2 content - not P1's s1
+  );
+});
+
+test("a part that stops playing before the piece's actual end still ties its last decay under the downbeat shift", () => {
+  // P2 has no <section-ref> for s2 - it stops after s1, the piece's actual
+  // end. Before this was fixed, P2's own boundaries ended right there, so
+  // recut() (which only skips a barline-crossing tie in a group's *own*
+  // last measure, to avoid buying a whole extra measure for a decay nobody
+  // strikes) mistook that early stop for the piece's true end and silently
+  // clipped P2's last decaying note there instead of tying it across the
+  // barline the shift pushed it into - a sharper case than the plain
+  // measure-count mismatch above, since it drops sound (a whole tied
+  // continuation), not just misplaces measures.
+  const doc = resolve(
+    score(
+      `<part-data part="P1">
+        <section-ref section="s1"><line number="1"><measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><rest/></measure></line></section-ref>
+        <section-ref section="s2"><line number="1">
+          <measure number="1"><note pitch="ล"/><note pitch="ท"/><note pitch="ด" octave="1"/><rest/></measure>
+          <measure number="2"><note pitch="ร" octave="1"/><rest/><rest/><rest/></measure>
+        </line></section-ref>
+      </part-data>
+      <part-data part="P2">
+        <section-ref section="s1"><line number="1"><measure number="1"><note pitch="ท"/><rest/><rest/><rest/></measure></line></section-ref>
+      </part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>A</instrument-name></part><part id="P2"><instrument-name>B</instrument-name></part>`,
+        structure: `<section id="s1"/><section id="s2"/>`,
+      },
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc)); // shift on: the default
+  const parts = Array.from(xml.getElementsByTagName("part"));
+  assert.deepEqual(
+    parts.map((p) => p.getElementsByTagName("measure").length),
+    [3, 3],
+  );
+  const p2Measures = Array.from(parts[1].getElementsByTagName("measure"));
+  const p2Notes = Array.from(p2Measures[0].getElementsByTagName("note"));
+  // ท absorbs its trailing rests and, shifted, crosses into measure 2 - tied,
+  // not clipped.
+  assert.equal(p2Notes.at(-1).getElementsByTagName("tie")[0]?.getAttribute("type"), "start");
+  const m2First = p2Measures[1].getElementsByTagName("note")[0];
+  assert.equal(m2First.getElementsByTagName("tie")[0]?.getAttribute("type"), "stop");
+});
+
 test("a repeated section is unrolled into its own plain measures", () => {
   const doc = resolve(
     score(
@@ -355,6 +434,53 @@ test("a lyric part pairs to the first notated part by default and prints one syl
   const texts = Array.from(notes).map((n) => n.getElementsByTagName("text")[0]?.textContent ?? null);
   // 4 items in a 4-beat measure: aligned, so beat 2 (ร) and beat 4 (ซ) carry the syllables.
   assert.deepEqual(texts, [null, "เพลง", null, "ไทย"]);
+});
+
+test("a lyric part stays aligned to its target across a section the target leaves out", () => {
+  // P1 (the lyric target) has no <section-ref> for s1 - silent for the whole
+  // section, same as the plain-part case above. Before this was fixed,
+  // unrollLyrics's own cursor (independent of unroll()'s) also didn't
+  // advance for a section the target lacks, which happened to still agree
+  // with the target's own (then-also-buggy) unroll() output - but once
+  // unroll() was fixed to advance correctly, the two would have gone out of
+  // sync with each other unless unrollLyrics got the identical fix.
+  const doc = resolve(
+    score(
+      `<part-data part="P1">
+        <section-ref section="s2"><line number="1"><measure number="1"><note pitch="ล"/><note pitch="ท"/><note pitch="ด" octave="1"/><note pitch="ร" octave="1"/></measure></line></section-ref>
+      </part-data>
+      <part-data part="P2">
+        <section-ref section="s1"><line number="1"><measure number="1"><syllable>ไม่ควรได้ยิน</syllable></measure></line></section-ref>
+        <section-ref section="s2"><line number="1"><measure number="1"><syllable>ลา</syllable><rest/><rest/><rest/></measure></line></section-ref>
+      </part-data>
+      <part-data part="P3">
+        <section-ref section="s1"><line number="1"><measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure></line></section-ref>
+      </part-data>`,
+      {
+        // P3 gives s1 a notated reference to borrow its measure grid from,
+        // the same role another instrument plays in a real ensemble - the
+        // lyric part P2's own <section-ref> for s1 doesn't count, since a
+        // lyric measure holds words rather than beats and has no comparable
+        // shape (see resolve.mjs's referenceSectionResolution).
+        ensemble: `<part id="P1"><instrument-name>Melody</instrument-name></part><part id="P2" type="lyric"><instrument-name>Lyrics</instrument-name></part><part id="P3"><instrument-name>Other</instrument-name></part>`,
+        structure: `<section id="s1"/><section id="s2"/>`,
+      },
+    ),
+  );
+  const xml = parseXml(toMusicXml(doc, unshifted()));
+  assert.equal(xml.getElementsByTagName("part").length, 2); // P1 and P3; the lyric part contributes no part of its own
+  const measures = Array.from(xml.getElementsByTagName("part")[0].getElementsByTagName("measure"));
+  assert.equal(measures.length, 2);
+  // Measure 1 is a whole-measure rest for the section P1 sits out, and
+  // carries no lyric - "ไม่ควรได้ยิน" ("shouldn't be heard") has nothing in
+  // P1's own timeline to attach to there.
+  assert.equal(measures[0].getElementsByTagName("text").length, 0);
+  // "ลา" lands on measure 2's first note (ล), P1's actual s2 content - not
+  // shifted a section early onto measure 1.
+  const m2Texts = Array.from(measures[1].getElementsByTagName("note")).map(
+    (n) => n.getElementsByTagName("text")[0]?.textContent ?? null,
+  );
+  assert.deepEqual(m2Texts, ["ลา", null, null, null]);
 });
 
 test("--no-lyrics disables lyric export entirely", () => {

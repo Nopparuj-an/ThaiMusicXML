@@ -88,6 +88,31 @@ test("unroll() concatenates every pass in playback order", () => {
   assert.equal(num(notes[8].onset), 8); // second pass starts right after the first
 });
 
+test("unroll() advances a part's cursor through a section it leaves out entirely, staying aligned with the parts that do play it", () => {
+  // section-omitted-by-part.txml: P2 (ฆ้องวงใหญ่) has no <section-ref> for
+  // s2 - it sits out ท่อน 2 entirely, a documented-valid way to be silent for
+  // a whole section (see section-ref.md). Before this was fixed, P2's cursor
+  // simply didn't advance for s2, so its own s1 content (the only thing it
+  // plays) looked fine in isolation, but a hypothetical part with content
+  // *after* s2 would land its notes a whole section too early. Pin the
+  // cursor/measure-boundary math itself instead, since P1 (which does have
+  // both sections) is the reference this alignment is checked against.
+  const doc = resolve(corpus("section-omitted-by-part.txml"));
+  const p1 = doc.unroll("P1");
+  const p2 = doc.unroll("P2");
+  // P1 plays s1 (measure 1) then s2 (measure 2); P2 plays only s1's measure,
+  // so it must end up with the same two-measure grid as P1, silent in s2's.
+  assert.deepEqual(
+    p1.measureBoundaries.map(num),
+    p2.measureBoundaries.map(num),
+  );
+  // P2 contributes no notes for s2's span - it's a real silence, left for
+  // to-musicxml.mjs's recut() to fill as a rest, not a note this layer
+  // fabricates.
+  assert.equal(p2.notes.length, 2);
+  assert.ok(p2.notes.every((n) => num(n.onset) < num(p1.measureBoundaries[0])));
+});
+
 test("a <rest> extends the previous note rather than sounding as silence", () => {
   const doc = resolve(
     score(`<line number="1"><measure number="1">

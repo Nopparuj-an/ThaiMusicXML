@@ -401,7 +401,35 @@ export function resolve(source) {
     return { sectionId, totalPasses, passes };
   }
 
-  /** Every part's notes, concatenated in true playback order across the whole piece. */
+  /**
+   * A section's own shape (line/measure/beat counts, hence length and
+   * measure grid) as resolved from whichever notated part actually
+   * references it - used to advance a part that leaves the section out
+   * entirely (see section-ref.md's "A part may leave out a section
+   * entirely") in lockstep with the rest of the ensemble. section-ref's own
+   * Conformance rule guarantees every part that *does* reference a section
+   * agrees on this shape, so any one of them is an equally valid stand-in;
+   * a lyric part is skipped as a candidate since its measures hold syllable
+   * items rather than beats and have no comparable shape to borrow. `null`
+   * only when no notated part anywhere references the section either - a
+   * section that exists in `<structure>` but nothing ever plays.
+   */
+  function referenceSectionResolution(sectionId, totalPasses) {
+    const candidate = parsed.parts.find(
+      (p) => p.type !== "lyric" && parsed.music[p.id]?.[sectionId],
+    );
+    return candidate ? resolveSection(candidate.id, sectionId, totalPasses) : null;
+  }
+
+  /**
+   * Every part's notes, concatenated in true playback order across the whole
+   * piece. A section this part leaves out entirely (no `<section-ref>`, a
+   * valid way to sit out - see section-ref.md) contributes no notes of its
+   * own, but the cursor and measure grid still have to advance by that
+   * section's real length so this part's later sections stay aligned with
+   * every other part's - `referenceSectionResolution` borrows another part's
+   * resolution of the same section for that shape alone.
+   */
   function unroll(partId) {
     const notes = [];
     const measureBoundaries = [];
@@ -417,11 +445,13 @@ export function resolve(source) {
         continue;
       }
       if (item.kind !== "section") continue;
-      const resolved = resolveSection(partId, item.id, item.totalPasses);
+      const resolved = resolveSection(partId, item.id, item.totalPasses) ?? referenceSectionResolution(item.id, item.totalPasses);
       if (!resolved) continue;
+      const ownNotes = parsed.music[partId]?.[item.id] != null;
       for (const { notes: passNotes, length, measureBoundaries: passBoundaries } of resolved.passes) {
-        for (const note of passNotes)
-          notes.push({ ...note, onset: add(cursor, note.onset), section: resolved.sectionId });
+        if (ownNotes)
+          for (const note of passNotes)
+            notes.push({ ...note, onset: add(cursor, note.onset), section: resolved.sectionId });
         for (const b of passBoundaries) measureBoundaries.push(add(cursor, b));
         cursor = add(cursor, length);
       }
@@ -433,8 +463,12 @@ export function resolve(source) {
    * A lyric part's syllables, paired to `targetPartId` for the beat-grid
    * each measure aligns against, concatenated across the whole piece in the
    * same playback order and cursor units as `unroll(targetPartId)` - see
-   * resolveLyricSectionPass. A section the target doesn't have is skipped
-   * with no cursor advance, matching `unroll`'s own handling of that case.
+   * resolveLyricSectionPass. A section the target leaves out entirely has no
+   * beat-grid for a syllable to align against there, so no syllables come
+   * from it, but the cursor still has to advance by the section's real
+   * length (via `referenceSectionResolution`, the same fallback `unroll`
+   * uses) so later sections stay aligned with `unroll(targetPartId)`'s own,
+   * now-corrected units.
    */
   function unrollLyrics(lyricPartId, targetPartId) {
     const syllables = [];
@@ -442,7 +476,11 @@ export function resolve(source) {
     for (const item of order) {
       if (item.kind !== "section") continue;
       const targetSectionMusic = parsed.music[targetPartId]?.[item.id];
-      if (!targetSectionMusic) continue;
+      if (!targetSectionMusic) {
+        const reference = referenceSectionResolution(item.id, item.totalPasses);
+        if (reference) for (const { length } of reference.passes) cursor = add(cursor, length);
+        continue;
+      }
       const lyricSectionMusic = parsed.music[lyricPartId]?.[item.id] ?? null;
       const ranges = rangesBySection[item.id] ?? [];
       for (let pass = 1; pass <= item.totalPasses; pass++) {
