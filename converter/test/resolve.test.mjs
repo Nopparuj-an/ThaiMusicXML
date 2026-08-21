@@ -259,8 +259,8 @@ test("a stacked row's decay is capped by the next attack in any row of its stack
   // trailing rests with nothing else written in its own row, so with no
   // sibling it would ring for a full extra beat past its own share. P1's
   // sibling row attacks partway through that window (ซ, the group's own
-  // middle position) - a stack is one physical instrument (group.md's
-  // `link`), so ฟ's decay stops mattering there instead of ringing on.
+  // middle position) - a stack is one physical instrument (link.md), so ฟ's
+  // decay stops mattering there instead of ringing on.
   const doc = resolve(
     `<?xml version="1.0" encoding="UTF-8"?>
 <thai-score xmlns="${NS}" version="0.1">

@@ -17,7 +17,7 @@ A three-instrument piece (ระนาดเอก, ฆ้องวงใหญ�
 - Multi-line [`<section-ref>`](/en/v0_1/reference/elements/section-ref/) content kept in sync across parts
 - [`<note>`](/en/v0_1/reference/elements/note/) pitches using Thai octave modifiers (nikhahit and pinthu)
 - [`<rest>`](/en/v0_1/reference/elements/rest/)
-- [`<group>`](/en/v0_1/reference/elements/group/) subdividing a beat into three, with `link` joining a group to the other row's beat
+- [`<group>`](/en/v0_1/reference/elements/group/) subdividing a beat into three, with a [`<link>`](/en/v0_1/reference/elements/link/) span joining a run to the other row's notes
 
 ## [Sathukan](/en/v0_1/reference/examples/sathukan/)
 

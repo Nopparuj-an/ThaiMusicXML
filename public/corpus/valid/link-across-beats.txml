@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A link span reaching past one beat. The markers sit either side of two
+     groups, so the run they mark is four notes long - the case a boolean on
+     <group> could not express, since a group is only ever one beat. The
+     second span opens inside a group and closes inside the next one. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header><title>Link across beats</title></header>
+  <structure><section id="s1"/></structure>
+  <ensemble>
+    <part id="P1"><instrument-name>ระนาดเอก</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด"/>
+          <link type="start"/>
+          <group><note pitch="ร"/><note pitch="ม"/></group>
+          <group><note pitch="ซ"/><note pitch="ล"/></group>
+          <link type="stop"/>
+          <note pitch="ท"/>
+        </measure>
+        <measure number="2">
+          <group>
+            <note pitch="ดํ"/>
+            <link type="start"/>
+            <note pitch="ท"/>
+          </group>
+          <note pitch="ล"/>
+          <group>
+            <note pitch="ซ"/>
+            <link type="stop"/>
+            <note pitch="ม"/>
+          </group>
+          <note pitch="ร"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

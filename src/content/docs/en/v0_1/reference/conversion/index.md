@@ -26,6 +26,7 @@ Both targets fit a fixed-rate slot grid with no notated sustain into a model bui
 | `<repeat>`, `<line-repeat>`, `<ending>` in MIDI | Unrolled into one linear sequence of events | [MIDI: repeats and endings](#repeats-and-endings-1) |
 | Stacked instrument rows (`stack`/`row`) | Merged: one MusicXML part with one staff per row, one MIDI track/channel for the whole stack; a command-line option splits each row out on its own | [Stacked instruments](#stacked-instruments) |
 | `<parenthesis>` (cued passage) in MIDI | Audible by default; `mute="true"` silences it | [MIDI: cued passages](#cued-passages) |
+| `<link>` (gesture curve) | Dropped in both formats; it marks the page, not the sound | [Bowing](#bowing) |
 | A `pitch`/`sound` value that doesn't match its part's declared type | Converts as a rest, with a warning, rather than sounding on the wrong kind of channel or notehead | [Unpitched and lyric parts](#unpitched-and-lyric-parts) |
 | Lyric part pairing to a notated part (MusicXML only) | The first lyric part (ensemble order) pairs to the first notated part or stack; a command-line option states an explicit pairing, or turns lyric export off entirely | [Unpitched and lyric parts](#unpitched-and-lyric-parts) |
 
@@ -86,6 +87,8 @@ The count is taken across the whole ensemble, never part by part: the leading ru
 A [`<bow>`](/en/v0_1/reference/elements/bow/) span becomes a MusicXML slur across the same notes. `direction` (`in`/`out`) has no fixed up-bow/down-bow convention for the instruments ThaiMusicXML's bowing marks apply to, so a converter drops it rather than asserting one.
 
 A [`<parenthesis>`](/en/v0_1/reference/elements/parenthesis/) span becomes a run of MusicXML cue notes. `dim` and `mute` are rendering and playback hints with no MusicXML equivalent and are dropped.
+
+A [`<link>`](/en/v0_1/reference/elements/link/) span is dropped in both formats. It says the notes under it are one gesture, which is a statement about the page rather than about the sound: nothing in it changes a pitch, an onset, or a duration. Converting it to a slur would assert a phrasing the source never claimed, and the notes carry the gesture on their own.
 
 ### Metadata
 

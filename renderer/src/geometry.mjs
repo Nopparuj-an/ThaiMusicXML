@@ -102,27 +102,24 @@ export function arrivals(shareList, slotCounts, tightness = 1) {
  * left of the first symbol matches the one right of the last and the last note
  * clears the barline. Printed scores set it this way.
  */
-// The two notes a link curve spans.
+// The two notes a link curve reaches, out of the notes it covers.
 //
-// A linked beat belongs to the instrument, not to one of its rows, so this
-// reads every row of the stack together. Rests are skipped, and what is left is
-// ordered by column, which is time order. "ฟ - -" under "- ซ ล" sounds ฟ ซ ล,
-// so the run is bounded by ฟ and ล even though neither row holds both ends.
+// A gesture belongs to the instrument, not to one of its rows, so the caller
+// collects points from every row of the stack together (spans.mjs's
+// soundingInSpan) and this only has to bound them. Ordering is by x, which
+// within a line is time order: "ฟ - -" under "- ซ ล" sounds ฟ ซ ล, so the run
+// is bounded by ฟ and ล even though neither row holds both ends of it.
 //
-// Each row comes in as its slots, the column each slot fell on, and a vertical
-// position where smaller is higher up the page. Returns null when fewer than
-// two notes sound, since one note is not a run and there is nothing to span.
-export function linkSpan(rows) {
-  const sounding = [];
-  for (const row of rows)
-    row.slots.forEach((slot, i) => {
-      if (slot.kind === "rest") return;
-      sounding.push({ column: row.columns[i], y: row.y });
-    });
-
-  if (sounding.length < 2) return null;
-  sounding.sort((a, b) => a.column - b.column);
-  return { first: sounding[0], last: sounding.at(-1) };
+// Points come in as { x, y }, y measured with smaller higher up the page.
+// Null for no points at all. One point bounds itself: a span crossing a line
+// break can leave a single note on one side of the cut, and that side still
+// gets a segment, running from the note to the grid's edge. Whether the span
+// as a whole has enough notes to be worth drawing is a question about the
+// span, not about one line of it, so the caller asks it.
+export function linkSpan(points) {
+  if (points.length === 0) return null;
+  const sorted = [...points].sort((a, b) => a.x - b.x);
+  return { first: sorted[0], last: sorted.at(-1) };
 }
 
 export function columnX(column, total, cellLeft, cellWidth, spread) {

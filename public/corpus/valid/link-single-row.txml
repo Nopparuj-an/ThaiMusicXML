@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- link on a group whose part has no stack. There is no other row to reach,
-     so the curve marks the group's own notes. -->
+<!-- A link span in a part with no stack. There is no other row to reach,
+     so the curve marks the span's own notes. -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
-  <header><title>Invalid example</title></header>
+  <header><title>Link on a single row</title></header>
   <structure><section id="s1"/></structure>
   <ensemble>
     <part id="P1"><instrument-name>ระนาดเอก</instrument-name></part>
@@ -11,7 +11,7 @@
     <section-ref section="s1">
       <line number="1">
         <measure number="1">
-          <group link="true"><note pitch="ด"/><note pitch="ร"/></group>
+          <link type="start"/><group><note pitch="ด"/><note pitch="ร"/></group><link type="stop"/>
         </measure>
       </line>
     </section-ref>

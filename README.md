@@ -15,7 +15,7 @@ What the format records:
 - A beat positioned at its end, so the last note lands on the beat and the notes before it lead in.
 - A rest that means no new stroke rather than silence, since Thai instruments have no notated sustain.
 - A row of its own for ฉิ่ง and other unpitched instruments, for lyrics (เนื้อร้อง), and for each hand of an instrument written across several rows, such as ฆ้องวงใหญ่. ชั้น and หน้าทับ are recorded alongside the piece.
-- Curves above the notation: the bow (คันชัก) held in one direction across a run of notes, and the arc that ties a group into one gesture (สะบัด), which reaches across both rows of an instrument when the hands share the beat.
+- Curves above the notation: the bow (คันชัก) held in one direction across a run of notes, and the arc that ties a run into one gesture (สะบัด), which reaches across both rows of an instrument when the hands share the beat.
 - Brackets around a passage that another instrument leads and the part waits out, and a repeat mark (ซ้ำ) in the margin beside the lines it covers.
 
 A file stays close to what a musician reads on paper and still parses as data, so a score can be archived, corrected, and printed again long after the program that wrote it is gone.

@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Box layout and grid-line drawing: turning one section's worth of rows, for
-// one line, into ruled boxes, positioned symbols, and the link curves between
-// them.
+// one line, into ruled boxes and positioned symbols.
 //
 // This is the one place a line's box tops and bottoms are worked out, and so
 // also the one place a line's height comes from: measureLine() below calls
@@ -11,10 +10,11 @@
 // to a position, and renderGridLine() calls it again to place it for real.
 // renderGridLine() also records where every notated symbol and row ended up,
 // in the caller-supplied notePos/rowGeom maps, which spans.mjs reads back
-// once every line a bow or parenthesis span touches has been drawn - a span
-// can reach across lines a single renderGridLine() call never sees at once.
+// once every line a bow, parenthesis, or link span touches has been drawn - a
+// span can reach across lines a single renderGridLine() call never sees at
+// once.
 
-import { shares, arrivals, columnX, linkSpan, nudge, lyricFitSize, glyph } from "./geometry.mjs";
+import { shares, arrivals, columnX, nudge, lyricFitSize, glyph } from "./geometry.mjs";
 import { textWidth } from "./text.mjs";
 import { posKey } from "./pos.mjs";
 
@@ -134,8 +134,8 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
     return height;
   };
 
-  // Draws one grid line whole - box ruling, symbols, and link curves - and
-  // returns its geometry. `firstOfGroup` is the same first-line-inherits,
+  // Draws one grid line whole - box ruling and symbols - and returns its
+  // geometry. `firstOfGroup` is the same first-line-inherits,
   // later-lines-take-gap.line rule the section loop always applied; endings
   // reuse it as a plain multi-line grid of their own.
   //
@@ -245,8 +245,9 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
       // matches, syllable i sits exactly where a plain note on beat i would.
       const beatArrivals = arrivals(shareList, shareList.map(() => 1)).map((c) => c[0]);
 
-      // Place every row before drawing anything, because a link curve on one
-      // row has to know where another row's symbols ended up.
+      // Work out every row's placement, then draw. Nothing here now reaches
+      // across rows - link curves used to, and were the reason for the split -
+      // but measuring and drawing still read more clearly apart than mixed.
       const placed = rows.map((r) => {
         const measure = r.line.measures[m];
         if (!measure) return null;
@@ -352,75 +353,6 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
                 ...(dim ? { dim: true } : {}),
               });
             }
-          });
-        });
-      }
-
-      // Link curves, once the symbols they join are positioned. A lyric row
-      // has no beats to link and takes no part in an instrument's link
-      // curve either, even where it shares a stack.
-      for (const row of placed) {
-        if (!row || row.lyric) continue;
-        row.measure.beats.forEach((beat, beatIndex) => {
-          if (!beat.link) return;
-
-          // The gesture is whatever the instrument sounds on this beat, so
-          // read every row of the stack at once rather than a row at a time.
-          const stackRows = row.part.stack
-            ? placed.filter((o) => o && !o.lyric && o.part.stack === row.part.stack)
-            : [row];
-
-          const span = linkSpan(
-            stackRows.map((o) => ({
-              slots: o.measure.beats[beatIndex]?.slots ?? [],
-              columns: o.columns[beatIndex] ?? [],
-              y: o.baseline,
-            })),
-          );
-          if (!span) return;
-
-          const top = (note) => note.y - s.linkTop * s.pitchSize;
-          const x1 = x(span.first.column);
-          const x2 = x(span.last.column);
-
-          if (span.first.y === span.last.y) {
-            // A level run, so the curve only has to mark it. It bows above
-            // the notes, taking whatever room the row leaves.
-            const arcY = top(span.first);
-            const rowTop = row.baseline - s.rowHeight / 2 - s.pitchSize / 3;
-            pager.push({
-              kind: "arc",
-              x1,
-              x2,
-              y: arcY,
-              rise: Math.min(s.linkRise * s.pitchSize, arcY - rowTop - 1),
-              role: "link",
-            });
-            return;
-          }
-
-          // Across rows the stroke arches over the run. Which way it turns
-          // follows from where the two notes fell: a run ending higher up the
-          // page leaves the first note upward and comes in flat above the
-          // last, and one ending lower leaves flat and turns down. Either way
-          // it stays above the notes rather than cutting between them.
-          const rising = span.last.y < span.first.y;
-
-          // Step off the first note's centre so the stroke starts at that
-          // letter's corner, on the side it departs towards.
-          const from = x1 + (rising ? -1 : 1) * s.linkSideStep * s.pitchSize;
-          const y1 = top(span.first);
-          const y2 = top(span.last);
-
-          pager.push({
-            kind: "curve",
-            x1: from,
-            y1,
-            x2,
-            y2,
-            cx: rising ? from : x2,
-            cy: rising ? y2 : y1,
-            role: "link",
           });
         });
       }

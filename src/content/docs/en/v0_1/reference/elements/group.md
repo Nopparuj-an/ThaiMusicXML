@@ -11,13 +11,11 @@ The `<group>` element subdivides a single beat into two or more equal parts, for
 
 ## Attributes
 
-| Attribute | Required | Type    | Description                                                                                          |
-| --------- | -------- | ------- | ----------------------------------------------------------------------------------------------------- |
-| `link`    | No       | boolean | Draws a curve marking the group as one gesture, reaching the instrument's other rows where it has any. See [Conformance](#conformance) below. |
+None.
 
 ## Children
 
-A sequence of two or more [`<note>`](/en/v0_1/reference/elements/note/) and [`<rest>`](/en/v0_1/reference/elements/rest/) elements, in any order, optionally interspersed with [`<bow>`](/en/v0_1/reference/elements/bow/) and [`<parenthesis>`](/en/v0_1/reference/elements/parenthesis/) markers.
+A sequence of two or more [`<note>`](/en/v0_1/reference/elements/note/) and [`<rest>`](/en/v0_1/reference/elements/rest/) elements, in any order, optionally interspersed with [`<bow>`](/en/v0_1/reference/elements/bow/), [`<parenthesis>`](/en/v0_1/reference/elements/parenthesis/), and [`<link>`](/en/v0_1/reference/elements/link/) markers.
 
 ## Semantics
 
@@ -47,15 +45,9 @@ Its earliest child therefore falls `(k−1)/k` of a beat early, and since `(k−
 
 See [Beats anchor to the right](/en/v0_1/reference/rendering/#beats-anchor-to-the-right) for how this places the symbols on the page, and [`<bpm>`](/en/v0_1/reference/elements/bpm/#walking-the-slots) for playback.
 
-`<bow>` and `<parenthesis>` markers may appear inside a `<group>` alongside its notes and rests. They have zero duration and do not count toward the division. A group with two `<note>` children and a `<bow>` marker still splits its beat in half rather than in three. Spans opened or closed by these markers may cross a `<group>`'s boundary freely, the same way they already cross `<measure>` and `<line>` boundaries.
+`<bow>`, `<parenthesis>`, and `<link>` markers may appear inside a `<group>` alongside its notes and rests. They have zero duration and do not count toward the division. A group with two `<note>` children and a `<bow>` marker still splits its beat in half rather than in three. Spans opened or closed by these markers may cross a `<group>`'s boundary freely, the same way they already cross `<measure>` and `<line>` boundaries.
 
-`link` marks the group as one connected gesture and asks for a curve saying so. It is a rendering hint with no effect on playback or timing, since the group's subdivision already describes the rhythm on its own.
-
-Where the curve goes depends on the instrument. On one notated across several rows (see [`<part>`](/en/v0_1/reference/elements/part/)'s `stack` attribute), it runs to what the other rows play on the same beat, marking the rows as belonging to one gesture. On a single-row instrument there is no other row to reach and the curve sits over the group's own notes instead.
-
-That second case is what makes the attribute useful on the solo scores most Thai music is written as. A group is otherwise shown only by its notes sitting closer together, and in a crowded measure that spacing has little room to work in. `link` is how an arranger says a particular group needs to be unmistakable.
-
-On the two-row instrument the connector was designed for there is one other row and one curve. On a stack of three it reaches every other row, which is as far as a boolean can go. A group that needs to reach one specific row and not another cannot say so in v0.1.
+A group says how a beat divides, and nothing more. To mark a run of notes as one connected gesture, and get a curve saying so, write a [`<link>`](/en/v0_1/reference/elements/link/) span around it. Because a group is exactly one beat and a gesture often is not, that mark is a marker pair rather than anything a group could carry itself.
 
 ## Example
 
@@ -85,11 +77,7 @@ On the two-row instrument the connector was designed for there is one other row 
 
 - A `<group>` must contain at least two `<note>` or `<rest>` children.
 - A `<group>` must not contain a nested `<group>`. Subdivisions in ThaiMusicXML v0.1 go one level deep.
-- `<bow>` and `<parenthesis>` markers inside a `<group>` do not count toward the equal division of its beat.
-- `link` is valid on any `<group>`. Where the containing `<part>` has no `stack`, the curve marks the group's own notes rather than reaching another row.
-- Where the `<part>` does have a `stack`, at least one other row in it must be a notated part, meaning `type="pitched"` or `type="unpitched"`. A [lyric part](/en/v0_1/reference/elements/part/#part-types) may carry `stack`, but a lyric measure holds words rather than beats, so there is no position for the connector to reach. A `link` whose stack contains no other notated row is invalid.
-- Across rows, `link` describes a connection, so declare it on one side only. Marking the group in the upper row is the convention; there is no need to mark the beat it reaches as well.
-- `link` points at whatever the stack's other rows play at this group's position. Because all parts agree on beat count within a measure (see [`<section-ref>`](/en/v0_1/reference/elements/section-ref/#conformance)), that position is always well-defined. Another row may hold a plain `<note>`, a `<rest>`, or a `<group>` of its own there.
+- `<bow>`, `<parenthesis>`, and `<link>` markers inside a `<group>` do not count toward the equal division of its beat.
 
 ## Rendering
 

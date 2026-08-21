@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- A two-row instrument. Both parts share a stack value and number their
-     rows from 1, and they sit adjacent in <ensemble> in row order. The group
-     in row 1 carries link, drawing a connector to what row 2 plays on the
-     same beat. Each row also carries an instrument-short-name, since the
+     rows from 1, and they sit adjacent in <ensemble> in row order. A link
+     span in row 1 draws a connector to what row 2 plays over the same beats.
+     Each row also carries an instrument-short-name, since the
      ensemble label column has only the page margin to work with. -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
   <header>
@@ -27,9 +27,11 @@
         <measure number="1">
           <note pitch="ด"/>
           <note pitch="ร"/>
-          <group link="true">
+          <link type="start"/>
+          <group>
             <note pitch="ม"/><note pitch="ซ"/>
           </group>
+          <link type="stop"/>
           <note pitch="ล"/>
         </measure>
       </line>

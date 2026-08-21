@@ -28,14 +28,9 @@ import { wrapText } from "./text.mjs";
 import { createPager } from "./pager.mjs";
 import { createGridRenderer } from "./grid.mjs";
 import { createSpanRenderer } from "./spans.mjs";
+import { comparePos } from "./pos.mjs";
 
 export { shares, arrivals, columnX, linkSpan, nudge, lyricFitSize, glyph } from "./geometry.mjs";
-
-// Lexicographic order over a note's position indices - line, then measure,
-// beat, slot - matching the document order resolveSpans() walks a part's
-// lines in. Used to test whether a position falls inside a resolved span.
-const comparePos = (a, b) =>
-  a.lineIndex - b.lineIndex || a.measureIndex - b.measureIndex || a.beatIndex - b.beatIndex || a.slotIndex - b.slotIndex;
 
 /**
  * Lay a parsed score out on a page.
@@ -301,7 +296,14 @@ export function layout(score, options = {}) {
     annotationRow,
   });
 
-  const { drawParenSpan, drawBowSpan } = createSpanRenderer({ pager, settings: s });
+  const { drawParenSpan, drawBowSpan, drawLinkSpan } = createSpanRenderer({ pager, settings: s });
+
+  // The rows a link span written by `part` reaches. A stack is one physical
+  // instrument, so the gesture belongs to all of its notated rows at once - a
+  // lyric row has no beats and takes no part in it. Without a stack there is
+  // no other row and the span marks the part's own notes.
+  const stackMates = (part, parts) =>
+    part.stack ? parts.filter((p) => p.stack === part.stack && p.type !== "lyric") : [part];
 
   for (let index = 0; index < body.length; index++) {
     const item = body[index];
@@ -358,6 +360,14 @@ export function layout(score, options = {}) {
     for (const p of parts) {
       for (const span of score.music[p.id][section.id].bowSpans) drawBowSpan(p, span, notePos, rowGeom);
       for (const span of score.music[p.id][section.id].parenSpans) drawParenSpan(p, span, notePos, rowGeom);
+
+      // A stack-mate may sit this section out, in which case it contributes
+      // nothing here and the span reads the rows that are present.
+      const stackRows = stackMates(p, parts)
+        .map((q) => ({ part: q, lines: score.music[q.id]?.[section.id]?.lines }))
+        .filter((row) => row.lines);
+      for (const span of score.music[p.id][section.id].linkSpans)
+        drawLinkSpan(p, span, notePos, rowGeom, stackRows);
     }
 
     // A line repeat prints as a bracket in the margin right of the grid,
@@ -482,9 +492,18 @@ export function layout(score, options = {}) {
         });
       }
 
+      const endingParts = entries.map((e) => e.part);
       for (const entry of entries) {
         for (const span of entry.ending.bowSpans) drawBowSpan(entry.part, span, endingNotePos, endingRowGeom);
         for (const span of entry.ending.parenSpans) drawParenSpan(entry.part, span, endingNotePos, endingRowGeom);
+
+        // An ending is its own scope, so a stack-mate counts here only if it
+        // wrote an ending for this pass too.
+        const stackRows = stackMates(entry.part, endingParts)
+          .map((q) => ({ part: q, lines: endingByPart.get(q.id)?.lines }))
+          .filter((row) => row.lines);
+        for (const span of entry.ending.linkSpans)
+          drawLinkSpan(entry.part, span, endingNotePos, endingRowGeom, stackRows);
       }
     }
 

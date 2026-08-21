@@ -62,7 +62,7 @@ again after the section-heading setting was cut back to a plain printed name.
   comparing a render to print, and each one was a real defect.
 - English first, per `AGENTS.md`. `CLAUDE.md` is a symlink to it, and the Edit
   tool refuses to write through the symlink.
-- `pnpm run check` runs links, corpus, and 72 unit tests — the last of those
+- `pnpm run check` runs links, corpus, and 186 unit tests — the last of those
   globs `renderer/test/*.test.mjs`, so a new test file needs no script edit.
   `make check` and CI run the same steps. `npx astro build` instead of
   `astro check`, which is broken here.
@@ -135,15 +135,21 @@ wherever this runs).
   clamped the wrong way and silently disabled tightening entirely.
 - **A link curve spans the first and last sounding notes across the whole
   stack**, rests skipped. `ฟ - -` under `- ซ ล` sounds ฟ ซ ล, and neither row
-  holds both ends. Reading one row at a time gets this wrong, which is what
-  `linkSpan`'s tests pin down.
+  holds both ends. Reading one row at a time gets this wrong, which is what the
+  link tests in `layout.test.mjs` pin down.
 
-  The attribute sits on a `<group>`, but resolving it reaches all the way out:
-  every part sharing the stack, the same `<section-ref>`, the same line, the
-  same measure, the same beat. Anything touching link placement has to keep
-  that whole chain lined up, and the sibling rows have to be positioned before
-  the curve can be drawn. That is why `layout.mjs` places every row of a
-  measure first and only then emits curves.
+  `<link>` is a marker with a `start`/`stop` pair, not an attribute on one
+  `<group>`, so a gesture can run past the beat it opens in — which is the
+  whole reason it is an element. Resolving one reaches all the way out: every
+  part sharing the stack, over every beat the span touches. The row that wrote
+  the span contributes exactly the slots between its markers; the other rows
+  contribute whole beats, because slot indices do not correspond across parts
+  but beat counts do. `soundingInSpan` in `spans.mjs` is where that lives.
+
+  The `< 2 sounding notes` test is over the whole span, not per line. A span
+  crossing a line break can leave one note on each side of the cut and is still
+  a run of two; testing per line drew nothing at all, which is exactly the bug
+  the line-break test was added for.
 - **Curves go above the notes, never below.** Thai scores do not put them below.
 - **Breaks are owed, not spent immediately.** A run of text between two grids
   splits: lines trailing the grid above stay with it, the last line before the
@@ -177,16 +183,19 @@ wherever this runs).
   check for a part's own annotations never fires a second time underneath an
   ending. `measureLine` and pagination both fall out of calling the same
   function rather than needing their own version of it.
-- **Bow and parenthesis spans are resolved at parse time** (`resolveSpans` in
-  `parse.mjs`), walking a part's `<line>` elements in document order and
-  matching `start`/`stop` by a simple open/closed flag — spans "cannot nest or
-  overlap" per the element pages, so no stack is needed. What comes out is a
+- **Bow, parenthesis, and link spans are resolved at parse time**
+  (`resolveSpans` in `parse.mjs`), walking a part's `<line>` elements in
+  document order and matching `start`/`stop` by a simple open/closed flag —
+  spans "cannot nest or overlap" per the element pages, so no stack is needed.
+  The three kinds are matched independently of each other, so a gesture that is
+  also bowed is fine. What comes out is a
   position (`lineIndex`/`measureIndex`/`beatIndex`/`slotIndex`, all array
   indices into the parsed shape) for each span's first and last note, not
   coordinates — `layout.mjs` resolves those once the lines they fall in have
   actually been placed, since a span can cross a line (and so, now, a page).
   A bow's curve is drawn one segment per line it touches (`drawBowSpan`), with
-  a directional tick only at the true start and stop; a parenthesis just
+  a directional tick only at the true start and stop; a link does the same
+  (`drawLinkSpan`), reading the whole stack as it goes; a parenthesis just
   brackets its two ends (`drawParenSpan`), no segmenting needed since there is
   nothing to draw at a line break.
 
@@ -206,7 +215,7 @@ wherever this runs).
   beat count, or centered as one group across the whole cell where it does
   not. A `<rest>` prints as blank space there, never the notated rows' hyphen.
   Lyric rows also take no part in a stack's link curve, even when `stack` is
-  set on the lyric part itself.
+  set on the lyric part itself, and resolve no spans of any kind.
 - **Instrument names split into two, unrelated defaults, corrected mid-session
   after the first pass got both wrong.** A solo score's name does not stack
   under the title as a centered subtitle any more — it prints in the

@@ -227,73 +227,157 @@ test("an octave mark renders as a drawn dot primitive, not text", () => {
   assert.equal(raised.x, symbols[0].x, "the dot centers on its letter");
 });
 
-// Link curves.
+// Link spans.
 //
-// These use column numbers and a row index standing in for vertical position,
-// smaller being higher up the page, so they stay statements about which notes
-// the curve joins rather than about where it lands on paper.
+// A <link> span is written into a real document and read back off the laid-out
+// page, so these stay statements about which notes the curve joins rather than
+// about any one helper's signature. `linkSpan` itself only bounds a set of
+// points; the rest-skipping and the reach into a stack's other rows live in
+// the span pass, and that is what these exercise.
 
-const note = (pitch) => ({ kind: "note", pitch });
-const rest = { kind: "rest" };
+// One notated part per `rows` entry, each row a string of measure XML. Rows
+// sharing a stack are declared adjacent and numbered from 1, as <part>
+// requires.
+const linkDoc = (rows, { stack = null } = {}) => `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble>${rows
+    .map((_, i) => `<part id="P${i + 1}"${stack ? ` stack="${stack}" row="${i + 1}"` : ""}/>`)
+    .join("")}</ensemble>
+  ${rows
+    .map(
+      (measures, i) => `<part-data part="P${i + 1}"><section-ref section="s1">${measures}</section-ref></part-data>`,
+    )
+    .join("")}
+</thai-score>`;
 
-test("a linked beat spans the notes, not the slots at the beat's edges", () => {
-  // Khaek Borathes measure 3: the upper row opens on a rest and the lower row
-  // ends on two. Anchoring to the beat's own edges would catch those rests and
-  // draw the curve backwards, between two silences.
+const onLine = (n, measures) => `<line number="${n}">${measures}</line>`;
+const onMeasure = (n, body) => `<measure number="${n}">${body}</measure>`;
+
+const links = (doc) =>
+  layout(parse(doc))
+    .pages.flatMap((page) => page.elements)
+    .filter((el) => el.role === "link");
+
+// The x a span's two ends reach, whichever primitive carried them: a level run
+// is an "arc" (x1/x2), a run across rows a "curve" (x1/x2 as well).
+const ends = (el) => [el.x1, el.x2];
+
+test("linkSpan bounds a set of points by x", () => {
   const span = linkSpan([
-    { slots: [rest, note("ซ"), note("ล")], columns: [4, 5, 6], y: 0 },
-    { slots: [note("ฟ"), rest, rest], columns: [4, 5, 6], y: 1 },
+    { x: 30, y: 1 },
+    { x: 10, y: 0 },
+    { x: 20, y: 1 },
   ]);
+  assert.deepEqual([span.first.x, span.last.x], [10, 30], "bounded by the outermost, whatever order they arrived in");
+  assert.equal(span.first.y, 0, "each end keeps the row it came from");
 
-  assert.equal(span.first.column, 4, "the run opens on ฟ in the lower row");
-  assert.equal(span.first.y, 1);
-  assert.equal(span.last.column, 6, "and closes on ล in the upper row");
-  assert.equal(span.last.y, 0);
+  const alone = linkSpan([{ x: 10, y: 0 }]);
+  assert.deepEqual([alone.first.x, alone.last.x], [10, 10], "one point bounds itself, for the far side of a line break");
+  assert.equal(linkSpan([]), null);
 });
 
-test("the run is read across rows, not row by row", () => {
-  // ฟ ซ ล is one gesture the instrument plays, and neither row holds both ends
-  // of it. A renderer reading one row at a time cannot find this span.
-  const rows = [
-    { slots: [rest, note("ซ"), note("ล")], columns: [4, 5, 6], y: 0 },
-    { slots: [note("ฟ"), rest, rest], columns: [4, 5, 6], y: 1 },
-  ];
-  const span = linkSpan(rows);
-
-  for (const row of rows) {
-    const alone = linkSpan([row]);
-    assert.ok(
-      alone === null || alone.first.column !== span.first.column || alone.last.column !== span.last.column,
-      "no single row yields the whole run",
-    );
-  }
-});
-
-test("a run ending higher up the page rises, one ending lower falls", () => {
-  const rising = linkSpan([
-    { slots: [rest, note("ซ"), note("ล")], columns: [4, 5, 6], y: 0 },
-    { slots: [note("ฟ"), rest, rest], columns: [4, 5, 6], y: 1 },
+test("a link span reaches past the beat it opens in", () => {
+  // The case a boolean on <group> could not express: two groups under one
+  // curve. The span has to end on ล in the second group, not on ม in the first.
+  const doc = linkDoc([
+    onLine(1, onMeasure(1, `<note pitch="ด"/><link type="start"/><group><note pitch="ร"/><note pitch="ม"/></group><group><note pitch="ซ"/><note pitch="ล"/></group><link type="stop"/><note pitch="ท"/>`)),
   ]);
-  const falling = linkSpan([
-    { slots: [note("ซ"), rest, rest], columns: [4, 5, 6], y: 0 },
-    { slots: [rest, note("ร"), note("ฟ")], columns: [4, 5, 6], y: 1 },
+  const symbols = layout(parse(doc)).pages[0].elements.filter((el) => el.role === "symbol");
+  const [drawn] = links(doc);
+
+  assert.equal(links(doc).length, 1);
+  const at = (text) => symbols.find((el) => el.text === text).x;
+  assert.deepEqual(ends(drawn), [at("ร"), at("ล")], "opens on ร in the first group and closes on ล in the second");
+});
+
+test("a span opening inside a group does not reach back over that group's earlier notes", () => {
+  // The marker sits where the arranger put it. ด is written before it and
+  // stays outside the gesture even though it shares the beat.
+  const doc = linkDoc([
+    onLine(1, onMeasure(1, `<group><note pitch="ด"/><link type="start"/><note pitch="ร"/></group><note pitch="ม"/><link type="stop"/><note pitch="ซ"/>`)),
   ]);
+  const symbols = layout(parse(doc)).pages[0].elements.filter((el) => el.role === "symbol");
+  const [drawn] = links(doc);
+  const at = (text) => symbols.find((el) => el.text === text).x;
 
-  assert.ok(rising.last.y < rising.first.y, "ends above where it began");
-  assert.ok(falling.last.y > falling.first.y, "ends below where it began");
+  assert.deepEqual(ends(drawn), [at("ร"), at("ม")]);
+  assert.ok(drawn.x1 > at("ด"), "ด is left outside the curve");
 });
 
-test("a single row's linked group spans its own notes and stays level", () => {
-  const span = linkSpan([{ slots: [note("ด"), note("ร")], columns: [5, 6], y: 0 }]);
+test("the run is read across a stack's rows, not row by row", () => {
+  // Khaek Borathes measure 3. ฟ ซ ล is one gesture the instrument plays, and
+  // neither row holds both ends of it: the upper row opens on a rest and the
+  // lower row ends on two. A renderer reading one row at a time cannot find
+  // this span, and anchoring to the beat's own edges would catch those rests
+  // and draw the curve backwards, between two silences.
+  const doc = linkDoc(
+    [
+      onLine(1, onMeasure(1, `<note pitch="ด"/><link type="start"/><group><rest/><note pitch="ซ"/><note pitch="ล"/></group><link type="stop"/><note pitch="ร"/><note pitch="ม"/>`)),
+      onLine(1, onMeasure(1, `<note pitch="ด"/><group><note pitch="ฟ"/><rest/><rest/></group><note pitch="ร"/><note pitch="ม"/>`)),
+    ],
+    { stack: "khong" },
+  );
+  const drawn = links(doc);
+  const symbols = layout(parse(doc)).pages[0].elements.filter((el) => el.role === "symbol");
+  const at = (text) => symbols.find((el) => el.text === text).x;
 
-  assert.equal(span.first.column, 5);
-  assert.equal(span.last.column, 6);
-  assert.equal(span.first.y, span.last.y, "a level run gets an arc, not a connector");
+  assert.equal(drawn.length, 1, "the connection is declared on one side only and drawn once");
+  assert.equal(drawn[0].kind, "curve", "the two ends sit in different rows, so it arches across");
+  assert.equal(drawn[0].x2, at("ล"), "closes on ล in the upper row");
+  // The stroke steps off ฟ's centre so it starts at that letter's corner
+  // rather than on top of it, and it departs leftward because the run rises.
+  assert.ok(
+    drawn[0].x1 < at("ฟ") && at("ฟ") - drawn[0].x1 < defaults.pitchSize,
+    "opens just off ฟ in the lower row, which no reading of the upper row alone would find",
+  );
 });
 
-test("a beat sounding fewer than two notes has no run to span", () => {
-  assert.equal(linkSpan([{ slots: [note("ด"), rest], columns: [5, 6], y: 0 }]), null);
-  assert.equal(linkSpan([{ slots: [rest, rest], columns: [5, 6], y: 0 }]), null);
+test("a sibling row contributes whole beats, since slot indices do not correspond", () => {
+  // The lower row divides the second beat in three where the upper divides it
+  // in two. There is no slot the two rows share, so the span reaches every
+  // note the lower row plays in the beats it covers.
+  const doc = linkDoc(
+    [
+      onLine(1, onMeasure(1, `<note pitch="ด"/><link type="start"/><group><note pitch="ร"/><note pitch="ม"/></group><link type="stop"/><note pitch="ซ"/><note pitch="ล"/>`)),
+      onLine(1, onMeasure(1, `<note pitch="ด"/><group><note pitch="ท"/><note pitch="ล"/><note pitch="ซ"/></group><note pitch="ซ"/><note pitch="ล"/>`)),
+    ],
+    { stack: "khong" },
+  );
+  const [drawn] = links(doc);
+  const symbols = layout(parse(doc)).pages[0].elements.filter((el) => el.role === "symbol");
+  const lower = symbols.filter((el) => el.text === "ท");
+
+  assert.equal(lower.length, 1);
+  assert.ok(drawn.x1 <= lower[0].x + 1e-9, "the curve opens on the lower row's first note of that beat");
+});
+
+test("without a stack a span marks its own notes and stays level", () => {
+  const doc = linkDoc([onLine(1, onMeasure(1, `<link type="start"/><group><note pitch="ด"/><note pitch="ร"/></group><link type="stop"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/>`))]);
+  const [drawn] = links(doc);
+
+  assert.equal(drawn.kind, "arc", "a level run gets an arc, not a connector");
+  assert.ok(drawn.x2 > drawn.x1);
+});
+
+test("a span sounding fewer than two notes draws nothing", () => {
+  const one = linkDoc([onLine(1, onMeasure(1, `<link type="start"/><note pitch="ด"/><link type="stop"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>`))]);
+  const none = linkDoc([onLine(1, onMeasure(1, `<link type="start"/><rest/><link type="stop"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>`))]);
+
+  assert.deepEqual(links(one), [], "one note is not a run");
+  assert.deepEqual(links(none), [], "a rest is no attack, so there is nothing to reach");
+});
+
+test("a span crossing a line break draws one segment per line", () => {
+  const doc = linkDoc([
+    onLine(1, onMeasure(1, `<note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><link type="start"/><note pitch="ซ"/>`)) +
+      onLine(2, onMeasure(1, `<note pitch="ล"/><link type="stop"/><note pitch="ท"/><note pitch="ดํ"/><note pitch="รํ"/>`)),
+  ]);
+  const drawn = links(doc);
+
+  assert.equal(drawn.length, 2, "one segment on each line the span touches");
+  assert.ok(drawn[0].x2 > drawn[0].x1 && drawn[1].x2 > drawn[1].x1, "neither segment collapses");
 });
 
 // Pagination.

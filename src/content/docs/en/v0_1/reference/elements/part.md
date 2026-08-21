@@ -84,7 +84,7 @@ Three rows is the most seen in practice. Nothing caps it.
 
 - `type` describes the part, not any particular performance. It is declared once here and never repeated in `<part-data>`. A lyric part is the one value that is not an instrument at all, which is a stretch of the word `<ensemble>` worth knowing about: reusing `<part>` is what gives a lyric line the whole line and measure grid for free.
 - See [`<note>`](/en/v0_1/reference/elements/note/) for how `type` determines which attribute a note uses.
-- `stack` describes the instrument too. See [`<ensemble>`](/en/v0_1/reference/elements/ensemble/#rendering) for how it affects rendering, and [`<group>`](/en/v0_1/reference/elements/group/) for the `link` attribute it enables.
+- `stack` describes the instrument too. See [`<ensemble>`](/en/v0_1/reference/elements/ensemble/#rendering) for how it affects rendering, and [`<link>`](/en/v0_1/reference/elements/link/) for the cross-row curve it enables.
 - A stack's parts sit together in `<ensemble>`, in row order. Their `<part-data>` is unaffected and still references each part on its own by `id`.
 
 ## Conformance

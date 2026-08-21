@@ -72,7 +72,7 @@
       <line number="1">
         <measure number="1"><rest/><rest/><rest/><rest/></measure>
         <measure number="2"><rest/><rest/><rest/><rest/></measure>
-        <measure number="3"><note pitch="ม"/><group link="true"><note pitch="ร"/><note pitch="ด"/></group><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="3"><note pitch="ม"/><link type="start"/><group><note pitch="ร"/><note pitch="ด"/></group><link type="stop"/><note pitch="ร"/><note pitch="ม"/></measure>
         <measure number="4"><rest/><rest/><rest/><rest/></measure>
         <measure number="5"><rest/><rest/><rest/><note pitch="ร"/></measure>
         <measure number="6"><note pitch="ด"/><note pitch="ด"/><rest/><note pitch="ด"/></measure>

@@ -55,14 +55,14 @@ A group occupies exactly one beat. Its children divide that one beat among thems
 A group can mix notes and rests. From แขกบรเทศ, ฆ้องวงใหญ่ R, ท่อน 2, measure 3:
 
 ```xml
-<group link="true">
+<group>
   <rest/>
   <note pitch="ซ"/>
   <note pitch="ล"/>
 </group>
 ```
 
-This is a 3-child group. The rest takes the first third of the beat, ซ takes the second, and ล lands on the beat itself. The `link` attribute is explained below.
+This is a 3-child group. The rest takes the first third of the beat, ซ takes the second, and ล lands on the beat itself.
 
 ## Groups alongside plain notes
 
@@ -79,19 +79,51 @@ A measure can mix plain notes and groups. From the same part, measure 6:
 
 Four beats: ดํ on beat 1, two rests on beats 2 and 3, and a 2-note group on beat 4. The group's two notes each get half a beat, with มํ landing on the beat.
 
-## Link: connecting rows
+## Link: marking a gesture
 
-`link` marks a group as one connected gesture. Where the containing `<part>` has a `stack` attribute (meaning the instrument is notated across several rows), the curve reaches the other rows' notes on the same beat.
+A group says how a beat divides. It does not say that the notes belong together as one movement of the hands. For that, write a [`<link>`](/en/v0_1/reference/elements/link/) span around them:
+
+```xml
+<note pitch="ด"/>
+<link type="start"/>
+<group>
+  <note pitch="ร"/>
+  <note pitch="ม"/>
+</group>
+<link type="stop"/>
+<note pitch="ซ"/>
+```
+
+A curve appears over ร and ม. It changes nothing about playback: the group's subdivision already describes the rhythm. What it adds is certainty, since a group is otherwise shown only by its notes sitting closer together, and a crowded measure leaves that spacing very little room to work in.
+
+Because `<link>` is a marker pair and not something a group carries, the span is free to run past the beat it opens in:
+
+```xml
+<note pitch="ด"/>
+<link type="start"/>
+<group><note pitch="ร"/><note pitch="ม"/></group>
+<group><note pitch="ซ"/><note pitch="ล"/></group>
+<link type="stop"/>
+<note pitch="ท"/>
+```
+
+One curve over four notes and two beats. This is the ordinary shape of a rapid run in Thai music, and it is why the mark is an element rather than an attribute on `<group>`: a group is exactly one beat, and a gesture often is not.
+
+### Reaching the other row
+
+Where the containing `<part>` has a `stack` attribute (meaning the instrument is notated across several rows), the curve reaches the other rows too.
 
 From แขกบรเทศ, ท่อน 2, measure 3, both rows of ฆ้องวงใหญ่:
 
 ฆ้องวงใหญ่ R:
 ```xml
-<group link="true">
+<link type="start"/>
+<group>
   <rest/>
   <note pitch="ซ"/>
   <note pitch="ล"/>
 </group>
+<link type="stop"/>
 ```
 
 ฆ้องวงใหญ่ L:
@@ -102,9 +134,9 @@ From แขกบรเทศ, ท่อน 2, measure 3, both rows of ฆ้อ
 </group>
 ```
 
-The `link` on the R group draws a curve to whatever the L row plays at the same beat. On a stacked instrument, this tells the player the two rows belong to one gesture.
+The instrument sounds ฟ ซ ล across that beat, and the curve runs from ฟ in the L row to ล in the R row. Neither row holds both ends of it. On a stacked instrument this tells the player that the two rows are one gesture.
 
-On a single-row instrument there is no other row to reach. The curve sits over the group's own notes instead, making the subdivision unmistakable in a crowded measure. `link` is a rendering hint with no effect on playback.
+Declare it on one side only. The span in the upper row already describes the connection; there is no need to mark what it reaches as well.
 
 ## Two parts subdividing differently
 
@@ -125,7 +157,7 @@ Both measures have four beats. Part A's ร is on beat 2. Part B's group splits 
 Next, see [Sections, repeats, and endings](/en/v0_1/tutorial/6-sections_repeats_endings/) for how a score is organized into sections that repeat and how endings substitute lines.
 
 :::note[Elements introduced]
-[`<group>`](/en/v0_1/reference/elements/group/), [`link` attribute](/en/v0_1/reference/elements/group/#attributes)
+[`<group>`](/en/v0_1/reference/elements/group/), [`<link>`](/en/v0_1/reference/elements/link/)
 :::
 
 [Try it in the Playground](/en/playground/)

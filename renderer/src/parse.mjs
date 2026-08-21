@@ -41,6 +41,10 @@ function slot(node) {
 const sounds = (node) =>
   node.nodeType === 1 && (node.localName === "note" || node.localName === "rest");
 
+// The zero-duration markers. All three open and close spans the same way, so
+// the walk in resolveSpans() tests membership rather than naming each one.
+const MARKERS = new Set(["bow", "parenthesis", "link"]);
+
 /**
  * The three aligned positions shared by <annotation> and the credits. Where the
  * element has <text> children they carry the whole content, so the indentation
@@ -75,12 +79,12 @@ function beats(measure) {
   for (const child of Array.from(measure.childNodes)) {
     if (child.nodeType !== 1) continue;
     if (child.localName === "group") {
-      // <bow> and <parenthesis> have zero duration, so they take no slot and do
-      // not count toward the group's division of its beat.
+      // <bow>, <parenthesis>, and <link> have zero duration, so they take no
+      // slot and do not count toward the group's division of its beat.
       const slots = Array.from(child.childNodes).filter(sounds).map(slot);
-      out.push({ slots, group: true, link: child.getAttribute("link") === "true" });
+      out.push({ slots, group: true });
     } else if (child.localName === "note" || child.localName === "rest") {
-      out.push({ slots: [slot(child)], group: false, link: false });
+      out.push({ slots: [slot(child)], group: false });
     }
   }
   return out;
@@ -114,8 +118,8 @@ function parseLine(line, partType) {
 }
 
 /**
- * Bow and parenthesis spans, matched across a run of <line> elements in
- * document order. Positions are array indices into the lines this walk was
+ * Bow, parenthesis, and link spans, matched across a run of <line> elements
+ * in document order. Positions are array indices into the lines this walk was
  * given, in the same shape parseLine() produces, so layout.mjs can address a
  * span's ends directly once it has laid those lines out.
  *
@@ -129,14 +133,17 @@ function parseLine(line, partType) {
 function resolveSpans(lineEls) {
   const bowSpans = [];
   const parenSpans = [];
+  const linkSpans = [];
   let openBow = null;
   let openParen = null;
+  let openLink = null;
   let last = null;
 
   const noteAt = (position) => {
     last = position;
     if (openBow && !openBow.first) openBow.first = position;
     if (openParen && !openParen.first) openParen.first = position;
+    if (openLink && !openLink.first) openLink.first = position;
   };
 
   const marker = (node) => {
@@ -159,6 +166,15 @@ function resolveSpans(lineEls) {
         parenSpans.push({ ...openParen, last });
         openParen = null;
       }
+    } else if (node.localName === "link") {
+      // Nothing to carry from the start marker: a link's shape follows from
+      // where its notes fell, not from anything the arranger chose.
+      if (type === "start") {
+        openLink = { first: null };
+      } else if (openLink) {
+        linkSpans.push({ ...openLink, last });
+        openLink = null;
+      }
     }
   };
 
@@ -175,21 +191,21 @@ function resolveSpans(lineEls) {
             if (gc.localName === "note" || gc.localName === "rest") {
               noteAt({ lineIndex, measureIndex, beatIndex, slotIndex });
               slotIndex++;
-            } else if (gc.localName === "bow" || gc.localName === "parenthesis") {
+            } else if (MARKERS.has(gc.localName)) {
               marker(gc);
             }
           }
         } else if (child.localName === "note" || child.localName === "rest") {
           beatIndex++;
           noteAt({ lineIndex, measureIndex, beatIndex, slotIndex: 0 });
-        } else if (child.localName === "bow" || child.localName === "parenthesis") {
+        } else if (MARKERS.has(child.localName)) {
           marker(child);
         }
       }
     });
   });
 
-  return { bowSpans, parenSpans };
+  return { bowSpans, parenSpans, linkSpans };
 }
 
 /**
@@ -273,7 +289,7 @@ export function parse(source) {
   collect(el(score, "structure"));
   const sections = structure.filter((item) => item.kind === "section");
 
-  // part id -> section id -> { annotations, lines, bowSpans, parenSpans, endings }
+  // part id -> section id -> { annotations, lines, bow/paren/linkSpans, endings }
   const music = {};
   for (const pd of els(score, "part-data")) {
     const partId = pd.getAttribute("part");
@@ -283,8 +299,10 @@ export function parse(source) {
       const lineEls = els(ref, "line");
       // Bow and parenthesis spans are invalid inside a lyric part, so there is
       // nothing to resolve there.
-      const { bowSpans, parenSpans } =
-        partType === "lyric" ? { bowSpans: [], parenSpans: [] } : resolveSpans(lineEls);
+      const { bowSpans, parenSpans, linkSpans } =
+        partType === "lyric"
+          ? { bowSpans: [], parenSpans: [], linkSpans: [] }
+          : resolveSpans(lineEls);
 
       music[partId][ref.getAttribute("section")] = {
         // Annotations here belong to this part alone, and render above its
@@ -293,12 +311,15 @@ export function parse(source) {
         lines: lineEls.map((line) => parseLine(line, partType)),
         bowSpans,
         parenSpans,
+        linkSpans,
         // An ending renders below the section, detached from the line(s) it
         // replaces, so it carries its own annotation and its own spans.
         endings: els(ref, "ending").map((endingEl) => {
           const endingLineEls = els(endingEl, "line");
           const spans =
-            partType === "lyric" ? { bowSpans: [], parenSpans: [] } : resolveSpans(endingLineEls);
+            partType === "lyric"
+              ? { bowSpans: [], parenSpans: [], linkSpans: [] }
+              : resolveSpans(endingLineEls);
           return {
             pass: (endingEl.getAttribute("pass") || "")
               .split(",")
@@ -308,6 +329,7 @@ export function parse(source) {
             lines: endingLineEls.map((line) => parseLine(line, partType)),
             bowSpans: spans.bowSpans,
             parenSpans: spans.parenSpans,
+            linkSpans: spans.linkSpans,
           };
         }),
       };

@@ -25,7 +25,7 @@
     - at most one <text> per align value
     - ending line runs, pass ranges, and pass ordering
     - line-repeat ranges against the section's line count
-    - bow and parenthesis span matching
+    - bow, parenthesis, and link span matching
     - recommended-value warnings for nathap and tuning
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="https://thaimusicxml.anan.ovh/ns/0.1" xmlns:ns1="https://thaimusicxml.anan.ovh/ns/0.1">
@@ -331,7 +331,6 @@
           <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:marker"/>
         </xs:sequence>
       </xs:sequence>
-      <xs:attribute name="link" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
   <xs:group name="note-or-rest">
@@ -340,6 +339,23 @@
       <xs:element ref="ns1:rest"/>
     </xs:choice>
   </xs:group>
+  <!--
+    A gesture arc. Nothing beyond type: unlike a bow's direction or a
+    parenthesis's dim/mute, the curve's shape is not chosen, it follows from
+    where the notes it spans fell.
+  -->
+  <xs:element name="link" substitutionGroup="ns1:marker">
+    <xs:complexType>
+      <xs:attribute name="type" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="start"/>
+            <xs:enumeration value="stop"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
   <!-- direction is required on a start and forbidden on a stop. -->
   <xs:element name="bow" substitutionGroup="ns1:marker">
     <xs:complexType>

@@ -261,4 +261,53 @@ test("a lyric part resolves no spans at all, since neither marker is valid there
 
   assert.deepEqual(section.bowSpans, []);
   assert.deepEqual(section.parenSpans, []);
+  assert.deepEqual(section.linkSpans, []);
+});
+
+test("a link span resolves like a bow, carrying nothing from its start marker", () => {
+  // Its shape follows from where its notes fell, so unlike a bow's direction
+  // or a parenthesis's dim there is nothing on the start to read.
+  const doc = score(line(1, `<note pitch="ด"/><link type="start"/><note pitch="ร"/><note pitch="ม"/><link type="stop"/><note pitch="ฟ"/>`));
+  const spans = parse(doc).music.P1.s1.linkSpans;
+
+  assert.equal(spans.length, 1);
+  assert.deepEqual(Object.keys(spans[0]).sort(), ["first", "last"]);
+  assert.deepEqual(spans[0].first, at(0, 0, 1, 0));
+  assert.deepEqual(spans[0].last, at(0, 0, 2, 0));
+});
+
+test("a link span reaches past the group it opens in, which is the point of it being a marker", () => {
+  // A boolean on <group> could only ever mark one beat. Here the span opens
+  // before one group and closes after the next, four notes and two beats on.
+  const doc = score(
+    line(1, `<link type="start"/><group><note pitch="ด"/><note pitch="ร"/></group><group><note pitch="ม"/><note pitch="ฟ"/></group><link type="stop"/><note pitch="ซ"/><note pitch="ล"/>`),
+  );
+  const spans = parse(doc).music.P1.s1.linkSpans;
+
+  assert.deepEqual(spans[0].first, at(0, 0, 0, 0), "the first slot of the first group");
+  assert.deepEqual(spans[0].last, at(0, 0, 1, 1), "and the last slot of the second, a beat later");
+});
+
+test("a link is matched independently of a bow, so the two may overlap", () => {
+  // Two spans of the same kind cannot nest or overlap; two of different kinds
+  // are separate runs, and a gesture that is also bowed is an ordinary thing.
+  const doc = score(line(1, `<bow type="start"/><note pitch="ด"/><link type="start"/><note pitch="ร"/><bow type="stop"/><note pitch="ม"/><link type="stop"/>`));
+  const { bowSpans, linkSpans } = parse(doc).music.P1.s1;
+
+  assert.deepEqual(bowSpans[0].first, at(0, 0, 0, 0));
+  assert.deepEqual(bowSpans[0].last, at(0, 0, 1, 0));
+  assert.deepEqual(linkSpans[0].first, at(0, 0, 1, 0));
+  assert.deepEqual(linkSpans[0].last, at(0, 0, 2, 0));
+});
+
+test("an ending resolves its own link spans, as its own run", () => {
+  const doc = score(
+    `${line(1, `<note pitch="ด"/>`)}
+     <ending pass="2">${line(1, `<link type="start"/><note pitch="ร"/><note pitch="ม"/><link type="stop"/>`)}</ending>`,
+  );
+  const ending = parse(doc).music.P1.s1.endings[0];
+
+  assert.equal(ending.linkSpans.length, 1);
+  assert.deepEqual(ending.linkSpans[0].first, at(0, 0, 0, 0));
+  assert.deepEqual(ending.linkSpans[0].last, at(0, 0, 1, 0));
 });

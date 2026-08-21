@@ -217,7 +217,7 @@ function flattenBeats(beats) {
  *
  * `siblingAttacks` are onsets, local to this same measure, of every note in
  * a sibling row of the same <ensemble> stack. A stack is one physical
- * instrument (see group.md's `link`), so a note's decay stops mattering the
+ * instrument (see link.md), so a note's decay stops mattering the
  * moment *any* row of it strikes again, not only its own. This only ever
  * shortens a note whose own row left its length undetermined - a rest was
  * absorbed after it, or its row simply has nothing more written this
@@ -380,7 +380,7 @@ export function resolve(source) {
     parsed.sections.map((s) => [s.id, s.lineRepeats]),
   );
 
-  /** Other notated rows of the same <ensemble> stack - a lyric row has no beats to strike, so it's excluded, per group.md's `link`. */
+  /** Other notated rows of the same <ensemble> stack - a lyric row has no beats to strike, so it's excluded, per link.md. */
   function siblingIdsOf(partId) {
     const part = parsed.parts.find((p) => p.id === partId);
     if (!part?.stack) return [];

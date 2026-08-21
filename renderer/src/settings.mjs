@@ -63,9 +63,8 @@ export const defaults = {
   // above this and a dense measure has nowhere to put the extra width.
   pitchSize: 12,
 
-  // Tall enough for the single-row link arc to sit under the notes without
-  // meeting the rule below, allowing room for an octave dot hanging under a
-  // letter.
+  // Tall enough for a same-row link arc to sit under the notes without meeting
+  // the rule below, allowing room for an octave dot hanging under a letter.
   rowHeight: 22,
 
   // The octave mark: a small dot above or below the letter, drawn as its own
@@ -87,10 +86,10 @@ export const defaults = {
   // symbols are held apart by minSymbolAdvance instead.
   spread: 0.7,
 
-  // The link curve. A group marked link="true" gets one: reaching the other
-  // rows of a stacked instrument, or arcing over its own notes where the
-  // instrument has only one row. Always above the notes, never below, which is
-  // where Thai scores put their curves.
+  // The link curve. A <link> span gets one: reaching the other rows of a
+  // stacked instrument, or arcing over its own notes where the instrument has
+  // only one row. Always above the notes, never below, which is where Thai
+  // scores put their curves.
   //
   // All of it OPEN, and all of it a multiple of the type size, so retuning
   // pitchSize carries the curve with it instead of leaving it behind.
@@ -105,7 +104,7 @@ export const defaults = {
   // that letter's corner rather than on top of it. Roughly half a letter.
   linkSideStep: 0.4,
 
-  // How far the single-row arc bows above its own ends. A ceiling rather than a
+  // How far a same-row arc bows above its own ends. A ceiling rather than a
   // fixed height: a short rowHeight leaves less than this and wins.
   linkRise: 0.45,
 
@@ -197,13 +196,14 @@ export const defaults = {
   // notes, the direction itself being the "tips pointing down"/"pointing
   // up" the spec describes rather than a separate mark at the tip.
   //
-  // "in" ties its tip height to linkTop, the same a single-row link curve
+  // "in" ties its tip height to linkTop, the same a same-row link curve
   // uses. "out" needs a taller anchor of its own (bowTop): it dips down
   // from the tip by the same bowRise, and doing that from linkTop's height
   // would cut into the note glyphs rather than clearing them. Neither is
-  // clamped to the row's own height the way a link curve's rise is - a bow
-  // spans a whole passage rather than one beat, so it is expected to reach
-  // past its own row's ruling into the gap above. All OPEN, and judged
+  // clamped to the row's own height the way a link curve's rise is - a link
+  // marks its notes and belongs to them, where a bow is a stroke over the
+  // passage and is expected to reach past the row's ruling into the gap
+  // above, however long either one runs. All OPEN, and judged
   // against a printed score the way the link curve was: this is a first
   // pass, not a settled convention.
   bowTop: 1.05,

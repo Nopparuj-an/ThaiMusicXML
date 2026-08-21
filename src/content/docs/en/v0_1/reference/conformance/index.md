@@ -61,16 +61,16 @@ The element pages name a type for each attribute. This section says what those n
 
 ### Booleans
 
-`true`, `false`, `1`, and `0`, matched by value. `link="1"` and `link="true"` are the same. Nothing else is accepted.
+`true`, `false`, `1`, and `0`, matched by value. `dim="1"` and `dim="true"` are the same. Nothing else is accepted.
 
 :::danger[Rejected]
 ```xml
 <!-- ✓ valid -->
-<group link="1">...</group>
-<group link="true">...</group>
+<parenthesis type="start" dim="1"/>
+<parenthesis type="start" dim="true"/>
 
 <!-- ✗ rejected: not one of true, false, 1, 0 -->
-<group link="yes">...</group>
+<parenthesis type="start" dim="yes"/>
 ```
 :::
 
@@ -482,7 +482,7 @@ Where an element takes either plain text or [`<text>`](/en/v0_1/reference/elemen
 - `<chan>`'s `value` must be one of the five listed levels, matched exactly. Validators must reject any other value.
 - `<nathap>`'s `value` and `<tuning>`'s `reference` accept any non-empty string. Validators should warn on a value outside the recommended list on the element's page, and must not reject it.
 - `<bpm>` content must be a positive integer.
-- `link` is valid on any `<group>`. Where the containing `<part>` has a `stack`, at least one other row in that stack must be a notated part, since a stack whose other rows are all lyric has no beat position for the connector to reach. Where the part has no `stack`, the curve marks the group's own notes and there is nothing further to satisfy.
+- A `<link>` span is valid in any notated part. Where the containing `<part>` has a `stack`, at least one other row in that stack must be a notated part, since a stack whose other rows are all lyric has no beat position for the curve to reach. Where the part has no `stack`, the curve marks the span's own notes and there is nothing further to satisfy.
 
 :::danger[Rejected]
 ```xml
@@ -500,11 +500,11 @@ Where an element takes either plain text or [`<text>`](/en/v0_1/reference/elemen
 <!-- ✗ rejected: bpm not a positive integer -->
 <bpm>0</bpm>
 
-<!-- ✗ rejected: link on a group whose stack has no notated row, only a lyric one -->
+<!-- ✗ rejected: a link span in a stack with no notated row, only lyric ones -->
 <part id="P1" stack="melody" row="1" type="lyric">...</part>
 <part id="P2" stack="melody" row="2" type="lyric">...</part>
-<!-- P1's group: -->
-<group link="true"><note.../><note.../></group>
+<!-- in P1: -->
+<link type="start"/><note.../><note.../><link type="stop"/>
 ```
 :::
 
@@ -521,12 +521,14 @@ Where an element takes either plain text or [`<text>`](/en/v0_1/reference/elemen
 
 ### Span markers
 
-- `<bow>` and `<parenthesis>` markers pair in document order within a resolved pass. Resolve the section's `<ending>` substitutions for a pass, then match within the lines that pass actually plays. See [Spans across an overridden line](/en/v0_1/reference/elements/ending/#spans-across-an-overridden-line).
+- `<bow>`, `<parenthesis>`, and `<link>` markers pair in document order within a resolved pass. The three kinds are matched independently of one another, so a span of one kind may open inside a span of another. Resolve the section's `<ending>` substitutions for a pass, then match within the lines that pass actually plays. See [Spans across an overridden line](/en/v0_1/reference/elements/ending/#spans-across-an-overridden-line).
 - A `<line-repeat>` does not affect matching. The lines are read once, in the order they are written, however many times playback runs through them.
 - On every resolved pass, a `type="start"` must be closed by a matching `type="stop"` before another `start` appears. Spans cannot nest or overlap.
 - On every resolved pass, each `start` must have a matching `stop` within the same `<section-ref>`. A span left open at the end of a pass is invalid even if another pass closes it, and spans cannot cross section boundaries.
 - `direction` is required on `<bow type="start">` and must not appear on `type="stop"`.
 - `dim` and `mute` are valid only on `<parenthesis type="start">`.
+- `<link>` carries no attribute but `type`, on either marker.
+- A `<link>`, `<bow>`, or `<parenthesis>` marker inside a `<group>` has zero duration and does not count toward the equal division of that group's beat.
 
 :::danger[Rejected]
 ```xml

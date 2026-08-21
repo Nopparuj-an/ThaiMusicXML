@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: A link start must be closed by a stop within the same section reference. This span is left open at the end of the pass. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>Invalid example</title>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <link type="start"/>
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

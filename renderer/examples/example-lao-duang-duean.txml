@@ -222,7 +222,7 @@
         <measure number="1"><rest/><rest/><rest/><rest/></measure>
         <measure number="2"><rest/><rest/><rest/><rest/></measure>
         <measure number="3"><rest/><bow type="start" direction="out"/><note pitch="ด"/><note pitch="ร"/><bow type="stop"/><note pitch="ม"/></measure>
-        <measure number="4"><rest/><note pitch="ซํ"/><rest/><note pitch="ดํ"/></measure>
+        <measure number="4"><rest/><note pitch="ซ"/><rest/><note pitch="ดํ"/></measure>
         <measure number="5"><parenthesis type="start" dim="true"/><rest/><rest/><rest/><bow type="start" direction="out"/><note pitch="รํ"/></measure>
         <measure number="6"><note pitch="ดํ"/><bow type="stop"/><note pitch="ดํ"/><note pitch="ดํ"/><note pitch="ดํ"/><parenthesis type="stop"/></measure>
         <measure number="7"><note pitch="ซ"/><note pitch="ล"/><note pitch="ดํ"/><bow type="start" direction="in"/><note pitch="ล"/></measure>
@@ -392,19 +392,19 @@
       <line number="3">
         <measure number="1"><rest/><rest/><rest/><note pitch="ม"/></measure>
         <measure number="2"><note pitch="ร"/><rest/><note pitch="ร"/><rest/></measure>
-        <measure number="3"><group link="true"><note pitch="ร"/><note pitch="ด"/></group><rest/><rest/><note pitch="ด"/></measure>
+        <measure number="3"><link type="start"/><group><note pitch="ร"/><note pitch="ด"/></group><rest/><link type="stop"/><rest/><note pitch="ด"/></measure>
         <measure number="4"><note pitch="ร"/><note pitch="ด"/><note pitch="ม"/><rest/></measure>
         <measure number="5"><rest/><note pitch="ซ"/><rest/><rest/></measure>
         <measure number="6"><rest/><note pitch="ด"/><rest/><note pitch="ร"/></measure>
-        <measure number="7"><note pitch="ด"/><group link="true"><note pitch="ร"/><note pitch="ม"/></group><note pitch="ซ"/><note pitch="ร"/></measure>
+        <measure number="7"><link type="start"/><note pitch="ด"/><group><note pitch="ร"/><note pitch="ม"/></group><link type="stop"/><note pitch="ซ"/><note pitch="ร"/></measure>
         <measure number="8"><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/><note pitch="ด"/></measure>
       </line>
       <line number="4">
         <measure number="1"><rest/><rest/><rest/><rest/></measure>
-        <measure number="2"><group link="true"><note pitch="ร"/><note pitch="ด"/></group><rest/><rest/><rest/></measure>
+        <measure number="2"><link type="start"/><group><note pitch="ร"/><note pitch="ด"/></group><rest/><link type="stop"/><rest/><rest/></measure>
         <measure number="3"><rest/><rest/><rest/><rest/></measure>
         <measure number="4"><note pitch="ด"/><rest/><note pitch="ล"/><rest/></measure>
-        <measure number="5"><rest/><rest/><group link="true"><note pitch="ร"/><note pitch="ด"/></group><rest/></measure>
+        <measure number="5"><rest/><rest/><link type="start"/><group><note pitch="ร"/><note pitch="ด"/></group><rest/><link type="stop"/></measure>
         <measure number="6"><rest/><rest/><rest/><rest/></measure>
         <measure number="7"><rest/><note pitch="ด"/><note pitch="ด"/><rest/></measure>
         <measure number="8"><rest/><note pitch="ซ"/><note pitch="ซ"/><rest/></measure>
@@ -418,7 +418,7 @@
           <measure number="4"></measure>
           <measure number="5"></measure>
           <measure number="6"></measure>
-          <measure number="7"><note pitch="ม"/><group link="true"><note pitch="ร"/><note pitch="ด"/></group><note pitch="ร"/><note pitch="ม"/></measure>
+          <measure number="7"><link type="start"/><note pitch="ม"/><group><note pitch="ร"/><note pitch="ด"/></group><link type="stop"/><note pitch="ร"/><note pitch="ม"/></measure>
           <measure number="8"><rest/><note pitch="ร"/><rest/><note pitch="ด"/></measure>
         </line>
       </ending>
@@ -427,9 +427,9 @@
       <line number="1">
         <measure number="1"><rest/><rest/><rest/><note pitch="ร"/></measure>
         <measure number="2"><note pitch="ด"/><rest/><note pitch="ด"/><rest/></measure>
-        <measure number="3"><note pitch="ด"/><group link="true"><note pitch="ร"/><note pitch="ม"/></group><note pitch="ซ"/><note pitch="ร"/></measure>
+        <measure number="3"><link type="start"/><note pitch="ด"/><group><note pitch="ร"/><note pitch="ม"/></group><link type="stop"/><note pitch="ซ"/><note pitch="ร"/></measure>
         <measure number="4"><note pitch="ม"/><note pitch="ร"/><note pitch="ด"/><note pitch="ด"/></measure>
-        <measure number="5"><rest/><rest/><group link="true"><note pitch="ร"/><note pitch="ด"/></group><rest/></measure>
+        <measure number="5"><rest/><rest/><link type="start"/><group><note pitch="ร"/><note pitch="ด"/></group><rest/><link type="stop"/></measure>
         <measure number="6"><rest/><rest/><rest/><note pitch="ด"/></measure>
         <measure number="7"><rest/><note pitch="ด"/><rest/><note pitch="ร"/></measure>
         <measure number="8"><rest/><note pitch="ม"/><rest/><note pitch="ด"/></measure>
@@ -469,7 +469,7 @@
         <measure number="2"><rest/><rest/><rest/><rest/></measure>
         <measure number="3"><rest/><rest/><note pitch="ด"/><rest/></measure>
         <measure number="4"><rest/><rest/><rest/><rest/></measure>
-        <measure number="5"><note pitch="ม"/><group link="true"><note pitch="ร"/><note pitch="ด"/></group><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="5"><note pitch="ม"/><link type="start"/><group><note pitch="ร"/><note pitch="ด"/></group><link type="stop"/><note pitch="ร"/><note pitch="ม"/></measure>
         <measure number="6"><rest/><note pitch="ด"/><rest/><note pitch="ด"/></measure>
         <measure number="7"><rest/><rest/><rest/><rest/></measure>
         <measure number="8"><rest/><rest/><rest/><note pitch="ด"/></measure>
@@ -674,7 +674,7 @@
       <line number="1">
         <measure number="1"><rest/><rest/><rest/><rest/></measure>
         <measure number="2"><rest/><rest/><rest/><rest/></measure>
-        <measure number="3"><note pitch="ม"/><group link="true"><note pitch="ร"/><note pitch="ด"/></group><note pitch="ร"/><note pitch="ม"/></measure>
+        <measure number="3"><link type="start"/><note pitch="ม"/><group><note pitch="ร"/><note pitch="ด"/></group><link type="stop"/><note pitch="ร"/><note pitch="ม"/></measure>
         <measure number="4"><rest/><rest/><rest/><rest/></measure>
         <measure number="5"><rest/><rest/><rest/><note pitch="ร"/></measure>
         <measure number="6"><note pitch="ด"/><note pitch="ด"/><rest/><note pitch="ด"/></measure>
@@ -684,7 +684,7 @@
       <line number="2">
         <measure number="1"><rest/><rest/><rest/><rest/></measure>
         <measure number="2"><rest/><rest/><rest/><rest/></measure>
-        <measure number="3"><note pitch="ม"/><group link="true"><note pitch="ม"/><note pitch="ม"/></group><rest/><note pitch="ม"/></measure>
+        <measure number="3"><link type="start"/><note pitch="ม"/><group><note pitch="ม"/><note pitch="ม"/></group><link type="stop"/><rest/><note pitch="ม"/></measure>
         <measure number="4"><rest/><rest/><rest/><rest/></measure>
         <measure number="5"><rest/><rest/><rest/><rest/></measure>
         <measure number="6"><rest/><rest/><rest/><note pitch="ม"/></measure>

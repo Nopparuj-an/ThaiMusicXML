@@ -17,7 +17,7 @@ description: ตัวอย่างสำหรับ ThaiMusicXML
 - เนื้อหา [`<section-ref>`](/th/v0_1/reference/elements/section-ref/) หลายบรรทัดที่ซิงค์ข้ามพาร์ต
 - ระดับเสียง [`<note>`](/th/v0_1/reference/elements/note/) ที่ใช้ตัวปรับ octaves ของไทย (นิคหิตและพินทุ)
 - [`<rest>`](/th/v0_1/reference/elements/rest/)
-- [`<group>`](/th/v0_1/reference/elements/group/) ที่แบ่งจังหวะเป็นสามส่วน พร้อม `link` ที่เชื่อมกลุ่มกับจังหวะของอีกแถว
+- [`<group>`](/th/v0_1/reference/elements/group/) ที่แบ่งจังหวะเป็นสามส่วน พร้อมช่วง [`<link>`](/th/v0_1/reference/elements/link/) ที่เชื่อมการรัวกับโน้ตของอีกแถว
 
 ## [สาธุการ](/th/v0_1/reference/examples/sathukan/)
 

@@ -318,7 +318,7 @@ function checkPartDataShape(ctx, err, warn) {
           for (const child of els(measure)) {
             const ok = lyric
               ? ["syllable", "rest"].includes(child.localName)
-              : ["note", "rest", "group", "bow", "parenthesis"].includes(child.localName);
+              : ["note", "rest", "group", "bow", "parenthesis", "link"].includes(child.localName);
             if (!ok)
               err(`<${child.localName}> is not valid in a measure of a ${type} part`);
           }
@@ -339,26 +339,26 @@ function checkPartDataShape(ctx, err, warn) {
         }
       }
 
-      // Groups
-      for (const group of descendants(sr, "group")) {
-        if (!group.hasAttribute("link")) continue;
-        // With no stack the curve marks the group's own notes, so there is no
-        // other row it has to be able to reach.
-        if (!part?.hasAttribute("stack")) continue;
+      // Link spans
+      //
+      // With no stack the curve marks the span's own notes, so there is no
+      // other row it has to be able to reach. With one, there has to be a row
+      // there to reach: a lyric measure holds words rather than beats.
+      if (part?.hasAttribute("stack") && inOrder(sr, "link").length > 0) {
         const stack = part.getAttribute("stack");
         const others = (ctx.stacks.get(stack) ?? []).filter((m) => m.part !== part);
         const notated = others.some(
           (m) => (m.part.getAttribute("type") || "pitched") !== "lyric",
         );
         if (!notated)
-          err(`link on a <group> in stack "${stack}", which has no other notated row`);
+          err(`a link span in stack "${stack}", which has no other notated row`);
       }
     }
   }
 }
 
-// Endings, and the bow/parenthesis spans that have to nest and close cleanly
-// within each pass an ending resolves to - both walk the same per-section-ref
+// Endings, and the bow/parenthesis/link spans that have to nest and close
+// cleanly within each pass an ending resolves to - both walk the same per-section-ref
 // pass/line/ending values, so they share one rule rather than recomputing them
 // twice.
 function checkEndingsAndSpans(ctx, err) {
@@ -449,7 +449,7 @@ function checkEndingsAndSpans(ctx, err) {
           );
         });
 
-        for (const kind of ["bow", "parenthesis"]) {
+        for (const kind of ["bow", "parenthesis", "link"]) {
           let open = false;
           for (const measure of resolvedMeasures)
             for (const marker of inOrder(measure, kind)) {

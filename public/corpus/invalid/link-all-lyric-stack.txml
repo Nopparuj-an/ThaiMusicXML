@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- INVALID: link needs at least one other notated row in the stack. A lyric
-     part may carry stack, but a lyric measure holds words rather than beats,
-     so there is no position for the connector to reach. -->
+<!-- INVALID: a link span in a stacked part needs at least one other notated
+     row in that stack. A lyric part may carry stack, but a lyric measure holds
+     words rather than beats, so there is no position for the curve to reach. -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
   <header><title>Invalid example</title></header>
   <structure><section id="s1"/></structure>
@@ -13,7 +13,7 @@
     <section-ref section="s1">
       <line number="1">
         <measure number="1">
-          <group link="true"><note pitch="ด"/><note pitch="ร"/></group>
+          <link type="start"/><group><note pitch="ด"/><note pitch="ร"/></group><link type="stop"/>
         </measure>
       </line>
     </section-ref>
