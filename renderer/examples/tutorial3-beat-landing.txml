@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+  <header>
+    <title>Example: Beats</title>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1" />
+  </structure>
+  <ensemble>
+    <part id="P1" type="unpitched">
+      <instrument-name></instrument-name>
+    </part>
+    <part id="P2" type="unpitched">
+      <instrument-name></instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note sound="1"/><note sound="2"/><note sound="3"/><note sound="4"/>
+        </measure>
+        <measure number="2">
+          <note sound="1"/><note sound="2"/><note sound="3"/>
+          <group>
+            <note sound="4"/><note sound="5"/>
+          </group>
+        </measure>
+        <measure number="3">
+          <rest/>
+          <group>
+            <note sound="1"/><note sound="2"/>
+          </group>
+          <rest/>
+          <group>
+            <note sound="3"/><note sound="4"/>
+          </group>
+        </measure>
+        <measure number="4">
+          <rest/><rest/><rest/>
+          <group>
+            <note sound="123"/>
+          </group>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note sound="1"/><note sound="2"/><note sound="3"/><note sound="4"/>
+        </measure>
+        <measure number="2">
+          <note sound="1"/><note sound="2"/><note sound="3"/><note sound="5"/>
+        </measure>
+        <measure number="3">
+          <rest/><note sound="2"/><rest/><note sound="4"/>
+        </measure>
+        <measure number="4">
+          <rest/><rest/><rest/><note sound="3"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

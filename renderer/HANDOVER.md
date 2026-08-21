@@ -77,7 +77,7 @@ node renderer/render.mjs renderer/examples/example-khaek-borathes.txml /tmp/out.
 
 `renderer/examples/*.txml` are named for where they surface in the docs:
 `tutorial1-`/`tutorial2-` for the two tutorial pages, `example-` for
-`reference/examples/`. `khaek-borathes-test.txml` is the exception — a dense,
+`reference/examples/`. `test-khaek-borathes.txml` is the exception — a dense,
 deliberately-overloaded fixture for stress-testing a render by eye during
 development, not linked from any doc page and not meant to be.
 
@@ -89,7 +89,7 @@ Then convert and crop to inspect, since reading an SVG tells you nothing about
 whether it looks right:
 
 ```js
-sharp(file, { density: 150 }).extract({ left, top, width, height }).png()
+sharp(file, { density: 150 }).extract({ left, top, width, height }).png();
 ```
 
 `density: 150` gives 2.083 px per point. To find something, grep the SVG for its
@@ -150,6 +150,7 @@ wherever this runs).
   crossing a line break can leave one note on each side of the cut and is still
   a run of two; testing per line drew nothing at all, which is exactly the bug
   the line-break test was added for.
+
 - **Curves go above the notes, never below.** Thai scores do not put them below.
 - **Breaks are owed, not spent immediately.** A run of text between two grids
   splits: lines trailing the grid above stay with it, the last line before the
@@ -175,6 +176,7 @@ wherever this runs).
   move to a fresh page together rather than stranding the heading at the foot
   of the one before — the page-break version of the same stranding "Text
   inside a break" already had to solve once.
+
 - **Endings, and any per-part grid that is not the section's main one, reuse
   `renderGridLine`** (factored out of the old inline per-line code this
   session) rather than duplicating box/ruling/symbol/curve logic. It takes an
@@ -209,6 +211,7 @@ wherever this runs).
   dangling (its matching `start` sits only in the regular line it replaces)
   is silently unmatched rather than drawn. Rare in practice; worth fixing if a
   real score hits it.
+
 - **Lyric rows are excluded from the subdivision count** (`shares()` only sees
   notated parts) and placed afterward against the columns those parts already
   settled on: one syllable per beat-arrival where the item count matches the
@@ -240,7 +243,7 @@ wherever this runs).
   everywhere else — the top-right solo placement included — always uses the
   full `<instrument-name>`, which has room. `stacked-instrument.txml` in the
   corpus now carries short names on both rows as the worked example. The
-  default 42pt margin can still be too narrow for a *full* name in the
+  default 42pt margin can still be too narrow for a _full_ name in the
   top-right corner or a label column on a part with no short name; that
   pairing is still worth revisiting against a printed score, same as before.
 - **An octave outside `-1`..`1` clamps silently to the nearest Thai mark**
@@ -252,13 +255,12 @@ wherever this runs).
   pass off a capped spelling as exact." Went through two further rounds
   after that fix landed, both the author's own call after inspecting a
   render rather than something derivable from the prose alone:
-
   1. A superscript signed digit (`ด⁺²`, `D⁻²`) — unambiguous, but visually
      cramped on a portrait cell's already-tight columns.
   2. The plain nikhahit/pinthu plus a trailing asterisk as a "there is more
      to this note" cue — closer to an ordinary note, satisfies the same
      "must not pass off as exact" sentence, but the author found the
-     asterisks made a real sheet *harder* to read across a page than the
+     asterisks made a real sheet _harder_ to read across a page than the
      thing they were warning about.
   3. **Current**: the plain mark, no cue at all. `octave` itself stays
      exact and is still what a player reads; only the page's display now
@@ -266,6 +268,7 @@ wherever this runs).
      considered exception to that sentence, not an oversight, and
      `rendering/index.md` is worth revisiting to say so explicitly if this
      holds up — it currently still reads as a hard "must not".
+
 - **An octave mark is a drawn dot, not the literal นิคหิต/พินทุ character**
   (Session 4). It used to be rendered by appending the actual combining
   character to the pitch text and letting the embedded Sarabun font glyph-
@@ -297,6 +300,7 @@ wherever this runs).
   `octaveDotGapAbove`, `octaveDotGapBelow` in `settings.mjs`) are a first
   pass, not a settled convention, the same as `linkTop`/`bowRise` — worth
   checking against a printed page rather than derived from anything.
+
 - **`generateSectionName` and `showHeaderExtras`** (both `settings.mjs`, both
   `false`) implement the two rows the settings table always documented but
   that had no code path at all: "a renderer may offer to print `name` as a
@@ -338,6 +342,7 @@ wherever this runs).
   item and now read by nothing at all, the ชั้น tracking having been its
   only reader. Worth building if a real score ever puts a second `<bpm>` or
   a `<chan>` change mid-piece and wants it on the page.
+
 - **Every eyeballed-only feature from Session 2 now has unit tests**:
   endings (an ending's own annotation heading, and that it does not
   re-print the section-ref's own annotation underneath it), repeat brackets
@@ -386,7 +391,7 @@ wherever this runs).
   anywhere in `layout.mjs` — the attribute existed and did nothing. Dimming
   now covers both the notes the span covers and its own brackets: every
   `role: "symbol"` push inside `renderGridLine()` checks a `dimmed(partId,
-  pos)` predicate the caller builds once per section (or once per ending)
+pos)` predicate the caller builds once per section (or once per ending)
   from that scope's own `parenSpans`, using a plain lexicographic compare
   over `{lineIndex, measureIndex, beatIndex, slotIndex}` (`comparePos`) to
   test whether a position falls between a span's `first` and `last`.
@@ -401,7 +406,7 @@ wherever this runs).
   call always passed the constant `lineIndex: 1` (to keep `layBoxes()` from
   re-printing the section-ref's own annotations under the ending), but that
   same `lineIndex` also keys `notePos`/`rowGeom`, which need the ending's
-  own *real*, 0-based line index to match what `resolveSpans()` recorded.
+  own _real_, 0-based line index to match what `resolveSpans()` recorded.
   A span opening and closing entirely inside one ending's own lines was
   silently failing to draw at all — `rowGeom.get(partId:0)` returning
   `undefined` when the only entry on record was `partId:1`. Fixed by
@@ -410,6 +415,7 @@ wherever this runs).
   everywhere else), and the ending loop passes the real `li` as `lineIndex`
   with `ownAnnotations: false` set explicitly instead of relying on a
   pinned constant to imply both at once.
+
 - **Bow direction is the arc's own facing, not a separate mark at the tip
   — reworked from Session 2's first pass after the author looked at a
   render.** The original reading of "a curve with both tips pointing down/
@@ -428,7 +434,7 @@ wherever this runs).
 
   Getting the amplitude right took two more rounds after that, both driven
   by the same "looked at a render" loop:
-  - The rise used to inherit the *link curve's* clamp
+  - The rise used to inherit the _link curve's_ clamp
     (`arcY - geom.top - 1`), which for a single-row instrument caps out
     around 3-4pt regardless of any rise setting — the actual reason the
     first arcs looked flat, not that the setting itself was too small. Bow
@@ -444,21 +450,21 @@ wherever this runs).
 
   `bowTop`, `bowRise`, and `bowStroke` in `settings.mjs` are still marked
   `OPEN` for this reason; treat a further correction here as expected, not
-  a regression. `renderer/examples/spans-and-endings-test.txml` is a
+  a regression. `renderer/examples/test-spans-and-endings.txml` is a
   standing fixture for this exact shape (both directions, one within a
   line and one crossing a line break) — regenerate it via
   `renderer/src/render-doc-image.mjs` rather than re-describing the shape
   from scratch if this needs another look.
 
-  One thing worth remembering about *testing* this: a `<bow type="stop"/>`
+  One thing worth remembering about _testing_ this: a `<bow type="stop"/>`
   closes on the note immediately before it in document order, not on
   whichever line it happens to sit on. Placed at the very start of a line,
   before that line's first note, the span it closes never actually reaches
-  that line at all — it closes on the *previous* line's last note instead.
+  that line at all — it closes on the _previous_ line's last note instead.
   A fixture meant to demonstrate a bow crossing a line break needs at least
   one note ahead of the stop marker on the line it is meant to land in, or
   the crossing never happens. This is exactly what the earlier
-  `spans-and-endings-test.txml` got wrong the first time it was written.
+  `test-spans-and-endings.txml` got wrong the first time it was written.
 
 ## First pass, not settled
 
@@ -466,7 +472,7 @@ Everything above is implemented and checked against `npm run check`. The
 repeat bracket's proportions (`repeatBracketGap`, `repeatBracketDepth`,
 `repeatLabelSize`) were the other item in this section as of Session 2, built
 to the prose description without a printed score to hold them against; the
-author looked at `spans-and-endings-test.txml`'s rendering of one in Session
+author looked at `test-spans-and-endings.txml`'s rendering of one in Session
 3 and confirmed the proportions as they stand, so that one moves to settled.
 One piece remains genuinely a first guess rather than something verified
 against print, the way both link-curve rounds and both break-spacing rounds

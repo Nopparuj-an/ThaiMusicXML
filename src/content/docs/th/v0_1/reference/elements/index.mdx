@@ -34,6 +34,7 @@ import TreeView from "@/components/TreeView.astro";
               children: [
                 {
                   name: "<text>",
+                  slug: "text",
                   color: "var(--sl-color-gray-4)",
                   note: "องค์ประกอบเดียวกับ <composer> > <text> ด้านบน",
                 },
@@ -45,6 +46,7 @@ import TreeView from "@/components/TreeView.astro";
               children: [
                 {
                   name: "<text>",
+                  slug: "text",
                   color: "var(--sl-color-gray-4)",
                   note: "องค์ประกอบเดียวกับ <composer> > <text> ด้านบน",
                 },
@@ -64,6 +66,7 @@ import TreeView from "@/components/TreeView.astro";
               children: [
                 {
                   name: "<text>",
+                  slug: "text",
                   color: "var(--sl-color-gray-4)",
                   note: "องค์ประกอบเดียวกับ <composer> > <text> ด้านบน",
                 },
@@ -85,11 +88,13 @@ import TreeView from "@/components/TreeView.astro";
               children: [
                 {
                   name: "<repeat>",
+                  slug: "repeat",
                   color: "var(--sl-color-gray-4)",
                   note: "ซ้อน <repeat> กันได้ไม่จำกัดระดับ",
                 },
                 {
                   name: "<section>",
+                  slug: "section",
                   color: "var(--sl-color-gray-4)",
                   note: "<repeat> มีลูกชุดเดียวกับ <structure> คือ <annotation>, <br>, <direction>, <section>, และ <repeat>",
                 },
@@ -111,7 +116,10 @@ import TreeView from "@/components/TreeView.astro";
               slug: "part",
               children: [
                 { name: "<instrument-name>", slug: "instrument-name" },
-                { name: "<instrument-short-name>", slug: "instrument-short-name" },
+                {
+                  name: "<instrument-short-name>",
+                  slug: "instrument-short-name",
+                },
               ],
             },
           ],
@@ -126,6 +134,7 @@ import TreeView from "@/components/TreeView.astro";
               children: [
                 {
                   name: "<annotation>",
+                  slug: "annotation",
                   color: "var(--sl-color-gray-4)",
                   note: "องค์ประกอบเดียวกับ <structure> > <annotation> ด้านบน",
                 },
@@ -145,26 +154,31 @@ import TreeView from "@/components/TreeView.astro";
                           children: [
                             {
                               name: "<note>",
+                              slug: "note",
                               color: "var(--sl-color-gray-4)",
                               note: "องค์ประกอบเดียวกับ <measure> > <note> ด้านบน",
                             },
                             {
                               name: "<rest>",
+                              slug: "rest",
                               color: "var(--sl-color-gray-4)",
                               note: "องค์ประกอบเดียวกับ <measure> > <rest> ด้านบน",
                             },
                             {
                               name: "<parenthesis>",
+                              slug: "parenthesis",
                               color: "var(--sl-color-gray-4)",
                               note: "องค์ประกอบเดียวกับ <measure> > <parenthesis> ด้านล่าง",
                             },
                             {
                               name: "<bow>",
+                              slug: "bow",
                               color: "var(--sl-color-gray-4)",
                               note: "องค์ประกอบเดียวกับ <measure> > <bow> ด้านล่าง",
                             },
                             {
                               name: "<link>",
+                              slug: "link",
                               color: "var(--sl-color-gray-4)",
                               note: "องค์ประกอบเดียวกับ <measure> > <link> ด้านล่าง",
                             },
@@ -176,7 +190,7 @@ import TreeView from "@/components/TreeView.astro";
                         {
                           name: "<syllable>",
                           slug: "syllable",
-                          note: "ใน <part type=\"lyric\"> ห้องหนึ่งมีแค่ <syllable> และ <rest> เท่านั้น",
+                          note: 'ใน <part type="lyric"> ห้องหนึ่งมีแค่ <syllable> และ <rest> เท่านั้น',
                         },
                       ],
                     },
@@ -188,11 +202,13 @@ import TreeView from "@/components/TreeView.astro";
                   children: [
                     {
                       name: "<annotation>",
+                      slug: "annotation",
                       color: "var(--sl-color-gray-4)",
                       note: "องค์ประกอบเดียวกับ <structure> > <annotation> ด้านบน",
                     },
                     {
                       name: "<line>",
+                      slug: "line",
                       color: "var(--sl-color-gray-4)",
                       note: "องค์ประกอบเดียวกับ <section-ref> > <line> ด้านบน",
                     },

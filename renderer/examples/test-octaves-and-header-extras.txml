@@ -3,7 +3,7 @@
      opt-in settings nothing implemented before this session
      (generateSectionName, showHeaderExtras). Rendered once with defaults and
      once with both settings on, for inspection. Not linked from any doc
-     page, the same way khaek-borathes-test.txml is not. -->
+     page, the same way test-khaek-borathes.txml is not. -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
   <header>
     <title>ทดสอบ: ออกตาฟ และตัวเลือกเสริม</title>

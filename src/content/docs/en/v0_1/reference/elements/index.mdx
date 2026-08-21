@@ -34,6 +34,7 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
               children: [
                 {
                   name: "<text>",
+                  slug: "text",
                   color: "var(--sl-color-gray-4)",
                   note: "Same element as <composer> > <text> above",
                 },
@@ -45,6 +46,7 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
               children: [
                 {
                   name: "<text>",
+                  slug: "text",
                   color: "var(--sl-color-gray-4)",
                   note: "Same element as <composer> > <text> above",
                 },
@@ -64,6 +66,7 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
               children: [
                 {
                   name: "<text>",
+                  slug: "text",
                   color: "var(--sl-color-gray-4)",
                   note: "Same element as <composer> > <text> above",
                 },
@@ -85,11 +88,13 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
               children: [
                 {
                   name: "<repeat>",
+                  slug: "repeat",
                   color: "var(--sl-color-gray-4)",
                   note: "Repeats nest to any depth",
                 },
                 {
                   name: "<section>",
+                  slug: "section",
                   color: "var(--sl-color-gray-4)",
                   note: "A <repeat> takes the same children as <structure>: <annotation>, <br>, <direction>, <section>, and <repeat>",
                 },
@@ -111,7 +116,10 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
               slug: "part",
               children: [
                 { name: "<instrument-name>", slug: "instrument-name" },
-                { name: "<instrument-short-name>", slug: "instrument-short-name" },
+                {
+                  name: "<instrument-short-name>",
+                  slug: "instrument-short-name",
+                },
               ],
             },
           ],
@@ -126,6 +134,7 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
               children: [
                 {
                   name: "<annotation>",
+                  slug: "annotation",
                   color: "var(--sl-color-gray-4)",
                   note: "Same element as <structure> > <annotation> above",
                 },
@@ -145,26 +154,31 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
                           children: [
                             {
                               name: "<note>",
+                              slug: "note",
                               color: "var(--sl-color-gray-4)",
                               note: "Same element as <measure> > <note> above",
                             },
                             {
                               name: "<rest>",
+                              slug: "rest",
                               color: "var(--sl-color-gray-4)",
                               note: "Same element as <measure> > <rest> above",
                             },
                             {
                               name: "<parenthesis>",
+                              slug: "parenthesis",
                               color: "var(--sl-color-gray-4)",
                               note: "Same element as <measure> > <parenthesis> below",
                             },
                             {
                               name: "<bow>",
+                              slug: "bow",
                               color: "var(--sl-color-gray-4)",
                               note: "Same element as <measure> > <bow> below",
                             },
                             {
                               name: "<link>",
+                              slug: "link",
                               color: "var(--sl-color-gray-4)",
                               note: "Same element as <measure> > <link> below",
                             },
@@ -176,7 +190,7 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
                         {
                           name: "<syllable>",
                           slug: "syllable",
-                          note: "In a <part type=\"lyric\"> a measure holds <syllable> and <rest> only",
+                          note: 'In a <part type="lyric"> a measure holds <syllable> and <rest> only',
                         },
                       ],
                     },
@@ -188,11 +202,13 @@ This reference lists the elements in a ThaiMusicXML v0.1 document and their rela
                   children: [
                     {
                       name: "<annotation>",
+                      slug: "annotation",
                       color: "var(--sl-color-gray-4)",
                       note: "Same element as <structure> > <annotation> above",
                     },
                     {
                       name: "<line>",
+                      slug: "line",
                       color: "var(--sl-color-gray-4)",
                       note: "Same element as <section-ref> > <line> above",
                     },
