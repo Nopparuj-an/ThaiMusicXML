@@ -1,0 +1,52 @@
+---
+title: Schema and test suite
+description: The RELAX NG schema for ThaiMusicXML v1.0 and the conformance corpus that goes with it
+---
+
+import CorpusTable from "@/components/CorpusTable.astro";
+
+Three artifacts ship alongside this specification: a schema a validator can read, the same schema in a second format, and a corpus of files to check an implementation against.
+
+<a href="/schema/thaimusicxml-1.0.rng"><code>/schema/thaimusicxml-1.0.rng</code></a> is the schema. It is RELAX NG in XML syntax, so `xmllint` and anything else built on libxml2 reads it without conversion:
+
+```sh
+xmllint --noout --relaxng thaimusicxml-1.0.rng score.txml
+```
+
+<a href="/schema/thaimusicxml-1.0.xsd"><code>/schema/thaimusicxml-1.0.xsd</code></a> is the same schema translated to W3C XML Schema, for tools that read XSD and not RELAX NG. It's generated from the `.rng` file by [Trang](https://relaxng.org/jclark/trang.html) on every push; the RELAX NG file is the one actually hand-edited, so treat the XSD as downstream of it.
+
+The corpus lives under `/corpus/`, split into files that must be accepted and files that must be rejected. Both are plain static files. Download them, point your own validator at them, and see whether it agrees.
+
+## What the schema covers, and what it cannot
+
+A grammar describes one document at a time, element by element. That reaches further than it might sound: the schema catches an unknown `pitch` spelling, a `chan` value of `0.50` where only `0.5` is exact, a `<bow type="stop">` carrying a `direction` it has no business carrying, a ninth `<measure>` in a `<line>`, a `<group>` with one child, and a `<part>` with `stack` but no `row`.
+
+What it cannot reach is anything that depends on the rest of the document. Whether a `<measure>` may hold `<syllable>` children turns on the `type` of a `<part>` declared elsewhere in the file. Whether two parts agree on beat count is a comparison between two branches. Whether an `<ending>` names a pass that exists depends on how many `<repeat>` elements enclose the section, several levels up.
+
+So conformance has two layers, and passing the schema is the first of them, not the whole of it. The [Conformance reference](/en/v1_0/reference/conformance/) states every rule; `scripts/check-corpus.mjs` in the repository implements the ones the grammar cannot express, and runs both layers over the corpus.
+
+One deliberate omission is worth naming. The schema does not declare `id` attributes as `xsd:ID`, even though that would buy uniqueness checking for free, because `xsd:ID` is unique across the whole document while ThaiMusicXML scopes ids per kind: a `<part id="1">` and a `<section id="1">` are different names that do not collide. Uniqueness is checked per kind outside the grammar instead.
+
+## Valid files
+
+Every file here must be accepted. Between them they exercise right-anchored groups, stacked instruments, lyric parts, spans crossing measure and line boundaries, nested repeats, and variant endings.
+
+<CorpusTable dir="valid" />
+
+`warnings.txml` is the odd one. It is a conforming document that a processor should nonetheless warn about five times over, because every rule it brushes against is one where the specification says warn rather than reject.
+
+## Invalid files
+
+Every file here must be rejected, and each one breaks exactly one rule so that a failure points somewhere specific. The comment at the top of each file names the rule it violates.
+
+These are counterexamples, not models. Nothing in this directory is a file to copy from.
+
+<CorpusTable dir="invalid" />
+
+## Using the corpus
+
+Point your implementation at both directories and compare its verdict to the directory name. That is the whole protocol.
+
+A validator that accepts everything under `valid/` and rejects everything under `invalid/` agrees with this specification on every rule the corpus covers, which is every `must` in the [Conformance reference](/en/v1_0/reference/conformance/). It says nothing about rendering, and nothing about the `should` rules, where a processor is expected to warn and carry on.
+
+Where your reading and the corpus disagree, one of the two is wrong and it is worth finding out which. [Open an issue](https://github.com/Nopparuj-an/ThaiMusicXML/issues) rather than working around it: a rule that two people read differently is a rule stated badly, and the corpus exists to surface exactly that.

@@ -50,15 +50,15 @@ jobs:
       # import into public/, so the playground needs its own copy to import.
       - name: Generate XSD from RELAX NG schema
         run: |
-          trang -O xsd public/schema/thaimusicxml-0.1.rng public/schema/thaimusicxml-0.1.xsd
-          cp public/schema/thaimusicxml-0.1.xsd src/playground/thaimusicxml-0.1.xsd
+          trang -O xsd public/schema/thaimusicxml-1.0.rng public/schema/thaimusicxml-1.0.xsd
+          cp public/schema/thaimusicxml-1.0.xsd src/playground/thaimusicxml-1.0.xsd
 
       - name: Commit regenerated XSD
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: regenerate XSD from RNG schema [skip ci]"
-          file_pattern: public/schema/thaimusicxml-0.1.xsd src/playground/thaimusicxml-0.1.xsd
+          file_pattern: public/schema/thaimusicxml-1.0.xsd src/playground/thaimusicxml-1.0.xsd
 
       # - name: Build
       #   run: pnpm run build

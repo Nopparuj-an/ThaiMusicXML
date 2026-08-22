@@ -4,7 +4,7 @@
 // ThaiMusicXML -> MusicXML. See reference/conversion in the docs for the
 // mapping policy this implements.
 //
-// v0.1 of this writer always unrolls play order (every pass of every
+// v1.0 of this writer always unrolls play order (every pass of every
 // repeated section becomes its own plain measures) rather than emitting
 // native repeat barlines and volta endings. The docs describe native
 // encoding as the eventual default; this is a staged interim step so a

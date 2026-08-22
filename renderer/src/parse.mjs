@@ -14,7 +14,7 @@
 
 import { DOMParser } from "#dom-parser";
 
-export const NS = "https://thaimusicxml.anan.ovh/ns/0.1";
+export const NS = "https://thaimusicxml.anan.ovh/ns/1";
 
 const els = (node, name) =>
   Array.from(node.getElementsByTagNameNS(NS, name)).filter(

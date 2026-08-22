@@ -4,7 +4,7 @@
      measures that actually differ. Measure 1 here is left empty on pass 2,
      so it plays measure 1 of the base line 2 unchanged; only measure 2
      actually varies. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>Ending inherits an unchanged measure</title></header>
   <structure>
     <repeat times="2"><section id="s1" name="ท่อน 1"/></repeat>

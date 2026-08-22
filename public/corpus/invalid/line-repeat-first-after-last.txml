@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- INVALID: first must be less than or equal to last. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>Invalid example</title></header>
   <structure>
     <section id="s1"><line-repeat first="3" last="2" times="2"/></section>

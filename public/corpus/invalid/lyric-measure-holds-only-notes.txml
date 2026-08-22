@@ -2,7 +2,7 @@
 <!-- INVALID: A lyric part's measures hold syllable and rest. This measure holds
      notes, which the grammar accepts on its own because a part's type is
      declared in <ensemble>, out of the grammar's reach. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>Invalid example</title></header>
   <structure><section id="s1"/></structure>
   <ensemble>

@@ -4,7 +4,7 @@
      romanized (mixed case, which carries no meaning), measure 3 Thai script,
      measure 4 the modifiers and octave. A real file picks one spelling and
      keeps to it; this one exercises all of them on purpose. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>Pitch spellings</title>
     <tuning reference="c-major"/>

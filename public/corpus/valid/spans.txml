@@ -4,7 +4,7 @@
      two arcs but is one span. The parenthesis span sits inside a group,
      showing that markers carry no duration and do not count toward the
      group's division. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>Spans</title>
   </header>

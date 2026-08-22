@@ -202,7 +202,7 @@ test("pitchSpelling re-spelling happens after the octave modifier is stripped to
 
 test("an octave mark renders as a drawn dot primitive, not text", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble><part id="P1"/></ensemble>
@@ -239,7 +239,7 @@ test("an octave mark renders as a drawn dot primitive, not text", () => {
 // sharing a stack are declared adjacent and numbered from 1, as <part>
 // requires.
 const linkDoc = (rows, { stack = null } = {}) => `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble>${rows
@@ -387,10 +387,10 @@ test("a span crossing a line break draws one segment per line", () => {
 // belong together." A tiny page height forces a break after one grid line
 // without needing a long score to prove it.
 
-const NS = "https://thaimusicxml.anan.ovh/ns/0.1";
+const NS = "https://thaimusicxml.anan.ovh/ns/1";
 
 const score = (structureXml) => `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>${structureXml}</structure>
   <ensemble><part id="P1"/></ensemble>
@@ -494,7 +494,7 @@ const byRole = (page, role) => page.elements.filter((el) => el.role === role);
 
 test("a line-repeat brackets its range and labels it, unless times is 1", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>
     <section id="s1" name="s1">
@@ -533,7 +533,7 @@ test("a line-repeat brackets its range and labels it, unless times is 1", () => 
 
 test("an ending prints its own heading and grid below the section, without repeating the part's own annotation", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>
     <repeat times="2">
@@ -572,7 +572,7 @@ test("two parts sharing the same ending print its heading once and rule one comb
   // detached grid - so two parts with the same ending looked like two
   // separate little sections stacked underneath each other.
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>
     <repeat times="2">
@@ -626,7 +626,7 @@ test("a bow span crossing a line resolves to the notes at its true start and sto
   // Start falls before ด, stop falls before ฟ (after ม), so the span is
   // ด..ม even though ฟ is the next note written after the stop marker.
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble><part id="P1"/></ensemble>
@@ -659,7 +659,7 @@ test("a bow span crossing a line resolves to the notes at its true start and sto
 
 test("a bow span crossing a line break draws one arc per line, same facing on every segment", () => {
   const crossingScore = (direction) => `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble><part id="P1"/></ensemble>
@@ -700,7 +700,7 @@ test("a bow span crossing a line break draws one arc per line, same facing on ev
 
 test("bow direction is the arc's own facing, not a separate tip mark: \"in\" domes up, \"out\" is the same arc mirrored", () => {
   const bowScore = (direction) => `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble><part id="P1"/></ensemble>
@@ -734,7 +734,7 @@ test("bow direction is the arc's own facing, not a separate tip mark: \"in\" dom
 
 test("a parenthesis span dims its notes and its brackets, on when dim=true or the renderer default is on, off otherwise", () => {
   const parenScore = (dimAttr) => `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble><part id="P1"/></ensemble>
@@ -782,7 +782,7 @@ test("a span entirely inside a single-line ending still resolves and draws", () 
   // and closing inside the ending's own lines - so it silently failed to
   // draw at all.
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>
     <repeat times="2">
@@ -814,7 +814,7 @@ test("a span entirely inside a single-line ending still resolves and draws", () 
 
 test("a parenthesis span crossing a line break brackets only its true ends", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble><part id="P1"/></ensemble>
@@ -849,7 +849,7 @@ test("a parenthesis span crossing a line break brackets only its true ends", () 
 
 test("a lyric measure matching the beat count aligns to the beats' own arrivals", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble>
@@ -885,7 +885,7 @@ test("a lyric measure matching the beat count aligns to the beats' own arrivals"
 
 test("a lyric measure not matching the beat count centers as one group, and a lyric rest is blank rather than a hyphen", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble>
@@ -960,7 +960,7 @@ test("the fitted size is the one that fills the cell exactly, gaps and padding i
 test("syllables too wide for their beats shift apart, and shrink only where shifting cannot save them", () => {
   const words = ["เพราะ", "เสียง", "เพลง", "เพลิน"];
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble>
@@ -1018,7 +1018,7 @@ test("a label reprints only on the first line, a fresh page, or a lineup change"
   // P2 has only two lines in this section, so line 3's lineup drops to P1
   // alone - the only thing, short of a page turn, that can change it.
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble>
@@ -1051,7 +1051,7 @@ test("a label reprints only on the first line, a fresh page, or a lineup change"
 
 test("a label reprints on the first line of a fresh page even where the lineup has not changed", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble>
@@ -1080,7 +1080,7 @@ test("a label reprints on the first line of a fresh page even where the lineup h
 
 test("showLabels: false hides a solo score's top-right instrument name too, not just an ensemble's label column", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble><part id="P1"><instrument-name>หนึ่ง</instrument-name></part></ensemble>
@@ -1105,7 +1105,7 @@ test("showLabels: false hides a solo score's top-right instrument name too, not 
 
 test("generateSectionName is off by default, so a bare section prints no heading at all", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>
     <section id="s1" name="ท่อน 1"/>
@@ -1123,7 +1123,7 @@ test("generateSectionName is off by default, so a bare section prints no heading
 
 test("generateSectionName prints a section's plain name for every named section, even one that already has an authored annotation", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>
     <section id="s1" name="ท่อน 1"/>
@@ -1154,7 +1154,7 @@ test("an unrelated annotation sitting directly before a section does not suppres
   // the generated name even when the annotation was unrelated. Detection is
   // gone now, so the name always prints alongside whatever else is there.
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>
     <annotation>หน้าทับปรบไก่</annotation>
@@ -1176,7 +1176,7 @@ test("an unrelated annotation sitting directly before a section does not suppres
 
 test("showHeaderExtras is off by default, and prints tuning, bpm, and license but never nathap when on", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header>
     <title>ทดสอบ</title>
     <tuning reference="c-major"/>

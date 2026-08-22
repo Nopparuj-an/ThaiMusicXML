@@ -12,7 +12,7 @@ uses third-party software under its own license terms, listed below.
 > This Font Software is licensed under the SIL Open Font License, Version 1.1.
 > This license is available with a FAQ at: https://openfontlicense.org
 
-Sarabun is the notation typeface (see [Typeface](https://github.com/Nopparuj-an/ThaiMusicXML/blob/main/src/content/docs/en/v0_1/reference/rendering/index.md#typeface)).
+Sarabun is the notation typeface (see [Typeface](https://github.com/Nopparuj-an/ThaiMusicXML/blob/main/src/content/docs/en/v1_0/reference/rendering/index.md#typeface)).
 Its font data is embedded directly into every SVG the renderer produces, and
 served by the docs site. The full license text ships with the
 `@fontsource/sarabun` package (`node_modules/@fontsource/sarabun/LICENSE`).

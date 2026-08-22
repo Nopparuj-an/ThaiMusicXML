@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ThaiMusicXML v1.0 - RELAX NG schema
+
+  Validate a document by passing this file to xmllint's relaxng option:
+      xmllint (noout) (relaxng) thaimusicxml-1.0.rng score.txml
+  writing each option with its usual two leading hyphens, which cannot be
+  reproduced literally inside an XML comment.
+
+  This schema covers what a grammar can express: element nesting and order,
+  attribute presence, datatypes, and co-occurrence constraints such as
+  "direction is required on a bow start and forbidden on a bow stop".
+
+  Rules that reach across the document are not expressible here and are
+  checked separately. See the Conformance reference:
+  https://thaimusicxml.anan.ovh/en/v1_0/reference/conformance/
+
+  Notably NOT enforced by this file:
+    - id uniqueness, and IDREF resolution (xsd:ID is document-global, but
+      ThaiMusicXML scopes ids per kind: a part "1" and a section "1" coexist)
+    - cross-part agreement on line, measure, and beat counts
+    - number attributes matching position
+    - which children a measure may hold, since that depends on the part's
+      type, declared elsewhere in the document
+    - at most one <text> per align value
+    - ending line runs, pass ranges, and pass ordering
+    - line-repeat ranges against the section's line count
+    - bow, parenthesis, and link span matching
+    - recommended-value warnings for nathap and tuning
+-->
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         ns="https://thaimusicxml.anan.ovh/ns/1"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <start>
+    <ref name="el-thai-score"/>
+  </start>
+
+  <!-- ==================================================================
+       Root
+       ================================================================== -->
+
+  <define name="el-thai-score">
+    <element name="thai-score">
+      <attribute name="version"><ref name="non-empty-string"/></attribute>
+      <ref name="el-header"/>
+      <ref name="el-structure"/>
+      <ref name="el-ensemble"/>
+      <oneOrMore><ref name="el-part-data"/></oneOrMore>
+    </element>
+  </define>
+
+  <!-- ==================================================================
+       Header
+       ================================================================== -->
+
+  <define name="el-header">
+    <element name="header">
+      <ref name="el-title"/>
+      <zeroOrMore><ref name="el-composer"/></zeroOrMore>
+      <zeroOrMore><ref name="el-lyricist"/></zeroOrMore>
+      <zeroOrMore><ref name="el-arranger"/></zeroOrMore>
+      <optional><ref name="el-tuning"/></optional>
+      <optional><ref name="el-license"/></optional>
+    </element>
+  </define>
+
+  <define name="el-title">
+    <element name="title"><text/></element>
+  </define>
+
+  <define name="el-composer">
+    <element name="composer"><ref name="aligned-text-content"/></element>
+  </define>
+
+  <define name="el-lyricist">
+    <element name="lyricist"><ref name="aligned-text-content"/></element>
+  </define>
+
+  <define name="el-arranger">
+    <element name="arranger"><ref name="aligned-text-content"/></element>
+  </define>
+
+  <define name="el-tuning">
+    <element name="tuning">
+      <attribute name="reference"><ref name="non-empty-string"/></attribute>
+    </element>
+  </define>
+
+  <define name="el-license">
+    <element name="license"><text/></element>
+  </define>
+
+  <!--
+    Plain text, or <text> children, or <text> children surrounded by the
+    whitespace of an indented document. The one-per-align limit and the
+    warning on discarded sibling text are checked outside the grammar.
+  -->
+  <define name="aligned-text-content">
+    <mixed>
+      <zeroOrMore><ref name="el-text"/></zeroOrMore>
+    </mixed>
+  </define>
+
+  <define name="el-text">
+    <element name="text">
+      <attribute name="align">
+        <choice>
+          <value>left</value>
+          <value>center</value>
+          <value>right</value>
+        </choice>
+      </attribute>
+      <text/>
+    </element>
+  </define>
+
+  <!-- ==================================================================
+       Structure
+       ================================================================== -->
+
+  <define name="el-structure">
+    <element name="structure">
+      <zeroOrMore><ref name="structure-content"/></zeroOrMore>
+    </element>
+  </define>
+
+  <!-- <repeat> takes exactly the children <structure> takes. -->
+  <define name="structure-content">
+    <choice>
+      <ref name="el-annotation"/>
+      <ref name="el-br"/>
+      <ref name="el-direction"/>
+      <ref name="el-section"/>
+      <ref name="el-repeat"/>
+    </choice>
+  </define>
+
+  <define name="el-annotation">
+    <element name="annotation"><ref name="aligned-text-content"/></element>
+  </define>
+
+  <define name="el-br">
+    <element name="br"><empty/></element>
+  </define>
+
+  <define name="el-direction">
+    <element name="direction">
+      <interleave>
+        <optional><ref name="el-nathap"/></optional>
+        <optional><ref name="el-chan"/></optional>
+        <optional><ref name="el-bpm"/></optional>
+      </interleave>
+    </element>
+  </define>
+
+  <!-- Open set: any non-empty string. Unrecognized values warn, never reject. -->
+  <define name="el-nathap">
+    <element name="nathap">
+      <attribute name="value"><ref name="non-empty-string"/></attribute>
+    </element>
+  </define>
+
+  <!-- Closed set, matched exactly. "0.50" and ".5" are invalid. -->
+  <define name="el-chan">
+    <element name="chan">
+      <attribute name="value">
+        <choice>
+          <value>0.5</value>
+          <value>1</value>
+          <value>2</value>
+          <value>3</value>
+          <value>4</value>
+        </choice>
+      </attribute>
+    </element>
+  </define>
+
+  <define name="el-bpm">
+    <element name="bpm">
+      <data type="positiveInteger"/>
+    </element>
+  </define>
+
+  <define name="el-repeat">
+    <element name="repeat">
+      <optional>
+        <attribute name="times"><data type="positiveInteger"/></attribute>
+      </optional>
+      <zeroOrMore><ref name="structure-content"/></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="el-section">
+    <element name="section">
+      <attribute name="id"><ref name="identifier"/></attribute>
+      <optional><attribute name="name"><text/></attribute></optional>
+      <zeroOrMore><ref name="el-line-repeat"/></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="el-line-repeat">
+    <element name="line-repeat">
+      <attribute name="first"><data type="positiveInteger"/></attribute>
+      <attribute name="last"><data type="positiveInteger"/></attribute>
+      <optional>
+        <attribute name="times"><data type="positiveInteger"/></attribute>
+      </optional>
+    </element>
+  </define>
+
+  <!-- ==================================================================
+       Ensemble
+       ================================================================== -->
+
+  <define name="el-ensemble">
+    <element name="ensemble">
+      <oneOrMore><ref name="el-part"/></oneOrMore>
+    </element>
+  </define>
+
+  <define name="el-part">
+    <element name="part">
+      <attribute name="id"><ref name="identifier"/></attribute>
+      <optional>
+        <attribute name="type">
+          <choice>
+            <value>pitched</value>
+            <value>unpitched</value>
+            <value>lyric</value>
+          </choice>
+        </attribute>
+      </optional>
+      <!-- stack and row appear together or not at all. -->
+      <optional>
+        <group>
+          <attribute name="stack"><ref name="non-empty-string"/></attribute>
+          <attribute name="row"><data type="positiveInteger"/></attribute>
+        </group>
+      </optional>
+      <element name="instrument-name"><text/></element>
+      <optional>
+        <element name="instrument-short-name"><text/></element>
+      </optional>
+    </element>
+  </define>
+
+  <!-- ==================================================================
+       Part data
+       ================================================================== -->
+
+  <define name="el-part-data">
+    <element name="part-data">
+      <attribute name="part"><ref name="identifier"/></attribute>
+      <oneOrMore><ref name="el-section-ref"/></oneOrMore>
+    </element>
+  </define>
+
+  <define name="el-section-ref">
+    <element name="section-ref">
+      <attribute name="section"><ref name="identifier"/></attribute>
+      <zeroOrMore><ref name="el-annotation"/></zeroOrMore>
+      <oneOrMore><ref name="el-line"/></oneOrMore>
+      <zeroOrMore><ref name="el-ending"/></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="el-ending">
+    <element name="ending">
+      <attribute name="pass"><ref name="pass-list"/></attribute>
+      <oneOrMore><ref name="el-annotation"/></oneOrMore>
+      <oneOrMore><ref name="el-line"/></oneOrMore>
+    </element>
+  </define>
+
+  <!-- One to eight measures. Eight is a hard limit. -->
+  <define name="el-line">
+    <element name="line">
+      <attribute name="number"><data type="positiveInteger"/></attribute>
+      <ref name="el-measure"/>
+      <optional><ref name="el-measure"/>
+      <optional><ref name="el-measure"/>
+      <optional><ref name="el-measure"/>
+      <optional><ref name="el-measure"/>
+      <optional><ref name="el-measure"/>
+      <optional><ref name="el-measure"/>
+      <optional><ref name="el-measure"/>
+      </optional></optional></optional></optional></optional></optional></optional>
+    </element>
+  </define>
+
+  <!--
+    A measure holds either notated content or lyric content. Which one is
+    legal depends on the containing part's type, which is declared in
+    <ensemble> and so is out of this grammar's reach. Both are accepted
+    here; the type match is checked outside.
+  -->
+  <define name="el-measure">
+    <element name="measure">
+      <attribute name="number"><data type="positiveInteger"/></attribute>
+      <choice>
+        <ref name="notated-measure-content"/>
+        <ref name="lyric-measure-content"/>
+      </choice>
+    </element>
+  </define>
+
+  <!--
+    At least one beat, with zero-duration markers free to sit anywhere
+    among them. A notated measure of no beats is invalid.
+  -->
+  <define name="notated-measure-content">
+    <zeroOrMore><ref name="marker"/></zeroOrMore>
+    <oneOrMore>
+      <group>
+        <ref name="beat"/>
+        <zeroOrMore><ref name="marker"/></zeroOrMore>
+      </group>
+    </oneOrMore>
+  </define>
+
+  <!-- A lyric measure may be empty, meaning nothing is sung there. -->
+  <define name="lyric-measure-content">
+    <zeroOrMore>
+      <choice>
+        <ref name="el-syllable"/>
+        <ref name="el-rest"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+
+  <define name="beat">
+    <choice>
+      <ref name="el-note"/>
+      <ref name="el-rest"/>
+      <ref name="el-group"/>
+    </choice>
+  </define>
+
+  <define name="marker">
+    <choice>
+      <ref name="el-bow"/>
+      <ref name="el-parenthesis"/>
+      <ref name="el-link"/>
+    </choice>
+  </define>
+
+  <!-- pitch and sound are mutually exclusive: exactly one of the two. -->
+  <define name="el-note">
+    <element name="note">
+      <choice>
+        <attribute name="pitch"><ref name="pitch-value"/></attribute>
+        <attribute name="sound"><ref name="non-empty-string"/></attribute>
+      </choice>
+      <optional>
+        <attribute name="octave"><data type="integer"/></attribute>
+      </optional>
+    </element>
+  </define>
+
+  <define name="el-rest">
+    <element name="rest"><empty/></element>
+  </define>
+
+  <!-- Two or more note/rest children. Groups do not nest. -->
+  <define name="el-group">
+    <element name="group">
+      <zeroOrMore><ref name="marker"/></zeroOrMore>
+      <ref name="note-or-rest"/>
+      <zeroOrMore><ref name="marker"/></zeroOrMore>
+      <oneOrMore>
+        <group>
+          <ref name="note-or-rest"/>
+          <zeroOrMore><ref name="marker"/></zeroOrMore>
+        </group>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="note-or-rest">
+    <choice>
+      <ref name="el-note"/>
+      <ref name="el-rest"/>
+    </choice>
+  </define>
+
+  <!--
+    A gesture arc. Nothing beyond type: unlike a bow's direction or a
+    parenthesis's dim/mute, the curve's shape is not chosen, it follows from
+    where the notes it spans fell.
+  -->
+  <define name="el-link">
+    <element name="link">
+      <attribute name="type">
+        <choice><value>start</value><value>stop</value></choice>
+      </attribute>
+    </element>
+  </define>
+
+  <!-- direction is required on a start and forbidden on a stop. -->
+  <define name="el-bow">
+    <element name="bow">
+      <choice>
+        <group>
+          <attribute name="type"><value>start</value></attribute>
+          <attribute name="direction">
+            <choice><value>in</value><value>out</value></choice>
+          </attribute>
+        </group>
+        <attribute name="type"><value>stop</value></attribute>
+      </choice>
+    </element>
+  </define>
+
+  <!-- dim and mute describe the whole span, so they sit on the start only. -->
+  <define name="el-parenthesis">
+    <element name="parenthesis">
+      <choice>
+        <group>
+          <attribute name="type"><value>start</value></attribute>
+          <optional><attribute name="dim"><data type="boolean"/></attribute></optional>
+          <optional><attribute name="mute"><data type="boolean"/></attribute></optional>
+        </group>
+        <attribute name="type"><value>stop</value></attribute>
+      </choice>
+    </element>
+  </define>
+
+  <define name="el-syllable">
+    <element name="syllable"><text/></element>
+  </define>
+
+  <!-- ==================================================================
+       Datatypes
+       ================================================================== -->
+
+  <define name="non-empty-string">
+    <data type="string">
+      <param name="minLength">1</param>
+    </data>
+  </define>
+
+  <!--
+    An id is any non-empty token. Deliberately not xsd:ID, whose uniqueness
+    is document-global: ThaiMusicXML scopes ids per kind, so a <part id="1">
+    and a <section id="1"> are distinct and must not collide.
+  -->
+  <define name="identifier">
+    <data type="token">
+      <param name="minLength">1</param>
+    </data>
+  </define>
+
+  <!--
+    One base note, optionally followed by one Thai octave modifier.
+
+    Base notes, in the three interchangeable spellings:
+      1-7
+      D R M F S L T, upper or lower case
+      ด U+0E14  ร U+0E23  ม U+0E21  ฟ U+0E1F  ซ U+0E0B  ล U+0E25  ท U+0E17
+
+    Modifiers, both combining characters:
+      nikhahit U+0E4D  raise one octave
+      pinthu   U+0E3A  lower one octave
+
+    The modifiers render on top of the preceding bracket in the pattern
+    below and cannot be identified by eye. Match on the code points.
+  -->
+  <define name="pitch-value">
+    <data type="string">
+      <param name="pattern">[1-7DRMFSLTdrmfsltดรมฟซลท][ํฺ]?</param>
+    </data>
+  </define>
+
+  <!--
+    Comma-separated 1-based pass numbers. Ascending order and the absence
+    of repeats are checked outside the grammar.
+  -->
+  <define name="pass-list">
+    <data type="string">
+      <param name="pattern">[1-9][0-9]*(,[1-9][0-9]*)*</param>
+    </data>
+  </define>
+
+</grammar>

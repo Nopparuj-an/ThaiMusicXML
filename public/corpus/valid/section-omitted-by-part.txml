@@ -2,7 +2,7 @@
 <!-- A part that sits out a section. P2 is silent for the whole of ท่อน 2, so
      its part-data simply has no section-ref for it. The cross-part agreement
      rule then applies only to the parts that do reference the section. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>Omitted section</title>
   </header>

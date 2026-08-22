@@ -1,4 +1,4 @@
-// Reads thaimusicxml-0.1.xsd (generated from the RELAX NG schema by Trang -
+// Reads thaimusicxml-1.0.xsd (generated from the RELAX NG schema by Trang -
 // see .github/workflows/ci.yml) into a small lookup table:
 // per element, its legal children, its attributes, and the doc comment
 // Trang carried straight through from the RNG source. That is everything

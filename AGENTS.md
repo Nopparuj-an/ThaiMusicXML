@@ -5,7 +5,7 @@ Although confirm English version with the user first before writing Thai.
 
 ## Development
 
-- Schema is `public/schema/thaimusicxml-0.1.rng` (RELAX NG); TreeView in `elements/index.mdx` mirrors the same hierarchy.
+- Schema is `public/schema/thaimusicxml-1.0.rng` (RELAX NG); TreeView in `elements/index.mdx` mirrors the same hierarchy.
 - Conformance rules are prose, in ## Conformance sections on the relevant element page. The grammar covers what it can; the rest live in `scripts/check-corpus.mjs`, run over `public/corpus/` by `npm run check:corpus`.
 - astro check is currently broken in this environment, use `npx astro build` instead.
 - After editing docs, run `npm run check:links`. It resolves every internal link and `#anchor`, including the TreeView slugs, and exits non-zero on a break.

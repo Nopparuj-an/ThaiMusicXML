@@ -1,0 +1,163 @@
+---
+title: Beats and subdivision
+description: How groups split a beat into equal parts
+sidebar:
+  order: 5
+---
+
+[Notes, rests, and octaves](/en/v1_0/tutorial/4-notes_and_octaves/) showed every note and rest taking one beat. This page introduces the `<group>` element, which splits a single beat into equal parts. It is the concept most specific to ThaiMusicXML.
+
+This page uses examples from แขกบรเทศ (Khaek Borathes), a piece with richer subdivision than ลาวดวงเดือน.
+
+## What a group is
+
+A `<group>` occupies exactly one beat, the same span as a single `<note>` or `<rest>`. That beat is divided evenly among its children: two children each get half a beat, three each get a third, and so on.
+
+```xml
+<!-- Beat 3 split into two -->
+<measure number="1">
+  <note pitch="ด"/>
+  <note pitch="ร"/>
+  <group>
+    <note pitch="ม"/>
+    <note pitch="ซ"/>
+  </group>
+  <note pitch="ล"/>
+</measure>
+```
+
+This measure has four beats. The `<group>` in beat 3 holds two notes, so each gets half a beat. The other three beats each hold one note.
+
+A group must contain at least two `<note>` or `<rest>` children. It cannot be nested: subdivisions go one level deep in v1.0.
+
+## Where the children fall
+
+A beat arrives on its last slot (see [The score model](/en/v1_0/tutorial/3-the_score_model/)). A group's final child lands on the beat, and the earlier ones space backwards from it.
+
+This is where Thai subdivision parts company with Western subdivision. In Western notation, a group of two eighth notes places the first on the beat and the second after it. In ThaiMusicXML, the second note is on the beat and the first leads up to it from before it.
+
+Marking each note that lands on a beat `X` and each note between beats `O`:
+
+```
+Plain notes:    | - ร  -  ม      | →  | -  X  -  X  |
+Group of two:   | - (ร ม) - ซ   | →  | - (O X) - X |
+Group of three: | -  -  - (ด ร ม)| →  | -  -  - (O O X) |
+```
+
+A plain `<note>` is always `X`: it is the beat. Only a group produces `O`, and only on its non-final children.
+
+## Why a group cannot cross a boundary
+
+A group occupies exactly one beat. Its children divide that one beat among themselves, so even a group of three or four notes still fits inside the same time span as a single plain note. Since the group never takes more than one beat, it cannot spill into the beat before it, and cannot cross a `<measure>` or `<line>` boundary.
+
+## Groups with rests
+
+A group can mix notes and rests. From แขกบรเทศ, ฆ้องวงใหญ่ R, ท่อน 2, measure 3:
+
+```xml
+<group>
+  <rest/>
+  <note pitch="ซ"/>
+  <note pitch="ล"/>
+</group>
+```
+
+This is a 3-child group. The rest takes the first third of the beat, ซ takes the second, and ล lands on the beat itself.
+
+## Groups alongside plain notes
+
+A measure can mix plain notes and groups. From the same part, measure 6:
+
+```xml
+<note pitch="ดํ"/>
+<rest/><rest/>
+<group>
+  <note pitch="รํ"/>
+  <note pitch="มํ"/>
+</group>
+```
+
+Four beats: ดํ on beat 1, two rests on beats 2 and 3, and a 2-note group on beat 4. The group's two notes each get half a beat, with มํ landing on the beat.
+
+## Link: marking a gesture
+
+A group says how a beat divides. It does not say that the notes belong together as one movement of the hands. For that, write a [`<link>`](/en/v1_0/reference/elements/link/) span around them:
+
+```xml
+<note pitch="ด"/>
+<link type="start"/>
+<group>
+  <note pitch="ร"/>
+  <note pitch="ม"/>
+</group>
+<link type="stop"/>
+<note pitch="ซ"/>
+```
+
+A curve appears over ร and ม. It changes nothing about playback: the group's subdivision already describes the rhythm. What it adds is certainty, since a group is otherwise shown only by its notes sitting closer together, and a crowded measure leaves that spacing very little room to work in.
+
+Because `<link>` is a marker pair and not something a group carries, the span is free to run past the beat it opens in:
+
+```xml
+<note pitch="ด"/>
+<link type="start"/>
+<group><note pitch="ร"/><note pitch="ม"/></group>
+<group><note pitch="ซ"/><note pitch="ล"/></group>
+<link type="stop"/>
+<note pitch="ท"/>
+```
+
+One curve over four notes and two beats. This is the ordinary shape of a rapid run in Thai music, and it is why the mark is an element rather than an attribute on `<group>`: a group is exactly one beat, and a gesture often is not.
+
+### Reaching the other row
+
+Where the containing `<part>` has a `stack` attribute (meaning the instrument is notated across several rows), the curve reaches the other rows too.
+
+From แขกบรเทศ, ท่อน 2, measure 3, both rows of ฆ้องวงใหญ่:
+
+ฆ้องวงใหญ่ R:
+```xml
+<link type="start"/>
+<group>
+  <rest/>
+  <note pitch="ซ"/>
+  <note pitch="ล"/>
+</group>
+<link type="stop"/>
+```
+
+ฆ้องวงใหญ่ L:
+```xml
+<group>
+  <note pitch="ฟ"/>
+  <rest/><rest/>
+</group>
+```
+
+The instrument sounds ฟ ซ ล across that beat, and the curve runs from ฟ in the L row to ล in the R row. Neither row holds both ends of it. On a stacked instrument this tells the player that the two rows are one gesture.
+
+Declare it on one side only. The span in the upper row already describes the connection; there is no need to mark what it reaches as well.
+
+## Two parts subdividing differently
+
+Different parts can subdivide the same beat in different ways. One instrument may play a plain note while another plays a group of three, and the grid stays aligned because the beat positions are shared across all parts.
+
+```xml
+<!-- Part A: beat 2 is a plain note -->
+<note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>
+
+<!-- Part B: beat 2 is a group of three -->
+<note pitch="ด"/><group><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></group><note pitch="ม"/><note pitch="ล"/>
+```
+
+Both measures have four beats. Part A's ร is on beat 2. Part B's group splits beat 2 into three, with ซ landing on the beat and ร and ม spacing backwards from it. The beats line up even though the notes do not.
+
+---
+
+Next, see [Sections, repeats, and endings](/en/v1_0/tutorial/6-sections_repeats_endings/) for how a score is organized into sections that repeat and how endings substitute lines.
+
+:::note[Elements introduced]
+[`<group>`](/en/v1_0/reference/elements/group/), [`<link>`](/en/v1_0/reference/elements/link/)
+:::
+
+[Try it in the Playground](/en/playground/)

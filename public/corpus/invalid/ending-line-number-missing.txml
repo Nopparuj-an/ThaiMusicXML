@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- INVALID: Each line in an ending must match the number of a line already present in the section-ref. There is no line 4. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>Invalid example</title></header>
   <structure>
     <repeat times="2"><section id="s1" name="ท่อน 1"/></repeat>

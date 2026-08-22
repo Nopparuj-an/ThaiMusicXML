@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- INVALID: An ending is only valid in a section whose total pass count is greater than 1. This section plays once. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>Invalid example</title></header>
   <structure>
     <section id="s1" name="ท่อน 1"/>

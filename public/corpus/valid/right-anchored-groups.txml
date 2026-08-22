@@ -3,7 +3,7 @@
      while filling them differently: P1 plays four plain notes, P2 splits
      beats 1 and 3 into groups. A group's final child lands on the beat and
      the earlier ones space backwards from it. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>กลุ่มโน้ตย่อย</title>
   </header>

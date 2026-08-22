@@ -2,7 +2,7 @@
 <!-- An unpitched part. Notes carry sound rather than pitch, and the codes are
      instrument-specific, so an annotation inside the section reference says
      what they mean. The rests are beats with no attack. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>ฉิ่ง</title>
   </header>

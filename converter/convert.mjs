@@ -121,7 +121,7 @@ if (options.to === "musicxml") {
   writeFileSync(out, xml, "utf8");
 } else {
   if (options.lyrics === false || options.lyricsMap) {
-    warn("--no-lyrics/--lyrics-map only apply to --to musicxml; MIDI export doesn't carry lyrics in v0.1");
+    warn("--no-lyrics/--lyrics-map only apply to --to musicxml; MIDI export doesn't carry lyrics in v1.0");
   }
   if (options.downbeatShift === false || options.trimLeadingEmptyMeasures) {
     warn(

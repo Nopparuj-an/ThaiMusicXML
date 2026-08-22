@@ -1,0 +1,46 @@
+---
+title: Sathukan
+description: A two-row ฆ้องวงใหญ่ transcription of the หน้าพาทย์ piece สาธุการ
+---
+
+import ExampleXml from "@/components/ExampleXml.astro";
+
+## Rendered
+
+Page 1 of 3. The full score continues past the intro shown here.
+
+![Rendered Song](../../../../../../assets/docs/v1_0/reference/examples/sathukan/image.png)
+
+## XML
+
+<ExampleXml file="example-sathukan.txml" />
+
+## Notes
+
+สาธุการ is a หน้าพาทย์ piece: traditionally cued live rather than played to a
+fixed repeat count. The source notation (a two-row ฆ้องวงใหญ่ transcription,
+right hand over left) marks three points where the performance branches:
+where the second time through starts, how far it plays before turning back,
+and where it closes after returning to the top, worded as marginal notes
+rather than as a fixed structure.
+
+This score keeps that shape rather than forcing it into
+[`<repeat>`](/en/v1_0/reference/elements/repeat/) and
+[`<ending>`](/en/v1_0/reference/elements/ending/): each branch point is a
+section boundary, with the original cue carried over verbatim as an
+[`<annotation>`](/en/v1_0/reference/elements/annotation/) between sections.
+A reader gets the same instruction a performer reading the source would.
+
+Covers:
+
+- Four [`<section>`](/en/v1_0/reference/elements/section/)s split exactly at
+  the source's cue points, with `<annotation>` carrying the cues themselves
+  rather than an encoded repeat
+- `<part>`'s `stack` and `row` attributes joining ฆ้องวงใหญ่ R and L as the
+  two rows of one instrument, the same pattern as
+  [Khaek Borathes](/en/v1_0/reference/examples/khaek-borathes/)
+- A long score with no Thai octave modifiers at all: every
+  [`<note>`](/en/v1_0/reference/elements/note/) sits in one register, which
+  the source notation does too
+- [`<rest>`](/en/v1_0/reference/elements/rest/) throughout, with no `<chan>`
+  or `<bpm>` set: the source gives no fixed tempo or ชั้น to record

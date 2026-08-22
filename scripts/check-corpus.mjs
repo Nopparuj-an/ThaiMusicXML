@@ -13,7 +13,7 @@
 // as its directory claims, so it can gate a commit or CI run.
 //
 // The rules implemented here are the "must" statements collected in
-// https://thaimusicxml.anan.ovh/en/v0_1/reference/conformance/
+// https://thaimusicxml.anan.ovh/en/v1_0/reference/conformance/
 // Warnings are printed but never fail the run.
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
@@ -21,8 +21,8 @@ import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { DOMParser } from "@xmldom/xmldom";
 
-const NS = "https://thaimusicxml.anan.ovh/ns/0.1";
-const SCHEMA = "public/schema/thaimusicxml-0.1.rng";
+const NS = "https://thaimusicxml.anan.ovh/ns/1";
+const SCHEMA = "public/schema/thaimusicxml-1.0.rng";
 const CORPUS = "public/corpus";
 
 const RECOMMENDED_NATHAP = ["ปรบไก่", "สองไม้", "ลาว", "เขมร", "มอญ"];
@@ -155,8 +155,8 @@ function buildPassCount(structure) {
 
 function checkVersion(score, warn) {
   const version = score.getAttribute("version");
-  if (version && version !== "0.1")
-    warn(`version="${version}" does not match the 0.1 namespace`);
+  if (version && version !== "1.0")
+    warn(`version="${version}" does not match the expected version 1.0`);
 }
 
 function checkIdsAndReferences(ctx, err) {

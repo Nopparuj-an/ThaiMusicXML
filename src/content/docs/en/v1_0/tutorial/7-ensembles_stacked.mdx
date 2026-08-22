@@ -1,0 +1,97 @@
+---
+title: Ensembles and stacked instruments
+description: Multiple parts, stacked rows, and parts that sit out
+sidebar:
+  order: 7
+---
+
+import ExampleXml from "@/components/ExampleXml.astro";
+
+Previous pages showed one or two instruments. This page adds several parts, stacked instrument rows, and a part that omits a section.
+
+![ลาวดวงเดือน, ระนาดเอก and ขิม](../../../../../assets/docs/v1_0/tutorial/7-ensembles_stacked/image.png)
+
+## The ensemble and part-data
+
+Every instrument listed in `<ensemble>` gets its own `<part-data>` element. The `part` attribute links back:
+
+```xml
+<ensemble>
+  <part id="P1">
+    <instrument-name>ระนาดเอก</instrument-name>
+    <instrument-short-name>รน.เอก</instrument-short-name>
+  </part>
+  <part id="P2" stack="khim" row="1">
+    <instrument-name>ขิม 1</instrument-name>
+  </part>
+</ensemble>
+```
+
+Each `<part-data>` holds the music for its instrument. The parts can reference different sections, play different lines, and have different amounts of music, as long as corresponding measures agree on beat count.
+
+## Stacked instruments
+
+Some instruments are notated across several rows. The `stack` and `row` attributes join parts into one visual instrument:
+
+```xml
+<part id="P2" stack="khim" row="1">
+  <instrument-name>ขิม 1</instrument-name>
+</part>
+<part id="P3" stack="khim" row="2">
+  <instrument-name>ขิม 2</instrument-name>
+</part>
+```
+
+Parts sharing the same `stack` value are drawn as consecutive rows of one instrument, with a shared label. The `row` attribute orders them: row 1 on top, row 2 below.
+
+For ขิม, the rows are registers (high, middle, low), not left and right hands. The musical relationship between rows is up to the arranger; the format only records which rows belong together.
+
+## Instrument short name
+
+`<instrument-short-name>` gives a shorter label for tight layouts. When the full name would crowd the score, the renderer uses the short name instead:
+
+```xml
+<part id="P1">
+  <instrument-name>ระนาดเอก</instrument-name>
+  <instrument-short-name>รน.เอก</instrument-short-name>
+</part>
+```
+
+The short name is optional. Without it, the renderer uses `<instrument-name>` everywhere.
+
+## Parts that sit out a section
+
+A part does not have to play in every section. If a `<part-data>` has no `<section-ref>` for a section, that part rests for the entire section:
+
+```xml
+<part-data part="P2">
+  <section-ref section="s1">
+    <!-- ขิม plays in ท่อน 1 -->
+  </section-ref>
+  <!-- No section-ref for s2: ขิม sits out ท่อน 2 -->
+</part-data>
+```
+
+The part still exists in the ensemble and still occupies its row in the rendered score. The row is blank for that section.
+
+## Beat count agreement
+
+Every part that references the same section must agree on beat count per measure. If ระนาดเอก's line 1, measure 1 has four notes, ขิม 1's line 1, measure 1 must also have four beats (whether notes, rests, or groups).
+
+The one exemption is a lyric part. Its measures hold syllables, not beats, so the count is what decides how the words sit in the cell. See [Lyrics](/en/v1_0/tutorial/8-lyrics/).
+
+## Example file
+
+This tutorial file has three parts: ระนาดเอก, ขิม 1 (stack="khim" row="1"), and ขิม 2 (stack="khim" row="2"). ท่อน 1 has all three parts. ท่อน 2 has only ระนาดเอก; the two ขิม parts have no `<section-ref>` for it, so they sit out.
+
+<ExampleXml file="tutorial7-ensemble.txml" />
+
+---
+
+Next, see [Lyrics](/en/v1_0/tutorial/8-lyrics/) for vocal parts, syllables, and the counting rule.
+
+:::note[Elements introduced]
+[`stack` attribute](/en/v1_0/reference/elements/part/#attributes), [`row` attribute](/en/v1_0/reference/elements/part/#attributes), [`<instrument-short-name>`](/en/v1_0/reference/elements/instrument-short-name/)
+:::
+
+[Try it in the Playground](/en/playground/)

@@ -4,7 +4,7 @@
      span in row 1 draws a connector to what row 2 plays over the same beats.
      Each row also carries an instrument-short-name, since the
      ensemble label column has only the page margin to work with. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>ฆ้องวงใหญ่ สองมือ</title>
   </header>

@@ -1,0 +1,68 @@
+---
+title: Validating and going further
+description: Schema validation, the Playground, and where to go next
+sidebar:
+  order: 10
+---
+
+You have a score, you understand the elements, and you know how the model works. This page covers how to check your work and where to go from here.
+
+## Schema validation
+
+ThaiMusicXML provides a RELAX NG schema at `public/schema/thaimusicxml-1.0.rng`. Validate a file against it with any RELAX NG validator. Using `xmllint`:
+
+```bash
+xmllint --noout --relaxng public/schema/thaimusicxml-1.0.rng your-file.txml
+```
+
+The schema checks structure: which elements go where, which attributes are allowed, and what values they accept. It does not check musical rules.
+
+## Corpus check
+
+Musical rules that the schema cannot express live in `scripts/check-corpus.mjs`. It runs over every `.txml` file in `public/corpus/valid/` and checks things like:
+
+- Corresponding measures across parts agree on beat count.
+- Line and measure numbers are sequential.
+- `<group>` has at least two children.
+- `<ending pass>` values are consistent.
+
+Run it with:
+
+```bash
+npm run check:corpus
+```
+
+If you are contributing a transcription, this script validates your file against the same rules the corpus uses.
+
+## The Playground
+
+The [Playground](/en/playground/) lets you edit and render a ThaiMusicXML file in the browser. Paste your XML, see the rendered score update live, and share the URL with others.
+
+It loads the same renderer the docs use, so what you see in the Playground matches what the docs images show.
+
+## What a conforming processor must warn about
+
+A conforming processor must warn on certain conditions rather than reject the file:
+
+- A measure with no notes, rests, or groups (empty beat count).
+- Corresponding measures across parts with different beat counts.
+- A `<group>` that would cross a measure boundary.
+- `<ending pass>` values that skip a pass or repeat one.
+
+These are warnings, not errors. The file still loads; the processor tells you something looks wrong so you can fix it.
+
+## Where to go from here
+
+The tutorial covers the core elements. The full reference has more:
+
+- [Elements](/en/v1_0/reference/elements/): every element, its attributes, children, and conformance rules.
+- [Examples](/en/v1_0/reference/examples/): complete scores including ลาวดวงเดือน, แขกบรเทศ, and others.
+- [Conformance](/en/v1_0/reference/conformance/): the rules a document must satisfy, collected from the element pages.
+- [Rendering](/en/v1_0/reference/rendering/): how a score is laid out and displayed (non-normative).
+- [Roadmap](/en/v1_0/updates/roadmap/): what is planned for future versions.
+
+To contribute a transcription, see the examples page for the shape a complete file follows, validate with the schema and corpus check, and use the Playground to verify the rendered output.
+
+:::note[Tools covered]
+[RELAX NG schema](/en/v1_0/reference/conformance/), [corpus check](/en/v1_0/reference/conformance/), [Playground](/en/playground/)
+:::

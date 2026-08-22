@@ -4,7 +4,7 @@
      (generateSectionName, showHeaderExtras). Rendered once with defaults and
      once with both settings on, for inspection. Not linked from any doc
      page, the same way test-khaek-borathes.txml is not. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>ทดสอบ: ออกตาฟ และตัวเลือกเสริม</title>
     <tuning reference="c-major" />

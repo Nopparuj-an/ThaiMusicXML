@@ -4,7 +4,7 @@
      why the label is part of the string rather than generated. Note that the
      three positions are placed independently, so document order does not
      decide where they land. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>Lao Duang Duen</title>
     <composer>

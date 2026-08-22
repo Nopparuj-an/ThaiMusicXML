@@ -1,0 +1,37 @@
+---
+title: Homrong Chom Surang
+description: A single-line score for the โหมโรง piece โหมโรงจอมสุรางค์
+---
+
+import ExampleXml from "@/components/ExampleXml.astro";
+
+## Rendered
+
+![Rendered Song](../../../../../../assets/docs/v1_0/reference/examples/chomsurang/image.png)
+
+## XML
+
+<ExampleXml file="example-chomsurang.txml" />
+
+## Notes
+
+ท่อน 2 is written out twice in the source, "รอบที่ 1" and "รอบที่ 2",
+identical measure for measure except the very last one. That is exactly what
+[`<repeat>`](/en/v1_0/reference/elements/repeat/) and
+[`<ending>`](/en/v1_0/reference/elements/ending/) are for: the section is
+written once and wrapped in `<repeat times="2">`, and only the differing
+final line is repeated, inside an `<ending pass="2">`.
+
+Covers:
+
+- [`<repeat times="2">`](/en/v1_0/reference/elements/repeat/) wrapping a
+  section, with [`<ending pass="2">`](/en/v1_0/reference/elements/ending/)
+  substituting just its last line
+- [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/) spans with
+  `dim="true"`, marking four bracketed passages from the source as cued
+  rather than played
+- [`<group>`](/en/v1_0/reference/elements/group/) subdividing a beat into
+  two in one measure and into three in another, inside a score that is
+  otherwise a plain four notes per measure throughout
+- An empty [`<instrument-name>`](/en/v1_0/reference/elements/instrument-name/)
+  for a single melodic line the source does not attribute to any instrument

@@ -1,0 +1,224 @@
+---
+title: ★ อ้างอิงองค์ประกอบ
+description: อ้างอิงองค์ประกอบ ThaiMusicXML v1.0
+sidebar:
+  order: 1
+---
+
+import TreeView from "@/components/TreeView.astro";
+
+หน้านี้แสดงรายการองค์ประกอบในเอกสาร ThaiMusicXML v1.0 และความสัมพันธ์ระหว่างกัน
+
+## ลำดับชั้นเอกสาร
+
+<TreeView
+  base="/th/v1_0/reference/elements"
+  nodes={[
+    {
+      name: "<thai-score>",
+      slug: "thai-score",
+      children: [
+        {
+          name: "<header>",
+          slug: "header",
+          children: [
+            { name: "<title>", slug: "title" },
+            {
+              name: "<composer>",
+              slug: "composer",
+              children: [{ name: "<text>", slug: "text" }],
+            },
+            {
+              name: "<lyricist>",
+              slug: "lyricist",
+              children: [
+                {
+                  name: "<text>",
+                  slug: "text",
+                  color: "var(--sl-color-gray-4)",
+                  note: "องค์ประกอบเดียวกับ <composer> > <text> ด้านบน",
+                },
+              ],
+            },
+            {
+              name: "<arranger>",
+              slug: "arranger",
+              children: [
+                {
+                  name: "<text>",
+                  slug: "text",
+                  color: "var(--sl-color-gray-4)",
+                  note: "องค์ประกอบเดียวกับ <composer> > <text> ด้านบน",
+                },
+              ],
+            },
+            { name: "<tuning>", slug: "tuning" },
+            { name: "<license>", slug: "license" },
+          ],
+        },
+        {
+          name: "<structure>",
+          slug: "structure",
+          children: [
+            {
+              name: "<annotation>",
+              slug: "annotation",
+              children: [
+                {
+                  name: "<text>",
+                  slug: "text",
+                  color: "var(--sl-color-gray-4)",
+                  note: "องค์ประกอบเดียวกับ <composer> > <text> ด้านบน",
+                },
+              ],
+            },
+            { name: "<br>", slug: "br" },
+            {
+              name: "<direction>",
+              slug: "direction",
+              children: [
+                { name: "<nathap>", slug: "nathap" },
+                { name: "<chan>", slug: "chan" },
+                { name: "<bpm>", slug: "bpm" },
+              ],
+            },
+            {
+              name: "<repeat>",
+              slug: "repeat",
+              children: [
+                {
+                  name: "<repeat>",
+                  slug: "repeat",
+                  color: "var(--sl-color-gray-4)",
+                  note: "ซ้อน <repeat> กันได้ไม่จำกัดระดับ",
+                },
+                {
+                  name: "<section>",
+                  slug: "section",
+                  color: "var(--sl-color-gray-4)",
+                  note: "<repeat> มีลูกชุดเดียวกับ <structure> คือ <annotation>, <br>, <direction>, <section>, และ <repeat>",
+                },
+              ],
+            },
+            {
+              name: "<section>",
+              slug: "section",
+              children: [{ name: "<line-repeat>", slug: "line-repeat" }],
+            },
+          ],
+        },
+        {
+          name: "<ensemble>",
+          slug: "ensemble",
+          children: [
+            {
+              name: "<part>",
+              slug: "part",
+              children: [
+                { name: "<instrument-name>", slug: "instrument-name" },
+                {
+                  name: "<instrument-short-name>",
+                  slug: "instrument-short-name",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: "<part-data>",
+          slug: "part-data",
+          children: [
+            {
+              name: "<section-ref>",
+              slug: "section-ref",
+              children: [
+                {
+                  name: "<annotation>",
+                  slug: "annotation",
+                  color: "var(--sl-color-gray-4)",
+                  note: "องค์ประกอบเดียวกับ <structure> > <annotation> ด้านบน",
+                },
+                {
+                  name: "<line>",
+                  slug: "line",
+                  children: [
+                    {
+                      name: "<measure>",
+                      slug: "measure",
+                      children: [
+                        { name: "<note>", slug: "note" },
+                        { name: "<rest>", slug: "rest" },
+                        {
+                          name: "<group>",
+                          slug: "group",
+                          children: [
+                            {
+                              name: "<note>",
+                              slug: "note",
+                              color: "var(--sl-color-gray-4)",
+                              note: "องค์ประกอบเดียวกับ <measure> > <note> ด้านบน",
+                            },
+                            {
+                              name: "<rest>",
+                              slug: "rest",
+                              color: "var(--sl-color-gray-4)",
+                              note: "องค์ประกอบเดียวกับ <measure> > <rest> ด้านบน",
+                            },
+                            {
+                              name: "<parenthesis>",
+                              slug: "parenthesis",
+                              color: "var(--sl-color-gray-4)",
+                              note: "องค์ประกอบเดียวกับ <measure> > <parenthesis> ด้านล่าง",
+                            },
+                            {
+                              name: "<bow>",
+                              slug: "bow",
+                              color: "var(--sl-color-gray-4)",
+                              note: "องค์ประกอบเดียวกับ <measure> > <bow> ด้านล่าง",
+                            },
+                            {
+                              name: "<link>",
+                              slug: "link",
+                              color: "var(--sl-color-gray-4)",
+                              note: "องค์ประกอบเดียวกับ <measure> > <link> ด้านล่าง",
+                            },
+                          ],
+                        },
+                        { name: "<parenthesis>", slug: "parenthesis" },
+                        { name: "<bow>", slug: "bow" },
+                        { name: "<link>", slug: "link" },
+                        {
+                          name: "<syllable>",
+                          slug: "syllable",
+                          note: 'ใน <part type="lyric"> ห้องหนึ่งมีแค่ <syllable> และ <rest> เท่านั้น',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  name: "<ending>",
+                  slug: "ending",
+                  children: [
+                    {
+                      name: "<annotation>",
+                      slug: "annotation",
+                      color: "var(--sl-color-gray-4)",
+                      note: "องค์ประกอบเดียวกับ <structure> > <annotation> ด้านบน",
+                    },
+                    {
+                      name: "<line>",
+                      slug: "line",
+                      color: "var(--sl-color-gray-4)",
+                      note: "องค์ประกอบเดียวกับ <section-ref> > <line> ด้านบน",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ]}
+/>

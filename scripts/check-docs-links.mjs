@@ -16,7 +16,7 @@ import { join, relative, sep } from "node:path";
 const DOCS = "src/content/docs";
 const PAGES = "src/pages";
 const DEFAULT_LOCALE = "en";
-const TREEVIEW = join(DOCS, DEFAULT_LOCALE, "v0_1/reference/elements/index.mdx");
+const TREEVIEW = join(DOCS, DEFAULT_LOCALE, "v1_0/reference/elements/index.mdx");
 
 // github-slugger's algorithm: lowercase, drop a fixed punctuation set, spaces
 // to hyphens. It leaves non-Latin scripts alone, which is what keeps Thai

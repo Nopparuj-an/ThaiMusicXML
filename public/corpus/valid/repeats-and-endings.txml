@@ -3,7 +3,7 @@
      within another times="2", so its total pass count is 4 and pass numbers
      run 1 to 4 absolutely, regardless of which layer produced each play.
      The ending replaces the section's last line on passes 2 and 4. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>Endings</title>
   </header>

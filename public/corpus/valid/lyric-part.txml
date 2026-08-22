@@ -4,7 +4,7 @@
      instead. The rests are เอื้อน: no new syllable begins, the vowel already
      being sung carries on. A lyric part shares the line and measure grid but
      is exempt from agreeing on beat count. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>ลาวดวงเดือน</title>
     <lyricist>Example Lyricist</lyricist>

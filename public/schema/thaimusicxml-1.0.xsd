@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ThaiMusicXML v1.0 - RELAX NG schema
+  
+  Validate a document by passing this file to xmllint's relaxng option:
+      xmllint (noout) (relaxng) thaimusicxml-1.0.rng score.txml
+  writing each option with its usual two leading hyphens, which cannot be
+  reproduced literally inside an XML comment.
+  
+  This schema covers what a grammar can express: element nesting and order,
+  attribute presence, datatypes, and co-occurrence constraints such as
+  "direction is required on a bow start and forbidden on a bow stop".
+  
+  Rules that reach across the document are not expressible here and are
+  checked separately. See the Conformance reference:
+  https://thaimusicxml.anan.ovh/en/v1_0/reference/conformance/
+  
+  Notably NOT enforced by this file:
+    - id uniqueness, and IDREF resolution (xsd:ID is document-global, but
+      ThaiMusicXML scopes ids per kind: a part "1" and a section "1" coexist)
+    - cross-part agreement on line, measure, and beat counts
+    - number attributes matching position
+    - which children a measure may hold, since that depends on the part's
+      type, declared elsewhere in the document
+    - at most one <text> per align value
+    - ending line runs, pass ranges, and pass ordering
+    - line-repeat ranges against the section's line count
+    - bow, parenthesis, and link span matching
+    - recommended-value warnings for nathap and tuning
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="https://thaimusicxml.anan.ovh/ns/1" xmlns:ns1="https://thaimusicxml.anan.ovh/ns/1">
+  <!--
+    ==================================================================
+    Root
+    ==================================================================
+  -->
+  <xs:element name="thai-score">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ns1:header"/>
+        <xs:element ref="ns1:structure"/>
+        <xs:element ref="ns1:ensemble"/>
+        <xs:element maxOccurs="unbounded" ref="ns1:part-data"/>
+      </xs:sequence>
+      <xs:attribute name="version" use="required" type="ns1:non-empty-string"/>
+    </xs:complexType>
+  </xs:element>
+  <!--
+    ==================================================================
+    Header
+    ==================================================================
+  -->
+  <xs:element name="header">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ns1:title"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:composer"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:lyricist"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:arranger"/>
+        <xs:element minOccurs="0" ref="ns1:tuning"/>
+        <xs:element minOccurs="0" ref="ns1:license"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="title" type="xs:string"/>
+  <xs:element name="composer" type="ns1:aligned-text-content"/>
+  <xs:element name="lyricist" type="ns1:aligned-text-content"/>
+  <xs:element name="arranger" type="ns1:aligned-text-content"/>
+  <xs:element name="tuning">
+    <xs:complexType>
+      <xs:attribute name="reference" use="required" type="ns1:non-empty-string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="license" type="xs:string"/>
+  <!--
+    Plain text, or <text> children, or <text> children surrounded by the
+    whitespace of an indented document. The one-per-align limit and the
+    warning on discarded sibling text are checked outside the grammar.
+  -->
+  <xs:complexType name="aligned-text-content" mixed="true">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:text"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="text">
+    <xs:complexType mixed="true">
+      <xs:attribute name="align" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="left"/>
+            <xs:enumeration value="center"/>
+            <xs:enumeration value="right"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <!--
+    ==================================================================
+    Structure
+    ==================================================================
+  -->
+  <xs:element name="structure">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:structure-content"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!-- <repeat> takes exactly the children <structure> takes. -->
+  <xs:element name="structure-content" abstract="true"/>
+  <xs:element name="annotation" substitutionGroup="ns1:structure-content" type="ns1:aligned-text-content"/>
+  <xs:element name="br" substitutionGroup="ns1:structure-content">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="direction" substitutionGroup="ns1:structure-content">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="ns1:nathap"/>
+        <xs:element ref="ns1:chan"/>
+        <xs:element ref="ns1:bpm"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <!-- Open set: any non-empty string. Unrecognized values warn, never reject. -->
+  <xs:element name="nathap">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="ns1:non-empty-string"/>
+    </xs:complexType>
+  </xs:element>
+  <!-- Closed set, matched exactly. "0.50" and ".5" are invalid. -->
+  <xs:element name="chan">
+    <xs:complexType>
+      <xs:attribute name="value" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="0.5"/>
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="2"/>
+            <xs:enumeration value="3"/>
+            <xs:enumeration value="4"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="bpm" type="xs:positiveInteger"/>
+  <xs:element name="repeat" substitutionGroup="ns1:structure-content">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:structure-content"/>
+      </xs:sequence>
+      <xs:attribute name="times" type="xs:positiveInteger"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="section" substitutionGroup="ns1:structure-content">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:line-repeat"/>
+      </xs:sequence>
+      <xs:attribute name="id" use="required" type="ns1:identifier"/>
+      <xs:attribute name="name"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="line-repeat">
+    <xs:complexType>
+      <xs:attribute name="first" use="required" type="xs:positiveInteger"/>
+      <xs:attribute name="last" use="required" type="xs:positiveInteger"/>
+      <xs:attribute name="times" type="xs:positiveInteger"/>
+    </xs:complexType>
+  </xs:element>
+  <!--
+    ==================================================================
+    Ensemble
+    ==================================================================
+  -->
+  <xs:element name="ensemble">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="ns1:part"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="part">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ns1:instrument-name"/>
+        <xs:element minOccurs="0" ref="ns1:instrument-short-name"/>
+      </xs:sequence>
+      <xs:attribute name="id" use="required" type="ns1:identifier"/>
+      <xs:attribute name="type">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="pitched"/>
+            <xs:enumeration value="unpitched"/>
+            <xs:enumeration value="lyric"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="stack" type="ns1:non-empty-string"/>
+      <xs:attribute name="row" type="xs:positiveInteger"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="instrument-name" type="xs:string"/>
+  <xs:element name="instrument-short-name" type="xs:string"/>
+  <!--
+    ==================================================================
+    Part data
+    ==================================================================
+  -->
+  <xs:element name="part-data">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="ns1:section-ref"/>
+      </xs:sequence>
+      <xs:attribute name="part" use="required" type="ns1:identifier"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="section-ref">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:annotation"/>
+        <xs:element maxOccurs="unbounded" ref="ns1:line"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:ending"/>
+      </xs:sequence>
+      <xs:attribute name="section" use="required" type="ns1:identifier"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ending">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="ns1:annotation"/>
+        <xs:element maxOccurs="unbounded" ref="ns1:line"/>
+      </xs:sequence>
+      <xs:attribute name="pass" use="required" type="ns1:pass-list"/>
+    </xs:complexType>
+  </xs:element>
+  <!-- One to eight measures. Eight is a hard limit. -->
+  <xs:element name="line">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ns1:measure"/>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="ns1:measure"/>
+          <xs:sequence minOccurs="0">
+            <xs:element ref="ns1:measure"/>
+            <xs:sequence minOccurs="0">
+              <xs:element ref="ns1:measure"/>
+              <xs:sequence minOccurs="0">
+                <xs:element ref="ns1:measure"/>
+                <xs:sequence minOccurs="0">
+                  <xs:element ref="ns1:measure"/>
+                  <xs:sequence minOccurs="0">
+                    <xs:element ref="ns1:measure"/>
+                    <xs:element minOccurs="0" ref="ns1:measure"/>
+                  </xs:sequence>
+                </xs:sequence>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:sequence>
+        </xs:sequence>
+      </xs:sequence>
+      <xs:attribute name="number" use="required" type="xs:positiveInteger"/>
+    </xs:complexType>
+  </xs:element>
+  <!--
+    A measure holds either notated content or lyric content. Which one is
+    legal depends on the containing part's type, which is declared in
+    <ensemble> and so is out of this grammar's reach. Both are accepted
+    here; the type match is checked outside.
+  -->
+  <xs:element name="measure">
+    <xs:complexType>
+      <xs:choice>
+        <xs:group ref="ns1:notated-measure-content"/>
+        <xs:group ref="ns1:lyric-measure-content"/>
+      </xs:choice>
+      <xs:attribute name="number" use="required" type="xs:positiveInteger"/>
+    </xs:complexType>
+  </xs:element>
+  <!--
+    At least one beat, with zero-duration markers free to sit anywhere
+    among them. A notated measure of no beats is invalid.
+  -->
+  <xs:group name="notated-measure-content">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:marker"/>
+      <xs:sequence maxOccurs="unbounded">
+        <xs:group ref="ns1:beat"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:marker"/>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:group>
+  <!-- A lyric measure may be empty, meaning nothing is sung there. -->
+  <xs:group name="lyric-measure-content">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="ns1:syllable"/>
+        <xs:element ref="ns1:rest"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="beat">
+    <xs:choice>
+      <xs:element ref="ns1:note"/>
+      <xs:element ref="ns1:rest"/>
+      <xs:element ref="ns1:group"/>
+    </xs:choice>
+  </xs:group>
+  <xs:element name="marker" abstract="true"/>
+  <!-- pitch and sound are mutually exclusive: exactly one of the two. -->
+  <xs:element name="note">
+    <xs:complexType>
+      <xs:attribute name="pitch" type="ns1:pitch-value"/>
+      <xs:attribute name="sound" type="ns1:non-empty-string"/>
+      <xs:attribute name="octave" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="rest">
+    <xs:complexType/>
+  </xs:element>
+  <!-- Two or more note/rest children. Groups do not nest. -->
+  <xs:element name="group">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:marker"/>
+        <xs:group ref="ns1:note-or-rest"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:marker"/>
+        <xs:sequence maxOccurs="unbounded">
+          <xs:group ref="ns1:note-or-rest"/>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:marker"/>
+        </xs:sequence>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="note-or-rest">
+    <xs:choice>
+      <xs:element ref="ns1:note"/>
+      <xs:element ref="ns1:rest"/>
+    </xs:choice>
+  </xs:group>
+  <!--
+    A gesture arc. Nothing beyond type: unlike a bow's direction or a
+    parenthesis's dim/mute, the curve's shape is not chosen, it follows from
+    where the notes it spans fell.
+  -->
+  <xs:element name="link" substitutionGroup="ns1:marker">
+    <xs:complexType>
+      <xs:attribute name="type" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="start"/>
+            <xs:enumeration value="stop"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <!-- direction is required on a start and forbidden on a stop. -->
+  <xs:element name="bow" substitutionGroup="ns1:marker">
+    <xs:complexType>
+      <xs:attribute name="type" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="start"/>
+            <xs:enumeration value="stop"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="direction">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="in"/>
+            <xs:enumeration value="out"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <!-- dim and mute describe the whole span, so they sit on the start only. -->
+  <xs:element name="parenthesis" substitutionGroup="ns1:marker">
+    <xs:complexType>
+      <xs:attribute name="type" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="start"/>
+            <xs:enumeration value="stop"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="dim" type="xs:boolean"/>
+      <xs:attribute name="mute" type="xs:boolean"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="syllable" type="xs:string"/>
+  <!--
+    ==================================================================
+    Datatypes
+    ==================================================================
+  -->
+  <xs:simpleType name="non-empty-string">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <!--
+    An id is any non-empty token. Deliberately not xsd:ID, whose uniqueness
+    is document-global: ThaiMusicXML scopes ids per kind, so a <part id="1">
+    and a <section id="1"> are distinct and must not collide.
+  -->
+  <xs:simpleType name="identifier">
+    <xs:restriction base="xs:token">
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <!--
+    One base note, optionally followed by one Thai octave modifier.
+    
+    Base notes, in the three interchangeable spellings:
+      1-7
+      D R M F S L T, upper or lower case
+      ด U+0E14  ร U+0E23  ม U+0E21  ฟ U+0E1F  ซ U+0E0B  ล U+0E25  ท U+0E17
+    
+    Modifiers, both combining characters:
+      nikhahit U+0E4D  raise one octave
+      pinthu   U+0E3A  lower one octave
+    
+    The modifiers render on top of the preceding bracket in the pattern
+    below and cannot be identified by eye. Match on the code points.
+  -->
+  <xs:simpleType name="pitch-value">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[1-7DRMFSLTdrmfsltดรมฟซลท][ํฺ]?"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <!--
+    Comma-separated 1-based pass numbers. Ascending order and the absence
+    of repeats are checked outside the grammar.
+  -->
+  <xs:simpleType name="pass-list">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[1-9][0-9]*(,[1-9][0-9]*)*"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

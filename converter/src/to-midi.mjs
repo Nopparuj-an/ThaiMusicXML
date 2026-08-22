@@ -218,7 +218,7 @@ export function toMidi(doc, options = {}) {
     options.splitStacks,
   );
   if (doc.parts.some((p) => p.type === "lyric")) {
-    warn("Standard MIDI has no lyric pairing in v0.1; lyric parts are not carried into this file");
+    warn("Standard MIDI has no lyric pairing in v1.0; lyric parts are not carried into this file");
   }
 
   const unrolledByGroup = groups.map((g) => g.members.map((m) => doc.unroll(m.id)));

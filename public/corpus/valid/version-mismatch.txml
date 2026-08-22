@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- A conforming document whose version attribute disagrees with its namespace.
-     The namespace is the compatibility boundary, so this is read as 0.1 and
+     The namespace is the compatibility boundary, so this is read as 1.0 and
      draws a warning rather than a rejection. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.2">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.3">
   <header>
     <title>แขกบรเทศ</title>
   </header>

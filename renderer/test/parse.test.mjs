@@ -17,7 +17,7 @@ import { parse, NS } from "../src/parse.mjs";
 /** A one-part score whose section-ref body is written out in full. */
 const score = (body, { partAttrs = "", structure = `<section id="s1" name="s1"/>` } = {}) =>
   `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>${structure}</structure>
   <ensemble><part id="P1"${partAttrs}/></ensemble>
@@ -110,7 +110,7 @@ test("a repeat contributes what it wraps and leaves nothing of itself in the seq
 
 test("a bare annotation goes left and a bare credit centers, since where each one sits differs", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title><composer>ครูมีแขก</composer></header>
   <structure><annotation>สองชั้น</annotation><section id="s1" name="s1"/></structure>
   <ensemble><part id="P1"/></ensemble>
@@ -206,7 +206,7 @@ test("a marker with nothing to match is dropped rather than left half-resolved",
 
 test("spans are matched within one section-ref, so a marker cannot reach into the next section", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/><section id="s2" name="s2"/></structure>
   <ensemble><part id="P1"/></ensemble>

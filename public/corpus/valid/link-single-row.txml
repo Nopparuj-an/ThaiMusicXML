@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- A link span in a part with no stack. There is no other row to reach,
      so the curve marks the span's own notes. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>Link on a single row</title></header>
   <structure><section id="s1"/></structure>
   <ensemble>

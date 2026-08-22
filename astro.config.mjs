@@ -92,20 +92,20 @@ export default defineConfig({
         {
           label: "Versions",
           translations: { th: "เวอร์ชัน" },
-          items: [{ label: "v0.1", slug: "v0_1" }],
+          items: [{ label: "v1.0", slug: "v1_0" }],
         },
         {
-          label: "v0.1",
+          label: "v1.0",
           items: [
             {
               label: "Introduction",
               translations: { th: "บทนำ" },
-              slug: "v0_1",
+              slug: "v1_0",
             },
             {
               label: "Tutorial",
               translations: { th: "บทช่วยสอน" },
-              items: [{ autogenerate: { directory: "v0_1/tutorial" } }],
+              items: [{ autogenerate: { directory: "v1_0/tutorial" } }],
             },
             {
               label: "Reference",
@@ -114,35 +114,35 @@ export default defineConfig({
                 {
                   label: "Conformance",
                   translations: { th: "ความสอดคล้อง" },
-                  slug: "v0_1/reference/conformance",
+                  slug: "v1_0/reference/conformance",
                 },
                 {
                   label: "Rendering",
                   translations: { th: "การแสดงผล" },
-                  slug: "v0_1/reference/rendering",
+                  slug: "v1_0/reference/rendering",
                 },
                 {
                   label: "Schema and test suite",
                   translations: { th: "Schema และชุดทดสอบ" },
-                  slug: "v0_1/reference/schema",
+                  slug: "v1_0/reference/schema",
                 },
                 {
                   label: "Conversion",
                   translations: { th: "การแปลงไฟล์" },
-                  slug: "v0_1/reference/conversion",
+                  slug: "v1_0/reference/conversion",
                 },
                 {
                   label: "Elements",
                   translations: { th: "องค์ประกอบ" },
                   items: [
-                    { autogenerate: { directory: "v0_1/reference/elements" } },
+                    { autogenerate: { directory: "v1_0/reference/elements" } },
                   ],
                 },
                 {
                   label: "Examples",
                   translations: { th: "ตัวอย่าง" },
                   items: [
-                    { autogenerate: { directory: "v0_1/reference/examples" } },
+                    { autogenerate: { directory: "v1_0/reference/examples" } },
                   ],
                 },
               ],
@@ -154,20 +154,20 @@ export default defineConfig({
                 {
                   label: "Breaking Changes",
                   translations: { th: "การเปลี่ยนแปลงสำคัญ" },
-                  slug: "v0_1/updates/breaking-changes",
+                  slug: "v1_0/updates/breaking-changes",
                 },
                 {
                   label: "Roadmap",
                   translations: { th: "แผนงาน" },
                   items: [
-                    { autogenerate: { directory: "v0_1/updates/roadmap" } },
+                    { autogenerate: { directory: "v1_0/updates/roadmap" } },
                   ],
                 },
                 {
                   label: "Erratum",
                   translations: { th: "ข้อผิดพลาด" },
                   items: [
-                    { autogenerate: { directory: "v0_1/updates/erratum" } },
+                    { autogenerate: { directory: "v1_0/updates/erratum" } },
                   ],
                 },
               ],

@@ -3,7 +3,7 @@
      groups, so the run they mark is four notes long - the case a boolean on
      <group> could not express, since a group is only ever one beat. The
      second span opens inside a group and closes inside the next one. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>Link across beats</title></header>
   <structure><section id="s1"/></structure>
   <ensemble>

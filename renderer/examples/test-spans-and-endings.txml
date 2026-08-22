@@ -14,7 +14,7 @@
      across that boundary, so this section prints two open ends: nothing
      connects the end of line 3 into the ending, on purpose, to show what
      that gap actually looks like on the page. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>ทดสอบ: โยง วงเล็บ ซ้ำ และรอบ</title>
   </header>

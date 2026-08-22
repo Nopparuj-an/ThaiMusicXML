@@ -10,7 +10,7 @@
          discarded rather than printed
        - octave sits alongside a Thai octave modifier, where the modifier wins
        - octave sits on a note that uses sound, where it has no meaning -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>Warnings</title>
     <composer>

@@ -15,7 +15,7 @@ import { DOMParser } from "#dom-parser";
 import { parse } from "../../renderer/src/parse.mjs";
 import { frac, add, subtract, compare, ZERO } from "./fraction.mjs";
 
-const NS = "https://thaimusicxml.anan.ovh/ns/0.1";
+const NS = "https://thaimusicxml.anan.ovh/ns/1";
 
 const els = (node, name) =>
   Array.from(node.getElementsByTagNameNS(NS, name)).filter((el) => el.parentNode === node);

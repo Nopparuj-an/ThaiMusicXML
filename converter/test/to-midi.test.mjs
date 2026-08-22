@@ -24,7 +24,7 @@ const score = (
   { ensemble = `<part id="P1"><instrument-name>Test</instrument-name></part>`, structure = `<section id="s1"/>` } = {},
 ) =>
   `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header><title>Test</title></header>
   <structure>${structure}</structure>
   <ensemble>${ensemble}</ensemble>

@@ -7,7 +7,7 @@ ThaiMusicXML documentation is available in English (`/en/`) and Thai (`/th/`). C
 ## Docs
 
 - [About](https://thaimusicxml.anan.ovh/en/about/): Background and goals of the ThaiMusicXML project
-- [v0.1 Introduction](https://thaimusicxml.anan.ovh/en/v0_1/): Getting started with ThaiMusicXML v0.1
+- [v1.0 Introduction](https://thaimusicxml.anan.ovh/en/v1_0/): Getting started with ThaiMusicXML v1.0
 
 Check out [Sitemap](https://thaimusicxml.anan.ovh/sitemap-index.xml) for more details.
 

@@ -3,7 +3,7 @@
      both versions of line 2: once in the regular line for the pass that plays
      it, once in the ending's line for the pass that plays that instead.
      Neither pass sees two stops, because neither pass plays both versions. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>Spans across an overridden line</title>
   </header>

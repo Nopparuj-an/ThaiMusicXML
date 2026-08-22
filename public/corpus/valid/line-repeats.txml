@@ -3,7 +3,7 @@
      both, which is the only arrangement allowed: ranges must be properly
      nested or wholly separate. A line repeat is independent of any <repeat>
      around the section and does not affect how spans are matched. -->
-<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/0.1" version="0.1">
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
   <header>
     <title>Line repeats</title>
   </header>

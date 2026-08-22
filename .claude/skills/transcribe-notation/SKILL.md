@@ -153,7 +153,7 @@ OCR pass just adds setup time without ever beating a careful visual read.
 
 ## Phase 2: work out the grid's structure
 
-Before writing any XML, read `src/content/docs/en/v0_1/reference/elements/note.md`,
+Before writing any XML, read `src/content/docs/en/v1_0/reference/elements/note.md`,
 `part.md`, and `section-ref.md` (or the `th/` equivalents), and skim an
 existing file in `renderer/examples/` (`example-khaek-borathes.txml` is a good
 one: it has a stacked instrument, repeats, and octave modifiers all in one
@@ -247,7 +247,7 @@ Astro at all, but the install still needs the flag to complete.
 Then run all three of these; each catches a different class of mistake:
 
 ```
-xmllint --noout --relaxng public/schema/thaimusicxml-0.1.rng renderer/examples/example-<slug>.txml
+xmllint --noout --relaxng public/schema/thaimusicxml-1.0.rng renderer/examples/example-<slug>.txml
 mkdir -p renderer/out
 node renderer/render.mjs renderer/examples/example-<slug>.txml renderer/out/example-<slug>.svg
 rsvg-convert -w 1240 -o renderer/out/example-<slug>.png renderer/out/example-<slug>.svg   # single-page piece

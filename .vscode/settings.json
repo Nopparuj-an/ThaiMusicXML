@@ -3,7 +3,7 @@
 
   // Paste or drop an image into a docs page: the file is written under
   // src/assets/docs/, mirroring the page path with the locale segment stripped
-  // (en/v0_1/reference/elements/note.md -> src/assets/docs/v0_1/reference/elements/note/),
+  // (en/v1_0/reference/elements/note.md -> src/assets/docs/v1_0/reference/elements/note/),
   // and the relative link is inserted. Select the alt text before pasting and it
   // is kept as the alt text. Works in .md, not .mdx.
   "markdown.copyFiles.destination": {

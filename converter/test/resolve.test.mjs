@@ -21,7 +21,7 @@ const corpus = (name) =>
 
 const score = (body, { partAttrs = "", structure = `<section id="s1" name="s1"/>` } = {}) =>
   `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure>${structure}</structure>
   <ensemble><part id="P1"${partAttrs}/></ensemble>
@@ -179,7 +179,7 @@ test("a note is marked openEnded only when nothing - not even a sibling - capped
 test("a sibling attack still closes an otherwise open-ended note, so it isn't marked openEnded", () => {
   const doc = resolve(
     `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble>
@@ -263,7 +263,7 @@ test("a stacked row's decay is capped by the next attack in any row of its stack
   // decay stops mattering there instead of ringing on.
   const doc = resolve(
     `<?xml version="1.0" encoding="UTF-8"?>
-<thai-score xmlns="${NS}" version="0.1">
+<thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
   <structure><section id="s1" name="s1"/></structure>
   <ensemble>

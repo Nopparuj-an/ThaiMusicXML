@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- INVALID: The root is in a namespace no ThaiMusicXML 0.1 processor implements. -->
-<thai-score xmlns="https://example.com/ns/other" version="0.1">
+<!-- INVALID: The root is in a namespace no ThaiMusicXML 1.0 processor implements. -->
+<thai-score xmlns="https://example.com/ns/other" version="1.0">
   <header><title>Invalid example</title></header>
   <structure><section id="s1"/></structure>
   <ensemble><part id="P1"><instrument-name>ระนาดเอก</instrument-name></part></ensemble>
