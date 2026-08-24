@@ -6,20 +6,20 @@
 // (even where a short line leaves it blank) since that margin is part of the
 // page's look, not incidental whitespace.
 //
-//   node render-doc-image.mjs <input.txml|--inline> <out.png>
+//   node scripts/render-doc-image.mjs <input.txml|--inline> <out.png>
 //
 // Reads XML from stdin when the input arg is "--inline".
 
 import { readFileSync } from "node:fs";
 import sharp from "sharp";
-import { parse } from "./parse.mjs";
-import { layout } from "./layout.mjs";
-import { draw } from "./draw.mjs";
-import { ready } from "./ready.mjs";
+import { parse } from "../renderer/src/parse.mjs";
+import { layout } from "../renderer/src/layout.mjs";
+import { draw } from "../renderer/src/draw.mjs";
+import { ready } from "../renderer/src/ready.mjs";
 
 const [input, output] = process.argv.slice(2);
 if (!input || !output) {
-  console.error("usage: node renderer/src/render-doc-image.mjs <input.txml|--inline> <out.png>");
+  console.error("usage: node scripts/render-doc-image.mjs <input.txml|--inline> <out.png>");
   process.exit(2);
 }
 

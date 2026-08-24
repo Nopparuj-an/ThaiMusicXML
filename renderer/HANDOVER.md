@@ -453,7 +453,7 @@ pos)` predicate the caller builds once per section (or once per ending)
   a regression. `renderer/examples/test-spans-and-endings.txml` is a
   standing fixture for this exact shape (both directions, one within a
   line and one crossing a line break) — regenerate it via
-  `renderer/src/render-doc-image.mjs` rather than re-describing the shape
+  `scripts/render-doc-image.mjs` rather than re-describing the shape
   from scratch if this needs another look.
 
   One thing worth remembering about _testing_ this: a `<bow type="stop"/>`

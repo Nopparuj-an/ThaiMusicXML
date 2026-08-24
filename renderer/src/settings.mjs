@@ -126,7 +126,7 @@ export const defaults = {
   // measure. A cell holding a group of three divides into six columns rather
   // than four, so the same fraction of a column is a much smaller distance,
   // and on a portrait page it is already close to the width of a letter.
-  minSymbolAdvance: 0.52,
+  minSymbolAdvance: 0.6,
 
   // The break at each nesting level, innermost first.
   //

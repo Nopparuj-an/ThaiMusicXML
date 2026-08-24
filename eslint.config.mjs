@@ -41,7 +41,7 @@ export default [
   {
     // These load in a browser (the docs playground, and draw.mjs's own
     // font-loading split), not under Node.
-    files: ["renderer/src/*.browser.mjs", "renderer/src/render-doc-image.mjs"],
+    files: ["renderer/src/*.browser.mjs", "scripts/render-doc-image.mjs"],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },

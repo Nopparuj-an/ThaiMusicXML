@@ -14,12 +14,12 @@ docs gain and lose examples over time. Discover the current set each run.
 
 ## The render script
 
-`renderer/src/render-doc-image.mjs` does the whole job: parse → layout → draw
+`scripts/render-doc-image.mjs` does the whole job: parse → layout → draw
 → rasterize with `sharp` → autocrop to content height (keeping the page's
 full left/right margin). Don't reinvent this - it already exists.
 
 ```
-node renderer/src/render-doc-image.mjs <input.txml> <out.png>
+node scripts/render-doc-image.mjs <input.txml> <out.png>
 ```
 
 Only page 1 is rendered; if the score spans multiple pages the script prints
@@ -54,7 +54,7 @@ from a past run:
 1. Build the pairs list as above.
 2. Run the script once per unique output path:
    ```
-   node renderer/src/render-doc-image.mjs renderer/examples/<source>.txml <resolved-output-path>
+   node scripts/render-doc-image.mjs renderer/examples/<source>.txml <resolved-output-path>
    ```
 3. Read each regenerated PNG with the Read tool to eyeball it - check the
    change you made actually shows up as expected and nothing else broke

@@ -650,7 +650,7 @@
       <line number="3">
         <measure number="1"><rest/><rest/><rest/><note pitch="ล"/></measure>
         <measure number="2"><note pitch="ซ"/><note pitch="ซ"/><rest/><note pitch="ซ"/></measure>
-        <measure number="3"><note sound="x"/><rest/><rest/><rest/></measure>
+        <measure number="3"><rest/><rest/><rest/><rest/></measure>
         <measure number="4"><note pitch="ซ"/><note pitch="ล"/><rest/><note pitch="ซ"/></measure>
         <measure number="5"><rest/><rest/><rest/><rest/></measure>
         <measure number="6"><rest/><rest/><rest/><note pitch="ล"/></measure>
@@ -781,7 +781,7 @@
       <line number="1">
         <measure number="1"><rest/><rest/><rest/><note pitch="ร"/></measure>
         <measure number="2"><note pitch="ด"/><note pitch="ด"/><rest/><note pitch="ด"/></measure>
-        <measure number="3"><note sound="x"/><rest/><rest/><note pitch="ม"/></measure>
+        <measure number="3"><rest/><rest/><rest/><note pitch="ม"/></measure>
         <measure number="4"><rest/><rest/><rest/><rest/></measure>
         <measure number="5"><rest/><rest/><rest/><note pitch="ร"/></measure>
         <measure number="6"><note pitch="ด"/><note pitch="ด"/><rest/><note pitch="ด"/></measure>
