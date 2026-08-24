@@ -261,7 +261,8 @@ export function parse(source) {
           lineRepeats: els(child, "line-repeat").map((lr) => ({
             first: Number(lr.getAttribute("first")),
             last: Number(lr.getAttribute("last")),
-            times: lr.hasAttribute("times") ? Number(lr.getAttribute("times")) : 1,
+            // A bare <line-repeat> is worth two plays, the bare ซ้ำ bracket.
+            times: lr.hasAttribute("times") ? Number(lr.getAttribute("times")) : 2,
           })),
         });
       else if (child.localName === "annotation") {

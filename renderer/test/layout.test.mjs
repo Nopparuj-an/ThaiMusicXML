@@ -492,7 +492,7 @@ test("a heading annotation moves with the grid it introduces", () => {
 
 const byRole = (page, role) => page.elements.filter((el) => el.role === role);
 
-test("a line-repeat brackets its range and labels it, unless times is 1", () => {
+test("a line-repeat brackets its range, a bare one reading as ซ้ำ and a longer one as its own count", () => {
   const doc = `<?xml version="1.0" encoding="UTF-8"?>
 <thai-score xmlns="${NS}" version="1.0">
   <header><title>ทดสอบ</title></header>
@@ -516,7 +516,7 @@ test("a line-repeat brackets its range and labels it, unless times is 1", () => 
   const { pages } = layout(parse(doc));
   const labels = byRole(pages[0], "repeat-label").map((el) => el.text);
 
-  assert.deepEqual(labels.sort(), ["3 ครั้ง", "ซ้ำ"], "times=1 draws no bracket at all");
+  assert.deepEqual(labels.sort(), ["3 ครั้ง", "ซ้ำ", "ซ้ำ"], "a bare line-repeat is worth two plays, the same as times=2");
 
   const gridRight = defaults.page.marginSide + (defaults.page.width - 2 * defaults.page.marginSide) / 8;
   for (const el of byRole(pages[0], "repeat-label")) {

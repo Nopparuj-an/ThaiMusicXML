@@ -188,7 +188,7 @@
   <define name="el-repeat">
     <element name="repeat">
       <optional>
-        <attribute name="times"><data type="positiveInteger"/></attribute>
+        <attribute name="times"><ref name="repeat-count"/></attribute>
       </optional>
       <zeroOrMore><ref name="structure-content"/></zeroOrMore>
     </element>
@@ -207,7 +207,7 @@
       <attribute name="first"><data type="positiveInteger"/></attribute>
       <attribute name="last"><data type="positiveInteger"/></attribute>
       <optional>
-        <attribute name="times"><data type="positiveInteger"/></attribute>
+        <attribute name="times"><ref name="repeat-count"/></attribute>
       </optional>
     </element>
   </define>
@@ -518,6 +518,18 @@
   <define name="pitch-value">
     <data type="string">
       <param name="pattern">[1-7DRMFSLTdrmfsltดรมฟซลท][ํฺ]?</param>
+    </data>
+  </define>
+
+  <!--
+    Total plays, not extra plays on top of the first: times="2" plays twice.
+    Two is also the default, so a bare <repeat> or <line-repeat> repeats. One
+    is excluded because a repeat that plays its content once is not a repeat,
+    and a document saying so is more likely to mean two.
+  -->
+  <define name="repeat-count">
+    <data type="positiveInteger">
+      <param name="minInclusive">2</param>
     </data>
   </define>
 

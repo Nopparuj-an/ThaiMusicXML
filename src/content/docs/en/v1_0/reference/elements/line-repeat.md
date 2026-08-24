@@ -15,11 +15,13 @@ The `<line-repeat>` element repeats a consecutive range of lines within a sectio
 | --------- | -------- | ------- | -------------------------------------------------------- |
 | `first`   | Yes      | integer | 1-based first line number this repeat covers.            |
 | `last`    | Yes      | integer | 1-based last line number this repeat covers, inclusive.  |
-| `times`   | No       | integer | How many times the range is played. Default: `1`.        |
+| `times`   | No       | integer | How many times the range is played in total, `2` or more. Default: `2`. |
 
 ## Semantics
 
 Each time playback reaches line `first`, lines `first` through `last` play `times` times before continuing past `last`. Setting `first` and `last` to the same number repeats a single line.
+
+`times` counts total plays rather than extra ones, and defaults to `2`. A bare `<line-repeat first="2" last="3"/>` therefore plays those lines twice, which is what the unadorned ซ้ำ bracket on a printed score means.
 
 A line repeat is independent of any [`<repeat>`](/en/v1_0/reference/elements/repeat/) enclosing the section, and nests inside it. It re-triggers in full on every pass of the section, including the second and later ones.
 
@@ -29,11 +31,11 @@ A section may carry several `<line-repeat>` children covering different ranges. 
 
 ```xml
 <section id="s1" name="ท่อน 1">
-  <line-repeat first="2" last="3" times="2"/>
+  <line-repeat first="2" last="3"/>
 </section>
 ```
 
-Lines 2 and 3 play twice before the section continues to line 4. If a `<repeat>` in `<structure>` plays this section twice, that happens on both passes.
+Lines 2 and 3 play twice before the section continues to line 4, `times` being `2` by default. If a `<repeat>` in `<structure>` plays this section twice, that happens on both passes.
 
 ## Rendering
 
@@ -42,7 +44,7 @@ A line repeat prints as a bracket in the margin right of the grid, spanning the 
 ## Conformance
 
 - `first` and `last` are both required, and `first` must be less than or equal to `last`.
-- `times` must be an integer of `1` or greater.
+- `times` must be an integer of `2` or greater, and defaults to `2` when absent. A range played once is not repeated, so a section that plays its lines straight through carries no `<line-repeat>`.
 - `last` must not exceed the number of `<line>` elements in the section's `<section-ref>` content. Where no [`<part-data>`](/en/v1_0/reference/elements/part-data/) references the section at all, there is no line count to check against and the rule does not apply. Such a section has no music, contributes no rows to the page, and is not played.
 - A `<line-repeat>` has no bearing on how [`<bow>`](/en/v1_0/reference/elements/bow/), [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/), and [`<link>`](/en/v1_0/reference/elements/link/) spans are matched. Those read the lines once in document order regardless of how often playback runs through them.
 - Two `<line-repeat>` ranges in the same `<section>` must be either properly nested or wholly disjoint. Partially overlapping ranges are invalid, and so are two elements covering the identical range: combine those into one element with a higher `times`.

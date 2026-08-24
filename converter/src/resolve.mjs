@@ -38,6 +38,9 @@ function withContext(context, fn) {
   }
 }
 
+// The plays a <repeat> or <line-repeat> without times is worth. See <repeat>.
+const DEFAULT_TIMES = 2;
+
 /**
  * <structure> walked depth-first, multiplying <repeat times> as it descends.
  * Unlike parse.mjs's `structure`, this keeps one entry per <section>
@@ -51,7 +54,7 @@ function playOrder(structureEl) {
     for (const child of Array.from(node.childNodes)) {
       if (child.nodeType !== 1) continue;
       if (child.localName === "repeat") {
-        const times = child.hasAttribute("times") ? Number(child.getAttribute("times")) : 1;
+        const times = child.hasAttribute("times") ? Number(child.getAttribute("times")) : DEFAULT_TIMES;
         walk(child, multiplier * times);
       } else if (child.localName === "section") {
         out.push({ kind: "section", id: child.getAttribute("id"), totalPasses: multiplier });
@@ -102,7 +105,7 @@ function expandRange(node) {
   while (l <= node.last) {
     const child = childByFirst.get(l);
     if (child) {
-      for (let t = 0; t < (child.times || 1); t++) seq.push(...expandRange(child));
+      for (let t = 0; t < (child.times || DEFAULT_TIMES); t++) seq.push(...expandRange(child));
       l = child.last + 1;
     } else {
       seq.push(l);
@@ -126,7 +129,7 @@ function lineOrder(lineCount, ranges) {
   while (l <= lineCount) {
     const node = topByFirst.get(l);
     if (node) {
-      for (let t = 0; t < (node.times || 1); t++) order.push(...expandRange(node));
+      for (let t = 0; t < (node.times || DEFAULT_TIMES); t++) order.push(...expandRange(node));
       l = node.last + 1;
     } else {
       order.push(l);

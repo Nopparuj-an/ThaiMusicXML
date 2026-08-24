@@ -130,6 +130,10 @@ function buildStacks(parts) {
   return stacks;
 }
 
+// The plays a <repeat> or <line-repeat> without times is worth. A repeat that
+// played its content once would not be a repeat, so a bare one means twice.
+const DEFAULT_TIMES = 2;
+
 // A section's total pass count is the product of the times values enclosing it.
 function buildPassCount(structure) {
   const passCount = new Map();
@@ -137,7 +141,7 @@ function buildPassCount(structure) {
     for (const el of els(node)) {
       if (el.localName === "section") passCount.set(el.getAttribute("id"), factor);
       else if (el.localName === "repeat") {
-        const t = el.hasAttribute("times") ? num(el, "times") : 1;
+        const t = el.hasAttribute("times") ? num(el, "times") : DEFAULT_TIMES;
         walk(el, factor * (Number.isFinite(t) && t > 0 ? t : 1));
       }
     }

@@ -14,7 +14,7 @@ The `<repeat>` element wraps a run of `<structure>` content and plays it more th
 
 | Attribute | Required | Type    | Description                                        |
 | --------- | -------- | ------- | -------------------------------------------------- |
-| `times`   | No       | integer | How many times the wrapped content plays. Default: `1`. |
+| `times`   | No       | integer | How many times the wrapped content plays in total, `2` or more. Default: `2`. |
 
 ## Children
 
@@ -28,7 +28,7 @@ The same children `<structure>` takes, in any order and repeated freely:
 
 ## Semantics
 
-Everything inside a `<repeat>` plays `times` times through before the score moves past it. Wrapping two sections repeats the pair together, so `A B A B`, which is different from repeating each section on its own.
+Everything inside a `<repeat>` plays `times` times through before the score moves past it. The count is the total number of plays rather than the number of extra plays on top of the first, so `times="2"` plays the content twice. Two is also the default, since a `<repeat>` that played its content once would not be repeating anything: leave `times` off and the content plays twice. Wrapping two sections repeats the pair together, so `A B A B`, which is different from repeating each section on its own.
 
 Nested repeats multiply. A section wrapped in a `times="2"` inside another `times="2"` plays four times.
 
@@ -57,7 +57,7 @@ Passes are counted absolutely, straight through from the first play to the last,
 
 ## Conformance
 
-- `times` must be an integer of `1` or greater.
+- `times` must be an integer of `2` or greater, and defaults to `2` when absent. A `<repeat>` playing its content once is not a repeat; a score that plays a section once writes no `<repeat>` around it.
 - A `<repeat>` must contain at least one `<section>`, directly or inside a nested `<repeat>`. A repeat wrapping only annotations and directions has nothing to play.
 - Repeats nest to any depth.
 - To repeat a range of lines within one section rather than the section as a whole, use [`<line-repeat>`](/en/v1_0/reference/elements/line-repeat/).

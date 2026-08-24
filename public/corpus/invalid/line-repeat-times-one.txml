@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: times="1" on a line-repeat. A range played once is not repeated,
+     and a bare <line-repeat> already means twice. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header><title>Invalid example</title></header>
+  <structure>
+    <section id="s1"><line-repeat first="1" last="2" times="1"/></section>
+  </structure>
+  <ensemble>
+    <part id="P1"><instrument-name>ระนาดเอก</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      <line number="2"><measure number="1"><note pitch="ร"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>

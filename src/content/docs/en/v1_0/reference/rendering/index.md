@@ -209,7 +209,7 @@ A [`<line-repeat>`](/en/v1_0/reference/elements/line-repeat/) renders as a brack
 
 The bracket sits immediately right of the grid it covers rather than at a fixed margin position, so a span over seven-measure lines sits further left than one over eight-measure lines. Where a span mixes lengths, align it to the longest line in the span.
 
-A bare ซ้ำ reads as playing the range twice, matching `times="2"`. That is what printed scores show and it needs no number.
+A bare ซ้ำ reads as playing the range twice, matching `times="2"` and the `times` default. That is what printed scores show and it needs no number.
 
 Above two, drop ซ้ำ and label the bracket with the count alone: `3 ครั้ง` for `times="3"`. The count is the total number of plays, not the number of extra plays on top of the first, so `3 ครั้ง` and `times="3"` say the same thing. Use Arabic numerals by default. Renderers generating this label are writing text the author never typed, so the safe default is the unambiguous one, whatever numerals the surrounding score uses.
 

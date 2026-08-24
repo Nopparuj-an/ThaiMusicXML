@@ -76,7 +76,7 @@ The element pages name a type for each attribute. This section says what those n
 
 ### Integers
 
-An optional sign followed by digits. `octave` takes any integer; `times`, `first`, `last`, `number`, `row`, and the content of `<bpm>` take positive ones, with the bounds each element page gives.
+An optional sign followed by digits. `octave` takes any integer; `times`, `first`, `last`, `number`, `row`, and the content of `<bpm>` take positive ones, with the bounds each element page gives. `times` is the one with a floor above `1`: it must be `2` or more.
 
 :::danger[Rejected]
 ```xml
@@ -88,6 +88,9 @@ An optional sign followed by digits. `octave` takes any integer; `times`, `first
 
 <!-- ✗ rejected: times, first, last, number, row, and <bpm> must be positive -->
 <repeat times="0">...</repeat>
+
+<!-- ✗ rejected: a repeat that plays once repeats nothing; the default is 2 -->
+<repeat times="1">...</repeat>
 ```
 :::
 
@@ -430,7 +433,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 
 ### Repetition
 
-- `times` on `<repeat>` and `<line-repeat>` must be an integer of `1` or greater.
+- `times` on `<repeat>` and `<line-repeat>` must be an integer of `2` or greater, and defaults to `2`. It counts total plays, not extra plays on top of the first. An element that played its content once would repeat nothing, so `times="1"` is rejected rather than treated as a no-op.
 - A `<repeat>` must contain at least one `<section>`, directly or nested.
 - `<line-repeat>` requires both `first` and `last`, with `first` no greater than `last`, and `last` no greater than the section's line count.
 - Two `<line-repeat>` ranges in one section must be properly nested or wholly disjoint.
@@ -443,6 +446,11 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 ```xml
 <!-- ✗ rejected: times="0" -->
 <repeat times="0">
+  <section id="s1" name="ท่อน 1"/>
+</repeat>
+
+<!-- ✗ rejected: times="1" repeats nothing. Omit the <repeat> to play once. -->
+<repeat times="1">
   <section id="s1" name="ท่อน 1"/>
 </repeat>
 
