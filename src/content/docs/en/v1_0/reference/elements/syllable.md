@@ -54,7 +54,7 @@ ThaiMusicXML v1.0 has no dedicated marker for เอื้อน beyond this. Th
 ## Conformance
 
 - `<syllable>` is valid only inside a `<measure>` in a part whose `type` is `"lyric"`.
-- A lyric part's measures must contain only `<syllable>` and `<rest>` children. `<note>`, `<group>`, `<bow>`, and `<parenthesis>` are not valid there.
+- A lyric part's measures must contain only `<syllable>` and `<rest>` children. `<note>`, `<group>`, `<bow>`, `<parenthesis>`, and `<link>` are not valid there.
 - A lyric measure's item count is unconstrained. It may equal the beat count of the corresponding measures in other parts, exceed it, fall short of it, or be zero.
 - A lyric part must still agree with every other part on line count and on the number of measures in each line.
 

@@ -18,7 +18,7 @@ description: ห้องเดียวที่บรรจุโน้ตแ�
 
 ## ลูก
 
-ในพาร์ตที่มีหรือไม่มีระดับเสียง ลำดับของ [`<note>`](/th/v1_0/reference/elements/note/), [`<rest>`](/th/v1_0/reference/elements/rest/), และ [`<group>`](/th/v1_0/reference/elements/group/) อาจแทรก [`<bow>`](/th/v1_0/reference/elements/bow/) และ [`<parenthesis>`](/th/v1_0/reference/elements/parenthesis/)
+ในพาร์ตที่มีหรือไม่มีระดับเสียง ลำดับของ [`<note>`](/th/v1_0/reference/elements/note/), [`<rest>`](/th/v1_0/reference/elements/rest/), และ [`<group>`](/th/v1_0/reference/elements/group/) อาจแทรก [`<bow>`](/th/v1_0/reference/elements/bow/), [`<parenthesis>`](/th/v1_0/reference/elements/parenthesis/), และ [`<link>`](/th/v1_0/reference/elements/link/)
 
 ในพาร์ตเนื้อเพลง ลำดับของ [`<syllable>`](/th/v1_0/reference/elements/syllable/) และ `<rest>` เท่านั้น ดู [`<part>`](/th/v1_0/reference/elements/part/#ประเภทพาร์ต)
 
@@ -26,7 +26,7 @@ description: ห้องเดียวที่บรรจุโน้ตแ�
 
 ห้องแบ่งเป็นจังหวะ `<note>`, `<rest>`, และ `<group>` แต่ละตัวใช้หนึ่งจังหวะพอดี [`<group>`](/th/v1_0/reference/elements/group/) แบ่งจังหวะเดียวในลูกของตัวเองแทนที่จะเพิ่มจังหวะให้ห้อง จำนวนจังหวะของห้องจึงเท่ากับจำนวนลูก `<note>`, `<rest>`, และ `<group>`
 
-`<bow>` และ `<parenthesis>` เป็นตัวกำกับไม่มีความยาว ไม่ใช้จังหวะและไม่กระทบจำนวน
+`<bow>`, `<parenthesis>`, และ `<link>` เป็นตัวกำกับไม่มีความยาว ไม่ใช้จังหวะและไม่กระทบจำนวน
 
 จำนวนจังหวะขึ้นอยู่กับเพลง สี่เป็นรูปแบบที่ใช้บ่อย
 

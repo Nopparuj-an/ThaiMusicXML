@@ -501,7 +501,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 ### Notes and pitch
 
 - `type` on a `<part>` must be `"pitched"`, `"unpitched"`, or `"lyric"`. Validators must reject any other value.
-- A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part. `<note>`, `<group>`, `<bow>`, and `<parenthesis>` are not valid in a lyric part, and `<syllable>` is not valid outside one.
+- A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part. `<note>`, `<group>`, `<bow>`, `<parenthesis>`, and `<link>` are not valid in a lyric part, and `<syllable>` is not valid outside one.
 - A note in a `pitched` part uses `pitch`; one in an `unpitched` part uses `sound`. The two are mutually exclusive.
 - `pitch` must be one of the seven base-note characters in any of the three spellings, optionally followed by one Thai octave modifier. Validators must reject any other value. See [Lexical types](#pitch).
 - A romanized base note may be written in upper or lower case. Case carries no meaning, and the renderer decides which case appears on the page.

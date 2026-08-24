@@ -18,7 +18,7 @@ The `<measure>` element contains the notes and rests in a single measure (ห้
 
 ## Children
 
-In a pitched or unpitched part, a sequence of [`<note>`](/en/v1_0/reference/elements/note/), [`<rest>`](/en/v1_0/reference/elements/rest/), and [`<group>`](/en/v1_0/reference/elements/group/) elements, optionally interspersed with [`<bow>`](/en/v1_0/reference/elements/bow/) and [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/) markers.
+In a pitched or unpitched part, a sequence of [`<note>`](/en/v1_0/reference/elements/note/), [`<rest>`](/en/v1_0/reference/elements/rest/), and [`<group>`](/en/v1_0/reference/elements/group/) elements, optionally interspersed with [`<bow>`](/en/v1_0/reference/elements/bow/), [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/), and [`<link>`](/en/v1_0/reference/elements/link/) markers.
 
 In a lyric part, a sequence of [`<syllable>`](/en/v1_0/reference/elements/syllable/) and `<rest>` elements, and nothing else. See [`<part>`](/en/v1_0/reference/elements/part/#part-types).
 
@@ -26,7 +26,7 @@ In a lyric part, a sequence of [`<syllable>`](/en/v1_0/reference/elements/syllab
 
 A measure is divided into beats. Each `<note>`, `<rest>`, and `<group>` occupies exactly one beat. A [`<group>`](/en/v1_0/reference/elements/group/) splits its single beat among its own children instead of adding beats to the measure, so a measure's beat count is the number of its `<note>`, `<rest>`, and `<group>` children.
 
-`<bow>` and `<parenthesis>` are zero-duration markers. They occupy no beat and do not affect the count.
+`<bow>`, `<parenthesis>`, and `<link>` are zero-duration markers. They occupy no beat and do not affect the count.
 
 How many beats a measure has depends on the piece. Four is the common pattern.
 

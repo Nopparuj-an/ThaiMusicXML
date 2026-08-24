@@ -65,7 +65,7 @@ Measure 1 plays ซ ล ด ม on every pass, exactly as line 4 above states it
 
 ### Spans across an overridden line
 
-[`<bow>`](/en/v1_0/reference/elements/bow/) and [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/) markers pair up in the order the lines are read once a pass is resolved, which is not the same as their order in the file. An `<ending>` sits after all the regular lines in the document but stands in for one of them, so the two orders come apart wherever a span reaches into a line an ending overrides.
+[`<bow>`](/en/v1_0/reference/elements/bow/), [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/), and [`<link>`](/en/v1_0/reference/elements/link/) markers pair up in the order the lines are read once a pass is resolved, which is not the same as their order in the file. An `<ending>` sits after all the regular lines in the document but stands in for one of them, so the two orders come apart wherever a span reaches into a line an ending overrides.
 
 Resolve the pass first, then match. Take the lines the part actually plays on that pass, regular lines with the ending's substitutions in place - an unchanged measure resolving to the original's own content, per [Unchanged measures](#unchanged-measures) above - and pair each `start` with the next `stop` in that sequence. Each pass is matched on its own.
 
