@@ -185,6 +185,8 @@ Comma-separated integers, in ascending order, with no repeats: `2` and `2,4` are
 
 ### `id` and `IDREF`
 
+An `id` is any run of characters with no whitespace in it, and two ids are the same when they match character for character. `id="s1"` and `id="S1"` are different ids; `id="s 1"` is not an id at all, because a value needing to be trimmed or collapsed before matching would resolve one way in a processor that did that and another way in one that did not.
+
 An `id` must be unique among elements of its own kind. `<part id="…">` values must be unique across all parts and `<section id="…">` values unique across all sections, but the two sets are independent, so a `<part id="1">` and a `<section id="1">` may both exist and refer to different things. An IDREF resolves within the kind its attribute names: `part` on [`<part-data>`](/en/v1_0/reference/elements/part-data/) finds a `<part>`, `section` on [`<section-ref>`](/en/v1_0/reference/elements/section-ref/) finds a `<section>`.
 
 [`<line>`](/en/v1_0/reference/elements/line/), [`<measure>`](/en/v1_0/reference/elements/measure/), [`<note>`](/en/v1_0/reference/elements/note/), [`<rest>`](/en/v1_0/reference/elements/rest/), and [`<group>`](/en/v1_0/reference/elements/group/) also accept an optional `id`, each kind its own independent set the same way `part` and `section` are. Nothing inside ThaiMusicXML itself resolves one - no IDREF attribute names these kinds - since a document has no reason to point at its own note. They exist so a [foreign-namespace extension](#foreign-namespace-extensions) or some other tool outside the document has a stable handle to attach state to, which is also why nothing requires them: a file with none of these ids is as conforming as one with every note tagged.
@@ -205,6 +207,9 @@ An `id` must be unique among elements of its own kind. `<part id="…">` values 
 <!-- ✗ rejected: two notes sharing an id -->
 <note id="n1" pitch="ด"/>
 <note id="n1" pitch="ร"/>
+
+<!-- ✗ rejected: whitespace in an id -->
+<section id="ท่อน 1"/>
 ```
 :::
 
@@ -309,6 +314,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - Every `<section-ref>` must reference a `<section>` that exists in `<structure>` through `section`.
 - Every `<play>` must reference a `<section>` that exists in `<structure>`. `<play>` adds a play of that section to the score's order without declaring one, so a section is still declared by exactly one `<section>`.
 - `<part-data>` elements may appear in any order. A `<part-data>` must not reference the same section twice, and need not reference every section.
+- A `<part-data>`'s `<section-ref>` elements may also appear in any order, and that order means nothing. What order the sections play in is `<structure>`'s to say; a `<section-ref>` only says which section a run of lines belongs to.
 - A `<section>` that no `<part-data>` references has no music. It is not played, contributes no rows to the page, and the rules below that count its lines and measures do not apply to it.
 - A `<part>` with `stack` must also have `row`, and vice versa. A `stack` value must be shared by at least two parts, their `row` values must run from `1` upward with no gaps or repeats, and they must be adjacent in `<ensemble>` in ascending `row` order.
 - A `type="lyric"` part must not carry `stack` or `row`. A stack is one instrument's own rows, and words are not a region of an instrument.

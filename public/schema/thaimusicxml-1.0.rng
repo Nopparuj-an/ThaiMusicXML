@@ -507,13 +507,19 @@
   </define>
 
   <!--
-    An id is any non-empty token. Deliberately not xsd:ID, whose uniqueness
-    is document-global: ThaiMusicXML scopes ids per kind, so a <part id="1">
-    and a <section id="1"> are distinct and must not collide.
+    An id is a non-empty run of characters with no whitespace in it.
+    Deliberately not xsd:ID, whose uniqueness is document-global:
+    ThaiMusicXML scopes ids per kind, so a <part id="1"> and a
+    <section id="1"> are distinct and must not collide.
+
+    Whitespace is excluded so that comparing two ids never depends on whether
+    a processor normalized them first: ids are matched character for
+    character, and there is no value where that differs from matching after
+    a whitespace collapse.
   -->
   <define name="identifier">
-    <data type="token">
-      <param name="minLength">1</param>
+    <data type="string">
+      <param name="pattern">\S+</param>
     </data>
   </define>
 

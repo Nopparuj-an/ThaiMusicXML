@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: an id containing a space. Ids are matched character for
+     character, so they carry no whitespace: an id that had to be trimmed or
+     collapsed before matching would resolve differently in two processors. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header><title>Invalid example</title></header>
+  <structure><section id="section 1"/></structure>
+  <ensemble>
+    <part id="P1"><instrument-name>ระนาดเอก</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="section 1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>

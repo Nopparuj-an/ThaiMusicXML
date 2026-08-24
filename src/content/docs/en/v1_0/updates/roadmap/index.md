@@ -23,6 +23,8 @@ These are known gaps, deferred to a later version rather than overlooked. A v1.0
 - **Ornamentation.** Techniques such as กรอ have no dedicated markup. [`<group>`](/en/v1_0/reference/elements/group/) covers subdivision, and a [`<link>`](/en/v1_0/reference/elements/link/) span marks a run as one gesture, which is as near as v1.0 comes to naming a สะบัด. Neither says which technique is meant.
 - **Simultaneous pitches within one part.** A `<note>` carries one pitch, so คู่แปด and similar intervals cannot be written on a single line. Instruments that need more than one line split across a `stack` of parts instead.
 - **ทาง.** [`<tuning>`](/en/v1_0/reference/elements/tuning/) fixes what pitch ด sounds at, but there is no element for the ทาง a piece is played in.
+- **Directions inside a section.** A [`<direction>`](/en/v1_0/reference/elements/direction/) sits in `<structure>`, between sections, so tempo and ชั้น can only change at a section boundary. A piece that speeds up over its last two lines has to say so in an [`<annotation>`](/en/v1_0/reference/elements/annotation/).
+- **A variation on one play of a repeated line range.** [`<ending>`](/en/v1_0/reference/elements/ending/) varies a pass of a *section*, so "ซ้ำ, เที่ยวสองลงจบอีกอย่าง" over a [`<line-repeat>`](/en/v1_0/reference/elements/line-repeat/) range cannot be written as such. Writing the lines out a second time, with the variation, says the same music at the cost of the repeat bracket.
 
 ### Next steps
 

@@ -31,6 +31,8 @@ Each `<section-ref>` has its own line-numbering scope. Line numbers start at `1`
 
 The section's order among the `<section>` elements in `<structure>` does not affect line or measure numbering. Repeating a section does not change these numbers.
 
+Nor does a `<section-ref>`'s own position among its siblings mean anything. [`<structure>`](/en/v1_0/reference/elements/structure/#section-order) settles what plays when, and `section` settles which section this music belongs to, so a `<part-data>` listing s2 before s1 says exactly what one listing them the other way says. Writing them in playing order is easier to read and nothing more.
+
 ## Conformance
 
 All `<section-ref>` elements referencing the same `<section>` must agree on three counts: the number of `<line>` elements, the number of `<measure>` elements in each corresponding line (matched by `number`), and the number of beats in each corresponding measure. This keeps a given measure and beat aligned to the same span of time across every part. Validators must reject documents that violate this rule.

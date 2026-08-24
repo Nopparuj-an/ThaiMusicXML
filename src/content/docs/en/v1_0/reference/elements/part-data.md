@@ -38,4 +38,5 @@ One or more [`<section-ref>`](/en/v1_0/reference/elements/section-ref/) elements
 - Every `<part>` in `<ensemble>` must have exactly one `<part-data>` referencing it. A part with no matching `<part-data>`, or more than one, is invalid.
 - A `<part-data>` must not reference the same `<section>` twice.
 - `<part-data>` elements may appear in any order. Matching a part to its data goes through `part`, not through document position.
+- A `<part-data>`'s `<section-ref>` children may appear in any order too. Play order comes from [`<structure>`](/en/v1_0/reference/elements/structure/#section-order); a `<section-ref>` is data attached to a section, not a place in the score. Writing them in the order the sections play is friendlier to read, and nothing depends on it.
 - A `<part-data>` need not reference every section. Leave out the `<section-ref>` for a section its instrument does not play.
