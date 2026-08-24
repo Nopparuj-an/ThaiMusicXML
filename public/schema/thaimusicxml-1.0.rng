@@ -135,8 +135,21 @@
       <ref name="el-br"/>
       <ref name="el-direction"/>
       <ref name="el-section"/>
+      <ref name="el-play"/>
       <ref name="el-repeat"/>
     </choice>
+  </define>
+
+  <!--
+    A section played again at a later point in the piece, without a second
+    copy of its music. <section> declares the section and gives it its first
+    place in the play order; <play> adds another. Whether the section it
+    names exists is checked outside this grammar.
+  -->
+  <define name="el-play">
+    <element name="play">
+      <attribute name="section"><ref name="identifier"/></attribute>
+    </element>
   </define>
 
   <define name="el-annotation">

@@ -24,6 +24,7 @@ The same children `<structure>` takes, in any order and repeated freely:
 - [`<br>`](/en/v1_0/reference/elements/br/)
 - [`<direction>`](/en/v1_0/reference/elements/direction/)
 - [`<section>`](/en/v1_0/reference/elements/section/)
+- [`<play>`](/en/v1_0/reference/elements/play/)
 - [`<repeat>`](/en/v1_0/reference/elements/repeat/)
 
 ## Semantics
@@ -47,7 +48,7 @@ That plays ท่อน 1 twice, then ท่อน 2 once, then repeats the whol
 
 ### Total pass count
 
-A section's total pass count is the product of the `times` values of every `<repeat>` enclosing it, or `1` if none do. In the example above ท่อน 1 has a total pass count of 4 and ท่อน 2 has 2.
+A section's total pass count is what every play of it adds up to: for each `<section>` or [`<play>`](/en/v1_0/reference/elements/play/) naming it, the product of the `times` values of every `<repeat>` enclosing that one, summed over all of them. A section played once where it is declared and again through a `<play>` therefore has two passes, and one declared inside no repeat at all has one. In the example above ท่อน 1 has a total pass count of 4 and ท่อน 2 has 2.
 
 Passes are counted absolutely, straight through from the first play to the last, ignoring which layer of repeat produced them. [`<ending>`](/en/v1_0/reference/elements/ending/)'s `pass` attribute uses these absolute numbers, so `pass="4"` on ท่อน 1 above names the last of its four plays, and `pass="2,4"` names two of them.
 
@@ -58,6 +59,6 @@ Passes are counted absolutely, straight through from the first play to the last,
 ## Conformance
 
 - `times` must be an integer of `2` or greater, and defaults to `2` when absent. A `<repeat>` playing its content once is not a repeat; a score that plays a section once writes no `<repeat>` around it.
-- A `<repeat>` must contain at least one `<section>`, directly or inside a nested `<repeat>`. A repeat wrapping only annotations and directions has nothing to play.
+- A `<repeat>` must contain at least one `<section>` or [`<play>`](/en/v1_0/reference/elements/play/), directly or inside a nested `<repeat>`. A repeat wrapping only annotations and directions has nothing to play.
 - Repeats nest to any depth.
 - To repeat a range of lines within one section rather than the section as a whole, use [`<line-repeat>`](/en/v1_0/reference/elements/line-repeat/).

@@ -134,12 +134,17 @@ function buildStacks(parts) {
 // played its content once would not be a repeat, so a bare one means twice.
 const DEFAULT_TIMES = 2;
 
-// A section's total pass count is the product of the times values enclosing it.
+// A section's total pass count: the product of the times values enclosing
+// each of its occurrences, summed over the occurrences. A section played once
+// where it is declared and again through a later <play> has two passes, and a
+// <play> inside a times="2" repeat contributes two more.
 function buildPassCount(structure) {
   const passCount = new Map();
+  const add = (id, n) => passCount.set(id, (passCount.get(id) ?? 0) + n);
   (function walk(node, factor) {
     for (const el of els(node)) {
-      if (el.localName === "section") passCount.set(el.getAttribute("id"), factor);
+      if (el.localName === "section") add(el.getAttribute("id"), factor);
+      else if (el.localName === "play") add(el.getAttribute("section"), factor);
       else if (el.localName === "repeat") {
         const t = el.hasAttribute("times") ? num(el, "times") : DEFAULT_TIMES;
         walk(el, factor * (Number.isFinite(t) && t > 0 ? t : 1));
@@ -215,8 +220,19 @@ function checkIdsAndReferences(ctx, err) {
 
 function checkRepeatsHaveSections(ctx, err) {
   for (const rep of descendants(ctx.structure, "repeat"))
-    if (descendants(rep, "section").length === 0)
-      err("a <repeat> contains no <section>, so it has nothing to play");
+    if (descendants(rep, "section").length === 0 && descendants(rep, "play").length === 0)
+      err("a <repeat> contains no <section> or <play>, so it has nothing to play");
+}
+
+// <play> names a section declared elsewhere in <structure>, and does not
+// declare one itself: a section still has exactly one <section> element, so
+// there is exactly one place its lines and line-repeats are described.
+function checkPlays(ctx, err) {
+  const declared = new Set(ctx.sections.map((s) => s.getAttribute("id")));
+  for (const play of descendants(ctx.structure, "play")) {
+    const ref = play.getAttribute("section");
+    if (!declared.has(ref)) err(`<play section="${ref}"> names no <section>`);
+  }
 }
 
 function checkDirections(ctx, err, warn) {
@@ -534,6 +550,7 @@ function checkCrossPartAgreement(ctx, err) {
 const RULES = [
   checkIdsAndReferences,
   checkRepeatsHaveSections,
+  checkPlays,
   checkDirections,
   checkStacks,
   checkLineRepeats,

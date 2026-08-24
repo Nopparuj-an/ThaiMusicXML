@@ -53,6 +53,50 @@ test("nested <repeat> multiplies a section's total pass count", () => {
   assert.equal(item.totalPasses, 4);
 });
 
+test("a <repeat> around two sections plays them A B A B, not A A B B", () => {
+  // <repeat>'s own page: "Wrapping two sections repeats the pair together, so
+  // A B A B". playOrder expands the repeat rather than carrying a multiplier,
+  // which is the only way to say that.
+  const doc = resolve(`<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header><title>ทดสอบ</title></header>
+  <structure><repeat times="2"><section id="s1"/><section id="s2"/></repeat></structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1"><line number="1"><measure number="1"><note pitch="ด"/></measure></line></section-ref>
+    <section-ref section="s2"><line number="1"><measure number="1"><note pitch="ร"/></measure></line></section-ref>
+  </part-data>
+</thai-score>`);
+
+  const sections = doc.playOrder.filter((i) => i.kind === "section");
+  assert.deepEqual(
+    sections.map((i) => `${i.id}:${i.pass}`),
+    ["s1:1", "s2:1", "s1:2", "s2:2"],
+    "the pair repeats together, each section's passes counted absolutely",
+  );
+  assert.deepEqual(pitches(doc.unroll("P1").notes), ["ด", "ร", "ด", "ร"]);
+});
+
+test("<play> plays a section again without a second copy of its music", () => {
+  // ABA form: s1 is declared once, played once where it is declared and once
+  // more through <play>, so it has two passes and the notes appear twice.
+  const doc = resolve(`<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1"/><section id="s2"/><play section="s1"/></structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1"><line number="1"><measure number="1"><note pitch="ด"/></measure></line></section-ref>
+    <section-ref section="s2"><line number="1"><measure number="1"><note pitch="ร"/></measure></line></section-ref>
+  </part-data>
+</thai-score>`);
+
+  const sections = doc.playOrder.filter((i) => i.kind === "section");
+  assert.deepEqual(sections.map((i) => `${i.id}:${i.pass}`), ["s1:1", "s2:1", "s1:2"]);
+  assert.equal(sections[0].totalPasses, 2, "both plays of s1 count toward its total");
+  assert.deepEqual(pitches(doc.unroll("P1").notes), ["ด", "ร", "ด"]);
+});
+
 test("<ending> substitutes its line only on the passes it names", () => {
   const doc = resolve(corpus("repeats-and-endings.txml"));
   const { passes } = doc.resolveSection("P1", "s1", 4);

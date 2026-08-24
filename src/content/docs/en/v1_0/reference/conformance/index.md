@@ -259,6 +259,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - `<thai-score>` must be the single root element, carrying `version` and the namespace.
 - A processor must reject a document whose root is in a namespace it does not implement. The namespace URI names the compatibility boundary: through 0.x each release carries its own, and from 1.0 the URI carries the major version alone. `version` tells releases apart within a boundary and is informational to a processor that already understands the namespace, so a mismatch between the two draws a warning rather than a rejection.
 - Its children appear in order: `<header>`, `<structure>`, `<ensemble>`, one or more `<part-data>`, then zero or more [foreign-namespace extension elements](#foreign-namespace-extensions).
+- `<structure>` and `<repeat>` take `<annotation>`, `<br>`, `<direction>`, `<section>`, `<play>`, and `<repeat>`, in any order.
 - `<header>` must contain exactly one `<title>`. Everything else in the header is optional, and `<tuning>` and `<license>` appear at most once each.
 - `<nathap>`, `<chan>`, and `<bpm>` are each optional within a `<direction>` and appear at most once each, in any order.
 
@@ -306,6 +307,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 
 - Every `<part>` must have exactly one `<part-data>` referencing it through `part`.
 - Every `<section-ref>` must reference a `<section>` that exists in `<structure>` through `section`.
+- Every `<play>` must reference a `<section>` that exists in `<structure>`. `<play>` adds a play of that section to the score's order without declaring one, so a section is still declared by exactly one `<section>`.
 - `<part-data>` elements may appear in any order. A `<part-data>` must not reference the same section twice, and need not reference every section.
 - A `<section>` that no `<part-data>` references has no music. It is not played, contributes no rows to the page, and the rules below that count its lines and measures do not apply to it.
 - A `<part>` with `stack` must also have `row`, and vice versa. A `stack` value must be shared by at least two parts, their `row` values must run from `1` upward with no gaps or repeats, and they must be adjacent in `<ensemble>` in ascending `row` order.
@@ -434,7 +436,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 ### Repetition
 
 - `times` on `<repeat>` and `<line-repeat>` must be an integer of `2` or greater, and defaults to `2`. It counts total plays, not extra plays on top of the first. An element that played its content once would repeat nothing, so `times="1"` is rejected rather than treated as a no-op.
-- A `<repeat>` must contain at least one `<section>`, directly or nested.
+- A `<repeat>` must contain at least one `<section>` or `<play>`, directly or nested.
 - `<line-repeat>` requires both `first` and `last`, with `first` no greater than `last`, and `last` no greater than the section's line count.
 - Two `<line-repeat>` ranges in one section must be properly nested or wholly disjoint.
 - `<ending>` is valid only when the section's total pass count exceeds `1`. Every `pass` value must fall within that count, every `<line number="N">` must replace an existing line, and the replacement must match the original's measure count. In a notated part it must match the beat counts too - except that a measure left completely empty means "unchanged from the line being replaced", regardless of that measure's own beat count. See [`<ending>`'s "Unchanged measures"](/en/v1_0/reference/elements/ending/#unchanged-measures).

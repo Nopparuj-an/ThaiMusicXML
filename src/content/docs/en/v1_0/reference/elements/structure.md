@@ -17,13 +17,16 @@ A sequence of:
 - [`<br>`](/en/v1_0/reference/elements/br/)
 - [`<direction>`](/en/v1_0/reference/elements/direction/)
 - [`<section>`](/en/v1_0/reference/elements/section/)
+- [`<play>`](/en/v1_0/reference/elements/play/)
 - [`<repeat>`](/en/v1_0/reference/elements/repeat/)
 
 These can appear in any order and be repeated.
 
 ## Section order
 
-A score's section order is the order in which `<section>` elements appear, counting only `<section>` elements and walking depth first into any [`<repeat>`](/en/v1_0/reference/elements/repeat/) wrappers. Interleaved `<annotation>`, `<br>`, and `<direction>` elements do not affect it. No attribute carries the order, so reordering the `<section>` elements in the document reorders the score.
+A score's section order is the order in which `<section>` and [`<play>`](/en/v1_0/reference/elements/play/) elements appear, walking depth first into any [`<repeat>`](/en/v1_0/reference/elements/repeat/) wrappers. Interleaved `<annotation>`, `<br>`, and `<direction>` elements do not affect it. No attribute carries the order, so reordering these elements in the document reorders the score.
+
+`<section>` and `<play>` both put one play of a section into that order. The difference is that `<section>` also declares the section, so it appears exactly once, and `<play>` only plays one already declared, so a section that comes back later in the piece needs no second copy of its music.
 
 ## Directions
 

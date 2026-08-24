@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: <play> names a section that no <section> declares. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header><title>Invalid example</title></header>
+  <structure>
+    <section id="s1"/>
+    <play section="s9"/>
+  </structure>
+  <ensemble>
+    <part id="P1"><instrument-name>ระนาดเอก</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+    </section-ref>
+  </part-data>
+</thai-score>

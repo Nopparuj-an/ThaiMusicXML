@@ -17,13 +17,16 @@ description: กำหนดโครงสร้างโน้ตด้วย�
 - [`<br>`](/th/v1_0/reference/elements/br/)
 - [`<direction>`](/th/v1_0/reference/elements/direction/)
 - [`<section>`](/th/v1_0/reference/elements/section/)
+- [`<play>`](/th/v1_0/reference/elements/play/)
 - [`<repeat>`](/th/v1_0/reference/elements/repeat/)
 
 ปรากฏลำดับใดก็ได้และซ้ำได้
 
 ## ลำดับท่อน
 
-ลำดับท่อนของโน้ตคือลำดับที่องค์ประกอบ `<section>` ปรากฏ นับเฉพาะ `<section>` และเดินแบบ depth first เข้าตัวครอบ [`<repeat>`](/th/v1_0/reference/elements/repeat/) องค์ประกอบ `<annotation>`, `<br>`, และ `<direction>` ที่แทรกไม่กระทบ ไม่มีแอตทริบิวต์ระบุลำดับ การจัดลำดับองค์ประกอบ `<section>` ใหม่ในเอกสารจึงจัดลำดับโน้ตใหม่
+ลำดับท่อนของโน้ตคือลำดับที่องค์ประกอบ `<section>` และ [`<play>`](/th/v1_0/reference/elements/play/) ปรากฏ โดยเดินแบบ depth first เข้าตัวครอบ [`<repeat>`](/th/v1_0/reference/elements/repeat/) องค์ประกอบ `<annotation>`, `<br>`, และ `<direction>` ที่แทรกไม่กระทบ ไม่มีแอตทริบิวต์ระบุลำดับ การจัดลำดับองค์ประกอบเหล่านี้ใหม่ในเอกสารจึงจัดลำดับโน้ตใหม่
+
+`<section>` และ `<play>` ต่างก็ใส่การเล่นท่อนหนึ่งครั้งลงในลำดับนั้น ต่างกันตรงที่ `<section>` ประกาศท่อนด้วย จึงปรากฏเพียงครั้งเดียว ส่วน `<play>` เล่นท่อนที่ประกาศไว้แล้วเท่านั้น ท่อนที่กลับมาภายหลังจึงไม่ต้องมีสำเนาโน้ตชุดที่สอง
 
 ## ทิศทาง
 

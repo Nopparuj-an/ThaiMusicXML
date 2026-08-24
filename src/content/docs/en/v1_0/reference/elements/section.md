@@ -39,7 +39,8 @@ Zero or more [`<line-repeat>`](/en/v1_0/reference/elements/line-repeat/) element
 
 - Referenced by [`<section-ref>`](/en/v1_0/reference/elements/section-ref/) in part data, which holds the actual notes.
 - A section's order in the score is its position among the other `<section>` elements in `<structure>`. There is no separate ordering attribute. See [`<structure>`](/en/v1_0/reference/elements/structure/#section-order).
-- To play a section more than once, wrap it in a [`<repeat>`](/en/v1_0/reference/elements/repeat/) in `<structure>`. Repetition is a property of where the section sits in the score, not of the section itself, which is why it is not an attribute here.
+- To play a section more than once in a row, wrap it in a [`<repeat>`](/en/v1_0/reference/elements/repeat/) in `<structure>`. Repetition is a property of where the section sits in the score, not of the section itself, which is why it is not an attribute here.
+- To play it again later, after something else, add a [`<play>`](/en/v1_0/reference/elements/play/) where it comes back. A section is declared by exactly one `<section>` however many times it plays.
 - When a section's total pass count is greater than `1`, a part can vary individual passes with [`<ending>`](/en/v1_0/reference/elements/ending/).
 
 ## Rendering

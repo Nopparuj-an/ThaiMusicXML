@@ -42,22 +42,44 @@ function withContext(context, fn) {
 const DEFAULT_TIMES = 2;
 
 /**
- * <structure> walked depth-first, multiplying <repeat times> as it descends.
- * Unlike parse.mjs's `structure`, this keeps one entry per <section>
- * occurrence with its total pass count, and drops into nested <repeat>
- * elements rather than flattening them away. See <repeat>'s "Total pass
- * count".
+ * <structure> expanded into the sequence the piece is actually played in:
+ * one entry per play of a section, carrying that play's absolute pass number.
+ *
+ * Repeats are expanded rather than carried as a multiplier, because the
+ * multiplier alone cannot say what order the plays fall in. A <repeat times="2">
+ * around two sections plays A B A B (see <repeat>), so A's two passes are not
+ * adjacent, and a section reached twice through <play> is the same problem
+ * again. Expanding gets the order right by construction.
+ *
+ * `pass` counts plays of that section from the first to the last, absolutely,
+ * however they were produced - which is what <ending>'s own `pass` attribute
+ * counts. `totalPasses` is that count's ceiling, the same on every entry for
+ * a given section.
  */
 function playOrder(structureEl) {
   const out = [];
-  const walk = (node, multiplier) => {
+  const played = new Map();
+  const nextPass = (id) => {
+    const pass = (played.get(id) ?? 0) + 1;
+    played.set(id, pass);
+    return pass;
+  };
+
+  const walk = (node) => {
     for (const child of Array.from(node.childNodes)) {
       if (child.nodeType !== 1) continue;
       if (child.localName === "repeat") {
         const times = child.hasAttribute("times") ? Number(child.getAttribute("times")) : DEFAULT_TIMES;
-        walk(child, multiplier * times);
-      } else if (child.localName === "section") {
-        out.push({ kind: "section", id: child.getAttribute("id"), totalPasses: multiplier });
+        for (let t = 0; t < times; t++) walk(child);
+      } else if (child.localName === "section" || child.localName === "play") {
+        // <section> declares the section and takes its first place in the
+        // order; <play> takes another. Neither is distinguishable here - both
+        // are one play of the same music.
+        const id =
+          child.localName === "section"
+            ? child.getAttribute("id")
+            : child.getAttribute("section");
+        out.push({ kind: "section", id, pass: nextPass(id) });
       } else if (child.localName === "direction") {
         const chanEl = els(child, "chan")[0];
         const bpmEl = els(child, "bpm")[0];
@@ -73,7 +95,9 @@ function playOrder(structureEl) {
       }
     }
   };
-  walk(structureEl, 1);
+  walk(structureEl);
+  for (const item of out)
+    if (item.kind === "section") item.totalPasses = played.get(item.id);
   return out;
 }
 
@@ -426,6 +450,18 @@ export function resolve(source) {
    * only when no notated part anywhere references the section either - a
    * section that exists in `<structure>` but nothing ever plays.
    */
+  // resolveSection() resolves all of a section's passes at once, and
+  // playOrder() now asks for them one play at a time, so the result is kept
+  // rather than rebuilt per play. Keyed by part and section; a section's
+  // total pass count is fixed for the whole document.
+  const resolutionCache = new Map();
+  function sectionResolution(partId, sectionId, totalPasses) {
+    const key = `${partId}\u0000${sectionId}`;
+    if (!resolutionCache.has(key))
+      resolutionCache.set(key, resolveSection(partId, sectionId, totalPasses));
+    return resolutionCache.get(key);
+  }
+
   function referenceSectionResolution(sectionId, totalPasses) {
     const candidate = parsed.parts.find(
       (p) => p.type !== "lyric" && parsed.music[p.id]?.[sectionId],
@@ -457,16 +493,19 @@ export function resolve(source) {
         continue;
       }
       if (item.kind !== "section") continue;
-      const resolved = resolveSection(partId, item.id, item.totalPasses) ?? referenceSectionResolution(item.id, item.totalPasses);
+      const resolved =
+        sectionResolution(partId, item.id, item.totalPasses) ??
+        referenceSectionResolution(item.id, item.totalPasses);
       if (!resolved) continue;
+      const thisPass = resolved.passes[item.pass - 1];
+      if (!thisPass) continue;
       const ownNotes = parsed.music[partId]?.[item.id] != null;
-      for (const { notes: passNotes, length, measureBoundaries: passBoundaries } of resolved.passes) {
-        if (ownNotes)
-          for (const note of passNotes)
-            notes.push({ ...note, onset: add(cursor, note.onset), section: resolved.sectionId });
-        for (const b of passBoundaries) measureBoundaries.push(add(cursor, b));
-        cursor = add(cursor, length);
-      }
+      const { notes: passNotes, length, measureBoundaries: passBoundaries } = thisPass;
+      if (ownNotes)
+        for (const note of passNotes)
+          notes.push({ ...note, onset: add(cursor, note.onset), section: resolved.sectionId });
+      for (const b of passBoundaries) measureBoundaries.push(add(cursor, b));
+      cursor = add(cursor, length);
     }
     return { notes, tempoChanges, chanChanges, measureBoundaries };
   }
@@ -490,19 +529,18 @@ export function resolve(source) {
       const targetSectionMusic = parsed.music[targetPartId]?.[item.id];
       if (!targetSectionMusic) {
         const reference = referenceSectionResolution(item.id, item.totalPasses);
-        if (reference) for (const { length } of reference.passes) cursor = add(cursor, length);
+        const thisPass = reference?.passes[item.pass - 1];
+        if (thisPass) cursor = add(cursor, thisPass.length);
         continue;
       }
       const lyricSectionMusic = parsed.music[lyricPartId]?.[item.id] ?? null;
       const ranges = rangesBySection[item.id] ?? [];
-      for (let pass = 1; pass <= item.totalPasses; pass++) {
-        const { syllables: passSyllables, length } = withContext(
-          `lyric part "${lyricPartId}" (paired to "${targetPartId}") section "${item.id}" pass ${pass}`,
-          () => resolveLyricSectionPass(lyricSectionMusic, targetSectionMusic, ranges, pass),
-        );
-        for (const s of passSyllables) syllables.push({ ...s, onset: add(cursor, s.onset) });
-        cursor = add(cursor, length);
-      }
+      const { syllables: passSyllables, length } = withContext(
+        `lyric part "${lyricPartId}" (paired to "${targetPartId}") section "${item.id}" pass ${item.pass}`,
+        () => resolveLyricSectionPass(lyricSectionMusic, targetSectionMusic, ranges, item.pass),
+      );
+      for (const s of passSyllables) syllables.push({ ...s, onset: add(cursor, s.onset) });
+      cursor = add(cursor, length);
     }
     return syllables;
   }

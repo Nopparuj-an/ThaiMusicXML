@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ABA form through <play>: ท่อน 1 is declared once and played twice, the
+     second time after ท่อน 2, without a second copy of its music. That gives
+     it two passes, so it can carry an <ending> for the return. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header>
+    <title>แขกบรเทศ</title>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+    <section id="s2" name="ท่อน 2"/>
+    <annotation>กลับต้น</annotation>
+    <play section="s1"/>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure>
+      </line>
+      <ending pass="2">
+        <annotation>เที่ยวกลับ ห้องสุดท้ายเปลี่ยนเป็น</annotation>
+        <line number="1">
+          <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ด"/><note pitch="ด"/></measure>
+        </line>
+      </ending>
+    </section-ref>
+    <section-ref section="s2">
+      <line number="1">
+        <measure number="1"><note pitch="ล"/><note pitch="ท"/><note pitch="ดํ"/><note pitch="ล"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

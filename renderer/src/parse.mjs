@@ -246,7 +246,10 @@ export function parse(source) {
   }));
 
   // <structure> in the order it lays the score out. A <repeat> contributes what
-  // it wraps; the repeat itself prints nothing (see "Repeat brackets").
+  // it wraps; the repeat itself prints nothing (see "Repeat brackets"), and
+  // neither does a <play>: the section's grid is already on the page where it
+  // was declared, and a return to it is written by the arranger as a กลับต้น
+  // annotation rather than by printing the music a second time.
   //
   // Annotations and <br> keep their place in the sequence rather than being
   // gathered separately, because where an annotation sits is the only thing
