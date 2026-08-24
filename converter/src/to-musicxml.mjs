@@ -555,6 +555,29 @@ function needsTailMeasure(groups, unrolled, shift) {
   return false;
 }
 
+/**
+ * A measure whose beat count does not divide a 2/4 bar exactly.
+ *
+ * Every measure lasts two <bpm> beats whatever its beat count, so a measure
+ * of b beats has to fill the same 2/4 bar as any other. Where b is a power of
+ * two the slots land on real note values and nothing is needed; where it is
+ * not - five beats, say - the bar can only be written as one tuplet across
+ * the whole measure, nested around any <group> tuplets already inside it,
+ * which v1.0 does not write. The measure is exported at one eighth per slot
+ * instead, so it overruns its own bar. See "MusicXML: rhythm".
+ *
+ * Warned once per measure that hits it, since a reader has to fix the bar by
+ * hand and needs to know which one.
+ */
+function warnUnevenMeasure(measureSpan, number, groupId, warn) {
+  const beats = measureSpan.n / measureSpan.d;
+  if (!Number.isInteger(beats) || (beats & (beats - 1)) === 0) return;
+  warn(
+    `measure ${number} of part "${groupId}" has ${beats} beats, which no 2/4 bar divides evenly; ` +
+      `it is written at one eighth per slot and so runs past its own bar. v1.0 does not write a measure-wide tuplet`,
+  );
+}
+
 function convertPart(group, prepared, tuning, slotTicks, divisions, warn, lyricAssignment) {
   const { boundaries, measures } = prepared;
   const staves = group.members.length;
@@ -565,6 +588,7 @@ function convertPart(group, prepared, tuning, slotTicks, divisions, warn, lyricA
     const measureStart = m === 0 ? ZERO : boundaries[m - 1];
     const measureSpan = subtract(boundaries[m], measureStart);
     const measureTicks = Math.round((measureSpan.n * slotTicks) / measureSpan.d);
+    warnUnevenMeasure(measureSpan, m + 1, group.id, warn);
 
     xml += `<measure number="${m + 1}">`;
     if (m === 0) {

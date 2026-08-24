@@ -16,7 +16,7 @@
 // both are byte-addressable and work with writeFileSync/Blob respectively.
 
 import { resolvePitch, resolveTuning } from "./pitch.mjs";
-import { lcm } from "./fraction.mjs";
+import { lcm, subtract, compare, ZERO } from "./fraction.mjs";
 import { groupParts } from "./ensemble-groups.mjs";
 
 // General MIDI program numbers, 1-indexed as GM names them; the wire value
@@ -47,6 +47,57 @@ function resolveProgram(instrumentName, overrides, warn) {
   }
   warn(`no General MIDI patch known for instrument "${instrumentName}", using Xylophone`);
   return DEFAULT_PROGRAM;
+}
+
+/**
+ * The tempo events this piece needs, in tick order, deduplicated.
+ *
+ * One <bpm> beat is half a measure, not a fixed count of note slots (see
+ * <bpm>'s "The unit being counted"), so a measure lasts the same wall-clock
+ * time whatever its beat count and the slots inside it stretch or compress to
+ * fit. MIDI has no measure-relative tempo, so that is expressed by scaling
+ * microseconds-per-quarter per measure: a measure of B slots has to fill two
+ * bpm beats, which puts a quarter (two slots) at 240000000 / (bpm * B)
+ * microseconds. At the usual B of 4 this is the plain 60000000 / bpm and no
+ * per-measure event is emitted at all, since the value never changes.
+ */
+function tempoEvents({ tempoChanges = [], measureBoundaries = [] }) {
+  // The bpm in force at a given onset, from the last <direction> at or before
+  // it. A piece with no <bpm> anywhere gets no tempo events and plays at
+  // whatever the reading device defaults to.
+  const bpmAt = (onset) => {
+    let bpm = null;
+    for (const change of tempoChanges) {
+      if (compare(change.onset, onset) > 0) break;
+      bpm = change.bpm;
+    }
+    return bpm;
+  };
+
+  const events = [];
+  const push = (onset, bpm, slots) => {
+    if (bpm === null || slots <= 0) return;
+    events.push({ onset, microsecondsPerQuarter: Math.round(240000000 / (bpm * slots)) });
+  };
+
+  // Every point the rate can change: a measure start, or a <direction>
+  // landing mid-measure.
+  let measureStart = ZERO;
+  for (const boundary of measureBoundaries) {
+    const slots = subtract(boundary, measureStart);
+    const beats = slots.n / slots.d;
+    push(measureStart, bpmAt(measureStart), beats);
+    for (const change of tempoChanges)
+      if (compare(change.onset, measureStart) > 0 && compare(change.onset, boundary) < 0)
+        push(change.onset, change.bpm, beats);
+    measureStart = boundary;
+  }
+
+  // A tempo that has not moved needs no second event.
+  events.sort((a, b) => compare(a.onset, b.onset));
+  return events.filter(
+    (e, i) => i === 0 || e.microsecondsPerQuarter !== events[i - 1].microsecondsPerQuarter,
+  );
 }
 
 /**
@@ -224,7 +275,7 @@ export function toMidi(doc, options = {}) {
   const unrolledByGroup = groups.map((g) => g.members.map((m) => doc.unroll(m.id)));
   const allDenominators = unrolledByGroup.flatMap(denominatorsOf);
   const ticksPerSlot = allDenominators.reduce(lcm, 1);
-  const division = ticksPerSlot * 2; // ticks per quarter note: one bpm beat, two slots
+  const division = ticksPerSlot * 2; // ticks per quarter note: two note slots
 
   const percussionNotes = resolvePercussionNotes(groups, doc, percussionMap);
 
@@ -236,9 +287,10 @@ export function toMidi(doc, options = {}) {
   // timeline works as the reference for placing tempo/chan markers - see
   // HANDOFF.md for the one edge case (a part that skips a section) this
   // doesn't perfectly account for.
-  const reference = groups[0] ? doc.unroll(groups[0].members[0].id) : { tempoChanges: [] };
-  for (const { onset, bpm } of reference.tempoChanges) {
-    const microsecondsPerQuarter = Math.round(60000000 / bpm);
+  const reference = groups[0]
+    ? doc.unroll(groups[0].members[0].id)
+    : { tempoChanges: [], measureBoundaries: [] };
+  for (const { onset, microsecondsPerQuarter } of tempoEvents(reference)) {
     metaTrack.add(ticksFor(onset, ticksPerSlot), [
       0xff,
       0x51,

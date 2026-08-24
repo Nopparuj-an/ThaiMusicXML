@@ -30,6 +30,8 @@ A measure is divided into beats. Each `<note>`, `<rest>`, and `<group>` occupies
 
 How many beats a measure has depends on the piece. Four is the common pattern.
 
+The measure itself is the unit of time. A measure lasts as long as any other measure in the score, and its beats divide that span among themselves, so a measure of five beats is not longer than one of four - it is the same span cut finer. See [`<bpm>`](/en/v1_0/reference/elements/bpm/#the-unit-being-counted).
+
 A beat arrives on its last slot, so a measure is read as travelling toward its final note rather than starting from its first, and that final note lands on the measure's closing boundary. This governs where a [`<group>`](/en/v1_0/reference/elements/group/#where-the-children-fall)'s children fall and where every symbol sits in the cell.
 
 Every part plays the same measure over the same span of time, so corresponding measures must agree on beat count across parts. What each part does within those beats is free: one instrument may play four notes where another plays a note, two rests, and a `<group>` of three.

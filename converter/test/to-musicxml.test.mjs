@@ -535,6 +535,30 @@ test("--no-lyrics disables lyric export entirely", () => {
   assert.equal(xml.getElementsByTagName("lyric").length, 0);
 });
 
+test("a measure whose beat count no 2/4 bar divides evenly warns, naming the measure", () => {
+  // Every measure lasts two bpm beats whatever its beat count, so a five-beat
+  // measure has to fill the same 2/4 bar as its four-beat neighbours. That
+  // needs a measure-wide tuplet, which v1.0 does not write - so it warns
+  // rather than emitting a bar that silently plays a quarter too long.
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure>
+          <measure number="2"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+          <measure number="3"><note pitch="ด"/><note pitch="ร"/></measure>
+        </line>
+      </section-ref></part-data>`,
+    ),
+  );
+  const warnings = [];
+  parseXml(toMusicXml(doc, unshifted({ warn: (w) => warnings.push(w) })));
+
+  const uneven = warnings.filter((w) => w.includes("no 2/4 bar divides evenly"));
+  assert.equal(uneven.length, 1, "only the five-beat measure warns");
+  assert.match(uneven[0], /measure 2 .* has 5 beats/, "the warning names the measure that needs fixing");
+});
+
 test("a second lyric part is dropped with a warning unless --lyrics-map names it", () => {
   const doc = resolve(
     score(

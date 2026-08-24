@@ -40,7 +40,7 @@ This is the most significant difference from Western notation in the format, and
 
 ชั้น (chan) is the Thai rhythmic layer system: ชั้นเดียว, สองชั้น, สามชั้น, and so on. It controls how often the ฉิ่ง cycle falls, not how fast the notes play.
 
-`<bpm>` fixes the tempo. One bpm beat is two note slots, whatever the ชั้น. Going from ชั้นเดียว to สองชั้น at the same bpm stretches the melody over twice as many note slots and stretches the ฉิ่ง cycle with it, so the strokes arrive half as often. The notes keep their rate. The song plays at the same speed with a sparser cycle underneath.
+`<bpm>` fixes the tempo. One bpm beat is half a measure, whatever the ชั้น, so a measure takes the same time wherever it falls and its beats divide that time between them. Going from ชั้นเดียว to สองชั้น at the same bpm stretches the melody over twice as many measures and stretches the ฉิ่ง cycle with it, so the strokes arrive half as often. The notes keep their rate. The song plays at the same speed with a sparser cycle underneath.
 
 `<chan>` and `<nathap>` in `<direction>` are metadata: they record what the piece is, and carry that information to editors, libraries, and playback engines. A processor that ignores them entirely still sounds the score correctly, because the ฉิ่ง part is written out as an ordinary unpitched `<part>` rather than generated from the ชั้น value.
 
@@ -68,5 +68,5 @@ This is a deliberate difference from MusicXML, where the renderer derives much o
 Next, see [Notes, rests, and octaves](/en/v1_0/tutorial/4-notes_and_octaves/) for the full pitch table and how octaves work.
 
 :::note[Concepts introduced]
-[Measure as fixed time unit](/en/v1_0/reference/elements/measure/), [beat arrives on its last slot](/en/v1_0/reference/elements/group/#where-the-children-fall), [rest is no attack](/en/v1_0/reference/elements/rest/), [ชั้น is not tempo](/en/v1_0/reference/elements/chan/), [one bpm beat is two slots](/en/v1_0/reference/elements/bpm/), [renderer shows what the arranger typed](/en/v1_0/reference/rendering/)
+[Measure as fixed time unit](/en/v1_0/reference/elements/measure/), [beat arrives on its last slot](/en/v1_0/reference/elements/group/#where-the-children-fall), [rest is no attack](/en/v1_0/reference/elements/rest/), [ชั้น is not tempo](/en/v1_0/reference/elements/chan/), [one bpm beat is half a measure](/en/v1_0/reference/elements/bpm/), [renderer shows what the arranger typed](/en/v1_0/reference/rendering/)
 :::

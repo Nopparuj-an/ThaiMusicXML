@@ -145,20 +145,49 @@ test("a rest produces no note event, and a rest-extended note's off lands at its
   assert.equal(on2.tick, 3 * slotTicks);
 });
 
+const tempoMicroseconds = (track) =>
+  track
+    .filter((e) => e.meta === 0x51)
+    .map((e) => (e.data[0] << 16) | (e.data[1] << 8) | e.data[2]);
+
 test("<bpm> becomes a set-tempo meta event with the right microseconds-per-quarter", () => {
   const doc = resolve(
     score(
       `<part-data part="P1"><section-ref section="s1">
-        <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+        <line number="1"><measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure></line>
       </section-ref></part-data>`,
       { structure: `<direction><bpm>120</bpm></direction><section id="s1"/>` },
     ),
   );
   const { tracks } = readMidi(toMidi(doc));
-  const tempoEvent = tracks[0].find((e) => e.meta === 0x51);
-  assert.ok(tempoEvent);
-  const microseconds = (tempoEvent.data[0] << 16) | (tempoEvent.data[1] << 8) | tempoEvent.data[2];
-  assert.equal(microseconds, 500000); // 60,000,000 / 120
+  // A four-beat measure is two bpm beats of four slots, so a quarter note is
+  // two slots and the tempo is the plain one.
+  assert.deepEqual(tempoMicroseconds(tracks[0]), [500000]); // 60,000,000 / 120
+});
+
+test("a measure with a different beat count scales the tempo, so every measure lasts two bpm beats", () => {
+  // One <bpm> beat is half a measure, not a fixed count of slots. The
+  // five-beat measure below fills the same wall-clock time as the four-beat
+  // one before it, so its slots run faster and MIDI expresses that as a tempo
+  // change at the measure boundary - then back again for the third measure.
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1">
+          <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure>
+          <measure number="2"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/><note pitch="ล"/></measure>
+          <measure number="3"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure>
+        </line>
+      </section-ref></part-data>`,
+      { structure: `<direction><bpm>120</bpm></direction><section id="s1"/>` },
+    ),
+  );
+  const { tracks } = readMidi(toMidi(doc));
+  assert.deepEqual(tempoMicroseconds(tracks[0]), [
+    500000, // 240,000,000 / (120 * 4)
+    400000, // 240,000,000 / (120 * 5), the five-beat measure
+    500000, // back to four beats
+  ]);
 });
 
 test("a known instrument name resolves to its General MIDI program", () => {

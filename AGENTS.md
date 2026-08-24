@@ -16,7 +16,7 @@ Although confirm English version with the user first before writing Thai.
 - The renderer generates almost nothing. Structured fields (`section/@name`, `<composer>`, `<chan>`, `<repeat>`) are metadata for files and editors; what prints is text the arranger typed into an `<annotation>` or a credit. Default answer to any "should this print, and how" is "the arranger writes it". Generated labels are opt-in settings at most.
 - A measure is the fixed time unit. Every part agrees on beat count per measure.
 - Beats align vertically across parts. Cell width divides by the summed maximum subdivision per beat across all parts, not evenly by beat.
-- One `<bpm>` beat is two note slots, and tempo is independent of ชั้น.
+- One `<bpm>` beat is half a measure. Every measure lasts the same time whatever its beat count, and tempo is independent of ชั้น.
 - Thai instruments have no notated sustain. A rest is no attack, not silence.
 
 ## Where a statement goes

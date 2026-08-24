@@ -17,7 +17,9 @@ Both targets fit a fixed-rate slot grid with no notated sustain into a model bui
 | MIDI tuning accuracy | Snap to 12-TET, the same pitch a note gets in the MusicXML export | [MIDI: pitch](#pitch-1) |
 | MIDI patch for a pitched part | Lookup by `instrument-name` against a known-name table, generic patch on no match | [MIDI: instrument patches](#instrument-patches) |
 | MIDI note for an unpitched `sound` code | Auto-assigned from a General MIDI percussion note, in order of first appearance; configurable | [MIDI: percussion](#percussion) |
-| Time signature (MusicXML) | 2/4, one note slot per eighth note | [MusicXML: rhythm](#rhythm) |
+| Time signature (MusicXML) | 2/4, one measure to the bar; one note slot per eighth note in a four-beat measure | [MusicXML: rhythm](#rhythm) |
+| A measure whose beat count does not divide 2/4 exactly (MusicXML) | Exported at one eighth per slot, overrunning the bar, with a warning. Writing it as a measure-wide tuplet is not in v1.0 | [MusicXML: rhythm](#rhythm) |
+| A measure whose beat count is not four (MIDI) | Tempo scaled for that measure so it still lasts two bpm beats | [MIDI: rhythm and tempo](#rhythm-and-tempo) |
 | Silence in a MusicXML measure | One rest per stretch of it, broken where the beat falls; a measure nothing sounds in gets a single whole-measure rest | [MusicXML: rhythm](#rhythm) |
 | Where a Thai measure's counted beat lands (MusicXML) | On the next measure's first beat: the music moves one note slot later, the barlines stay put; a command-line option leaves it where the source has it | [MusicXML: the counted beat](#the-counted-beat) |
 | Measures at the front of a piece that no part plays in (MusicXML) | Kept; a command-line option drops them | [MusicXML: empty measures at the front](#empty-measures-at-the-front) |
@@ -60,7 +62,9 @@ A command-line option splits a stack's rows into separate parts or tracks instea
 
 ### Rhythm
 
-Every measure converts to 2/4 time, and every note slot, the unit [`<bpm>`](/en/v1_0/reference/elements/bpm/) counts two of to the beat, becomes one eighth note.
+Every measure converts to 2/4 time, which is one measure's worth of the [`<bpm>`](/en/v1_0/reference/elements/bpm/) beat: a bpm beat is half a measure, so a measure is two quarter notes. In the usual four-beat measure that puts one note slot on one eighth note.
+
+A measure with some other beat count still fills its 2/4 bar, since a measure's length does not depend on how finely it is cut. Where that count divides the bar exactly - two beats to the quarter, eight to the sixteenth - the slots convert to those values directly. Where it does not, the bar needs a tuplet across the whole measure, which **v1.0's converter does not write**: it exports the measure at one eighth per slot, which makes that one bar longer than 2/4 and the piece longer than the source, and warns. A score whose measures all share a beat count, which is nearly all of them, never meets this.
 
 A converted note's duration always reaches to the next attack rather than a fixed share of its own beat. [Rests](#rests) already needs this to fold a decaying instrument's silence into the note before it, and a [`<group>`](/en/v1_0/reference/elements/group/#where-the-children-fall) needs the same rule for a different reason: a beat arrives on its last slot, so a group's last member lands exactly where a plain note at that beat would, the same position the renderer's own page layout gives it, and the earlier members lead up to it, drawing their time from whatever preceded the group rather than from an equal share of the group's own beat. A group of *k* members therefore converts to *k* notes of unequal duration, not a Western tuplet of *k* equal ones: the members before the last one are short, spaced `1/k` of a beat apart, and the last one rings for as long as nothing else attacks, which can be a full beat or more.
 
@@ -142,7 +146,7 @@ A [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/) span sounds normal
 
 ### Rhythm and tempo
 
-`<bpm>` sets a MIDI tempo (set-tempo meta event) directly: one bpm beat is a quarter note in the same 2/4 framework the MusicXML export uses, so the numeric value carries over unchanged. Each resolved note (see [Rests](#rests)) becomes one note-on followed by a note-off after its full duration in slots, rather than a short strike left to a synth's own decay, since General MIDI patches vary widely in how long they ring on their own.
+`<bpm>` sets a MIDI tempo (set-tempo meta event): one bpm beat is a quarter note in the same 2/4 framework the MusicXML export uses, so for the usual four-beat measure the numeric value carries over unchanged. Where a measure's beat count differs from four, its slots have to fit the same two bpm beats as any other measure, and MIDI has no measure-relative tempo to say so with, so the converter scales microseconds-per-quarter for that measure instead - `240000000 / (bpm × beats)` - and sets it back afterwards. The measures stay equal in length, which is what [`<bpm>`](/en/v1_0/reference/elements/bpm/#the-unit-being-counted) asks for, and no tuplet is needed because nothing is being engraved. Each resolved note (see [Rests](#rests)) becomes one note-on followed by a note-off after its full duration in slots, rather than a short strike left to a synth's own decay, since General MIDI patches vary widely in how long they ring on their own.
 
 ### Repeats and endings
 
