@@ -14,6 +14,7 @@ The `<line>` element contains a musical line or phrase within a section.
 | Attribute | Required | Type | Description |
 |-----------|----------|------|-------------|
 | `number` | Yes | integer | 1-based line number within the containing `<section-ref>`. |
+| `id` | No | token | Optional identifier, unique among all `<line>` elements in the document. Exists for a [foreign-namespace extension](/en/v1_0/reference/elements/thai-score/#extensions) to reference; ThaiMusicXML itself does not use it. |
 
 ## Children
 
@@ -27,6 +28,7 @@ Line numbers are local to the containing `<section-ref>`. They start at `1` for 
 
 - A `<line>` must contain between one and eight `<measure>` elements. Validators must reject a line with nine or more.
 - `number` must match the line's position in its `<section-ref>`, counting from `1`. Lines must appear in ascending order.
+- `id`, when present, must be unique among all `<line>` elements in the document.
 
 ## Rendering
 

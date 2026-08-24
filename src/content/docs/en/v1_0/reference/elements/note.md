@@ -16,6 +16,7 @@ The `<note>` element represents a musical note.
 | `pitch`   | If the part's `type` is `"pitched"` (default) | pitch   | The note name. See [Pitch format](#pitch-format) below.                                   |
 | `sound`   | If the part's `type` is `"unpitched"`         | string  | An instrument-specific sound code. See [Unpitched Notation](#unpitched-notation) below.    |
 | `octave`  | No                                             | integer | The octave number, any integer. Only applies to `pitch`. Default is 0. Ignored when `pitch` carries a Thai octave modifier, see [Conformance](#conformance) below.  |
+| `id`      | No                                             | token   | Optional identifier, unique among all `<note>` elements in the document. Exists for a [foreign-namespace extension](/en/v1_0/reference/elements/thai-score/#extensions) to reference; ThaiMusicXML itself does not use it. |
 
 `pitch` and `sound` are mutually exclusive: a note uses one or the other depending on the [`type`](/en/v1_0/reference/elements/part/#part-types) of its containing `<part>`. A `type="lyric"` part has no `<note>` elements at all, using [`<syllable>`](/en/v1_0/reference/elements/syllable/) instead.
 
@@ -101,3 +102,4 @@ A note displays in the spelling the file is written in, and an unpitched note's 
 - When `pitch` has no Thai octave modifier (numeric, romanized, or unmodified Thai), `octave` applies as normal, defaulting to `0` when absent.
 - `octave` is not limited to `-1`, `0`, or `1`. Values outside that range have no distinct Thai-script spelling, since there is only one nikhahit and one pinthu. The `octave` value stays authoritative for playback whatever a renderer chooses to display. See [Octaves beyond the Thai spellings](/en/v1_0/reference/rendering/#octaves-beyond-the-thai-spellings).
 - `octave` may appear on a `<note>` that uses `sound`. It has no effect there: `sound` codes are instrument-specific and not organized into octaves. Validators should warn, since the attribute is being discarded.
+- `id`, when present, must be unique among all `<note>` elements in the document.

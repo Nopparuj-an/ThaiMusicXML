@@ -11,7 +11,9 @@ The `<group>` element subdivides a single beat into two or more equal parts, for
 
 ## Attributes
 
-None.
+| Attribute | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | No | token | Optional identifier, unique among all `<group>` elements in the document. Exists for a [foreign-namespace extension](/en/v1_0/reference/elements/thai-score/#extensions) to reference; ThaiMusicXML itself does not use it. |
 
 ## Children
 
@@ -78,6 +80,7 @@ A group says how a beat divides, and nothing more. To mark a run of notes as one
 - A `<group>` must contain at least two `<note>` or `<rest>` children.
 - A `<group>` must not contain a nested `<group>`. Subdivisions in ThaiMusicXML v1.0 go one level deep.
 - `<bow>`, `<parenthesis>`, and `<link>` markers inside a `<group>` do not count toward the equal division of its beat.
+- `id`, when present, must be unique among all `<group>` elements in the document.
 
 ## Rendering
 

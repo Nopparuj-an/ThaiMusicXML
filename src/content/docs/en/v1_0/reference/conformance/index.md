@@ -184,6 +184,8 @@ Comma-separated integers, in ascending order, with no repeats: `2` and `2,4` are
 
 An `id` must be unique among elements of its own kind. `<part id="…">` values must be unique across all parts and `<section id="…">` values unique across all sections, but the two sets are independent, so a `<part id="1">` and a `<section id="1">` may both exist and refer to different things. An IDREF resolves within the kind its attribute names: `part` on [`<part-data>`](/en/v1_0/reference/elements/part-data/) finds a `<part>`, `section` on [`<section-ref>`](/en/v1_0/reference/elements/section-ref/) finds a `<section>`.
 
+[`<line>`](/en/v1_0/reference/elements/line/), [`<measure>`](/en/v1_0/reference/elements/measure/), [`<note>`](/en/v1_0/reference/elements/note/), [`<rest>`](/en/v1_0/reference/elements/rest/), and [`<group>`](/en/v1_0/reference/elements/group/) also accept an optional `id`, each kind its own independent set the same way `part` and `section` are. Nothing inside ThaiMusicXML itself resolves one - no IDREF attribute names these kinds - since a document has no reason to point at its own note. They exist so a [foreign-namespace extension](#foreign-namespace-extensions) or some other tool outside the document has a stable handle to attach state to, which is also why nothing requires them: a file with none of these ids is as conforming as one with every note tagged.
+
 :::danger[Rejected]
 ```xml
 <!-- ✓ valid: a part id and a section id may share a value, they're independent sets -->
@@ -196,6 +198,31 @@ An `id` must be unique among elements of its own kind. `<part id="…">` values 
 
 <!-- ✗ rejected: dangling IDREF, no <part id="P9"> exists -->
 <part-data part="P9">...</part-data>
+
+<!-- ✗ rejected: two notes sharing an id -->
+<note id="n1" pitch="ด"/>
+<note id="n1" pitch="ร"/>
+```
+:::
+
+### Foreign-namespace extensions
+
+[`<thai-score>`](/en/v1_0/reference/elements/thai-score/) accepts foreign-namespace elements after the last `<part-data>`, an escape hatch for a third-party tool to carry its own state alongside the score - an editor recording `<nts:editor version="1">`, say. Each must commit to a real namespace: an unprefixed element in no namespace is rejected, since that would let a tool's own markup pass as native.
+
+The rule applies at every depth, not just to the element directly under `<thai-score>`. A processor that walks the whole document by namespace and name must never find something that looks like a ThaiMusicXML element inside an extension, so an unprefixed grandchild inheriting ThaiMusicXML's own default namespace is rejected exactly like an unprefixed top-level extension is. Declaring a default namespace once, on the extension's own root, covers every unprefixed descendant beneath it - nothing has to be individually prefixed.
+
+A processor must preserve an extension element it does not recognize, unchanged, across a round trip, and an extension must never affect how the document renders or plays. Those two rules are what let more than one tool's extensions sit side by side without either needing to understand the other, and what stops an extension from forking the format by becoming load-bearing.
+
+:::danger[Rejected]
+```xml
+<!-- ✓ valid: another tool's own state, ignored by anything that doesn't know it -->
+<part-data part="P1">...</part-data>
+<nts:editor xmlns:nts="https://example.com/nts/1" xmlns="https://example.com/nts/1" version="1">
+  <cursor note="n1"/>
+</nts:editor>
+
+<!-- ✗ rejected: no namespace, indistinguishable from native markup -->
+<editor xmlns="" version="1"/>
 ```
 :::
 
@@ -228,7 +255,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 
 - `<thai-score>` must be the single root element, carrying `version` and the namespace.
 - A processor must reject a document whose root is in a namespace it does not implement. The namespace URI names the compatibility boundary: through 0.x each release carries its own, and from 1.0 the URI carries the major version alone. `version` tells releases apart within a boundary and is informational to a processor that already understands the namespace, so a mismatch between the two draws a warning rather than a rejection.
-- Its children appear in order: `<header>`, `<structure>`, `<ensemble>`, then one or more `<part-data>`.
+- Its children appear in order: `<header>`, `<structure>`, `<ensemble>`, one or more `<part-data>`, then zero or more [foreign-namespace extension elements](#foreign-namespace-extensions).
 - `<header>` must contain exactly one `<title>`. Everything else in the header is optional, and `<tuning>` and `<license>` appear at most once each.
 - `<nathap>`, `<chan>`, and `<bpm>` are each optional within a `<direction>` and appear at most once each, in any order.
 

@@ -47,6 +47,7 @@
       <ref name="el-structure"/>
       <ref name="el-ensemble"/>
       <oneOrMore><ref name="el-part-data"/></oneOrMore>
+      <zeroOrMore><ref name="el-extension"/></zeroOrMore>
     </element>
   </define>
 
@@ -277,6 +278,7 @@
   <define name="el-line">
     <element name="line">
       <attribute name="number"><data type="positiveInteger"/></attribute>
+      <optional><attribute name="id"><ref name="identifier"/></attribute></optional>
       <ref name="el-measure"/>
       <optional><ref name="el-measure"/>
       <optional><ref name="el-measure"/>
@@ -298,6 +300,7 @@
   <define name="el-measure">
     <element name="measure">
       <attribute name="number"><data type="positiveInteger"/></attribute>
+      <optional><attribute name="id"><ref name="identifier"/></attribute></optional>
       <choice>
         <ref name="notated-measure-content"/>
         <ref name="lyric-measure-content"/>
@@ -355,16 +358,20 @@
       <optional>
         <attribute name="octave"><data type="integer"/></attribute>
       </optional>
+      <optional><attribute name="id"><ref name="identifier"/></attribute></optional>
     </element>
   </define>
 
   <define name="el-rest">
-    <element name="rest"><empty/></element>
+    <element name="rest">
+      <optional><attribute name="id"><ref name="identifier"/></attribute></optional>
+    </element>
   </define>
 
   <!-- Two or more note/rest children. Groups do not nest. -->
   <define name="el-group">
     <element name="group">
+      <optional><attribute name="id"><ref name="identifier"/></attribute></optional>
       <zeroOrMore><ref name="marker"/></zeroOrMore>
       <ref name="note-or-rest"/>
       <zeroOrMore><ref name="marker"/></zeroOrMore>
@@ -428,6 +435,38 @@
 
   <define name="el-syllable">
     <element name="syllable"><text/></element>
+  </define>
+
+  <!-- ==================================================================
+       Extensions
+       ================================================================== -->
+
+  <!--
+    A foreign-namespace escape hatch for third-party tools, e.g. an editor
+    recording its own state as <nts:editor version="1"> after the last
+    <part-data>. A processor must preserve an extension it does not
+    recognize, unchanged, across a round trip, and an extension must never
+    change how the score renders or plays. See <thai-score>'s Conformance
+    section.
+
+    Anything is accepted as long as it commits to a real namespace: the
+    ThaiMusicXML namespace is excluded (that's every other element in this
+    grammar) and so is no namespace at all, which would otherwise let an
+    unprefixed element pass as native markup.
+  -->
+  <define name="el-extension">
+    <element>
+      <anyName>
+        <except>
+          <nsName ns="https://thaimusicxml.anan.ovh/ns/1"/>
+          <nsName ns=""/>
+        </except>
+      </anyName>
+      <zeroOrMore><attribute><anyName/></attribute></zeroOrMore>
+      <mixed>
+        <zeroOrMore><ref name="el-extension"/></zeroOrMore>
+      </mixed>
+    </element>
   </define>
 
   <!-- ==================================================================

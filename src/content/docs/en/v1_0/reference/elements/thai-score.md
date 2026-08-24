@@ -22,6 +22,7 @@ In order:
 2. [`<structure>`](/en/v1_0/reference/elements/structure/) - score layout
 3. [`<ensemble>`](/en/v1_0/reference/elements/ensemble/) - instrument list
 4. [`<part-data>`](/en/v1_0/reference/elements/part-data/) - one or more, one per instrument
+5. Zero or more foreign-namespace extension elements - a third-party tool's own state, see [Extensions](#extensions) below
 
 ## Example
 
@@ -40,6 +41,24 @@ In order:
 Every ThaiMusicXML document declares the namespace `https://thaimusicxml.anan.ovh/ns/1` on its root. Tools match elements by namespace and name, which keeps a ThaiMusicXML `<note>` distinct from a MusicXML one and lets a ThaiMusicXML score sit inside a larger XML document without collision.
 
 The URI identifies the vocabulary. Nothing is required to fetch it.
+
+## Extensions
+
+`<thai-score>` accepts foreign-namespace elements after the last `<part-data>`, an escape hatch for a third-party tool - an editor, say - to carry its own state alongside the score without forking the format. Each must declare its own namespace, at every depth, not only at the top: ThaiMusicXML's own namespace and no namespace at all are both excluded throughout the extension, so nothing inside it can ever be mistaken for native markup. Declaring a default namespace once, on the extension's own root, covers every unprefixed element beneath it.
+
+```xml
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header>...</header>
+  <structure>...</structure>
+  <ensemble>...</ensemble>
+  <part-data part="P1">...</part-data>
+  <nts:editor xmlns:nts="https://example.com/nts/1" xmlns="https://example.com/nts/1" version="1">
+    <cursor note="n1"/>
+  </nts:editor>
+</thai-score>
+```
+
+The `id` attribute available on [`<line>`](/en/v1_0/reference/elements/line/), [`<measure>`](/en/v1_0/reference/elements/measure/), [`<note>`](/en/v1_0/reference/elements/note/), [`<rest>`](/en/v1_0/reference/elements/rest/), and [`<group>`](/en/v1_0/reference/elements/group/) exists for this: a stable handle an extension can point at, such as `note="n1"` above, without ThaiMusicXML itself needing to know what points at it. See [Foreign-namespace extensions](/en/v1_0/reference/conformance/#foreign-namespace-extensions) in the Conformance reference for the full rules.
 
 ## File type
 
@@ -71,3 +90,5 @@ Where that boundary falls follows semantic versioning. Through 0.x any release m
 - `<thai-score>` must be the single root element, carrying both `version` and the ThaiMusicXML namespace.
 - A processor must reject a document whose root is in a namespace it does not implement.
 - Validators should warn when `version` does not match the namespace it appears in, and must not reject on that alone.
+- A foreign-namespace extension element after the last `<part-data>` must declare a real namespace, neither ThaiMusicXML's own nor no namespace at all.
+- A processor must preserve an extension element it does not recognize, unchanged, across a round trip, and must not let one affect how the document renders or plays.

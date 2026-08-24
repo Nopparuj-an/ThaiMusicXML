@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: Two notes share an id. Ids are unique within their own kind,
+     the same rule as part and section ids, extended to note. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header><title>Invalid example</title></header>
+  <structure><section id="s1"/></structure>
+  <ensemble>
+    <part id="P1"><instrument-name>ระนาดเอก</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด" id="n1"/>
+          <note pitch="ร" id="n1"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

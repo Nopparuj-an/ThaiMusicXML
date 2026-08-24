@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Optional ids on line, measure, note, rest, and group, plus a
+     foreign-namespace extension element after the last <part-data>. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header>
+    <title>Test</title>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1" id="ln1">
+        <measure number="1" id="m1">
+          <note pitch="ด" id="n1"/>
+          <note pitch="ร"/>
+          <group id="g1">
+            <note pitch="ม"/>
+            <rest id="r1"/>
+          </group>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <nts:editor xmlns:nts="https://example.com/nts/1" xmlns="https://example.com/nts/1" version="1">
+    <cursor note="n1"/>
+  </nts:editor>
+</thai-score>

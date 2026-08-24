@@ -14,6 +14,7 @@ The `<measure>` element contains the notes and rests in a single measure (ห้
 | Attribute | Required | Type | Description |
 |-----------|----------|------|-------------|
 | `number` | Yes | integer | 1-based measure number within the containing `<line>`. |
+| `id` | No | token | Optional identifier, unique among all `<measure>` elements in the document. Exists for a [foreign-namespace extension](/en/v1_0/reference/elements/thai-score/#extensions) to reference; ThaiMusicXML itself does not use it. |
 
 ## Children
 
@@ -53,3 +54,4 @@ Measure numbers are local to the containing `<line>`. They start at `1` for each
 - Corresponding measures across all parts referencing the same section must have the same beat count. Lyric parts are excluded from this. See [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
 - A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part.
 - A measure in a pitched or unpitched part must hold at least one `<note>`, `<rest>`, or `<group>`. An empty one would be a measure of no beats, and the agreement above would force every other part's corresponding measure to no beats with it. A lyric measure may be empty, meaning nothing is sung there.
+- `id`, when present, must be unique among all `<measure>` elements in the document.

@@ -174,6 +174,18 @@ function checkIdsAndReferences(ctx, err) {
     seenSectionIds.add(id);
   }
 
+  // line/measure/note/rest/group ids are optional and, like part/section
+  // ids, each kind is its own independent set, unique document-wide.
+  for (const kind of ["line", "measure", "note", "rest", "group"]) {
+    const seen = new Set();
+    for (const el of descendants(ctx.score, kind)) {
+      const id = el.getAttribute("id");
+      if (!id) continue;
+      if (seen.has(id)) err(`duplicate ${kind} id "${id}"`);
+      seen.add(id);
+    }
+  }
+
   const seenPartDataRefs = new Set();
   for (const pd of ctx.partDatas) {
     const ref = pd.getAttribute("part");
