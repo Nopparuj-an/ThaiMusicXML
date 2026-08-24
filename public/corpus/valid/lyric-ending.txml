@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A lyric part varying its words on the second pass. The ending's measure
+     holds two syllables where the line it replaces holds one syllable and a
+     rest: a lyric part's item count is its own business in an ending as
+     anywhere else, and only the measure count has to match. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header>
+    <title>ลาวดวงเดือน</title>
+  </header>
+  <structure>
+    <repeat times="2">
+      <section id="s1" name="ท่อน 1"/>
+    </repeat>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+    <part id="P2" type="lyric">
+      <instrument-name>เนื้อร้อง</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <syllable>ลาว</syllable><rest/>
+        </measure>
+      </line>
+      <ending pass="2">
+        <annotation>เนื้อร้อง เที่ยวที่ 2</annotation>
+        <line number="1">
+          <measure number="1">
+            <syllable>ดวง</syllable><syllable>เดือน</syllable>
+          </measure>
+        </line>
+      </ending>
+    </section-ref>
+  </part-data>
+</thai-score>

@@ -434,7 +434,8 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - A `<repeat>` must contain at least one `<section>`, directly or nested.
 - `<line-repeat>` requires both `first` and `last`, with `first` no greater than `last`, and `last` no greater than the section's line count.
 - Two `<line-repeat>` ranges in one section must be properly nested or wholly disjoint.
-- `<ending>` is valid only when the section's total pass count exceeds `1`. Every `pass` value must fall within that count, every `<line number="N">` must replace an existing line, and the replacement must match the original's measure and beat counts - except that a notated part may leave a measure completely empty to mean "unchanged from the line being replaced", regardless of that measure's own beat count. See [`<ending>`'s "Unchanged measures"](/en/v1_0/reference/elements/ending/#unchanged-measures).
+- `<ending>` is valid only when the section's total pass count exceeds `1`. Every `pass` value must fall within that count, every `<line number="N">` must replace an existing line, and the replacement must match the original's measure count. In a notated part it must match the beat counts too - except that a measure left completely empty means "unchanged from the line being replaced", regardless of that measure's own beat count. See [`<ending>`'s "Unchanged measures"](/en/v1_0/reference/elements/ending/#unchanged-measures).
+- A lyric part's `<ending>` matches on measure count alone, the same exemption it has everywhere else. See [Varying the words](/en/v1_0/reference/elements/ending/#varying-the-words).
 - An `<ending>`'s lines must form a consecutive run ending on the section's last line. An ending over the middle of a section is invalid, since the section would carry on normally afterwards and so would not be ending on the variation.
 - Every `<ending>` must carry at least one `<annotation>` captioning the variation.
 

@@ -413,11 +413,17 @@ function checkEndingsAndSpans(ctx, err) {
             err(`<ending> line ${line.getAttribute("number")} has ${a.length} measure(s) where the line it replaces has ${b.length}`);
             continue;
           }
+          // A lyric part holds as many items as the words need, in an
+          // ending as anywhere else, so it is exempt from the beat-count
+          // comparison here the same way it is exempt from the cross-part
+          // one. Its ending line still has to match on measure count, which
+          // the check above already made.
+          if (lyric) continue;
           a.forEach((measure, i) => {
             // A completely empty measure in a notated part's ending means
             // "unchanged from the line being replaced" - see ending.md's
             // "Unchanged measures" - not a real zero-beat measure to compare.
-            if (!lyric && beats(measure).length === 0) return;
+            if (beats(measure).length === 0) return;
             if (beats(measure).length !== beats(b[i]).length)
               err(`<ending> line ${line.getAttribute("number")} measure ${i + 1} has ${beats(measure).length} beat(s) where the line it replaces has ${beats(b[i]).length}`);
           });
