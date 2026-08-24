@@ -85,7 +85,7 @@ Both markers always sit in the same part, the same as a `<bow>`. It is the curve
 - On every resolved pass, each `type="start"` must have a matching `type="stop"` within the same `<section-ref>`. A span left open at the end of a pass is invalid, even if another pass closes it.
 - Link spans cannot cross `<section>` boundaries.
 - A `<link>` marker inside a [`<group>`](/en/v1_0/reference/elements/group/) has zero duration and does not count toward the equal division of that group's beat.
-- Where the containing `<part>` has a `stack`, at least one other row in that stack must be a notated part, meaning `type="pitched"` or `type="unpitched"`. A [lyric part](/en/v1_0/reference/elements/part/#part-types) may carry `stack`, but a lyric measure holds words rather than beats, so there is no position for the curve to reach. A link span whose stack contains no other notated row is invalid.
+- Where the containing `<part>` has a `stack`, the curve reaches that instrument's other rows. Every row of a stack is a notated part, since a [lyric part](/en/v1_0/reference/elements/part/#part-types) cannot carry `stack`, so there is always a row there for it to reach.
 - Where the `<part>` has no `stack`, the curve marks the span's own notes and there is nothing further to satisfy.
 - Both markers of a span must be in the same part. A `type="start"` in one row of a stack cannot be closed by a `type="stop"` in another; that leaves the first span open at the end of the pass and the second marker closing nothing, and both are already invalid under the rules above.
 - Across rows a link describes a connection, so declare it on one side only. Marking the span in the upper row is the convention; there is no need to mark what it reaches as well.

@@ -17,7 +17,7 @@ The `<part>` element defines a single instrument in the ensemble.
 | --------- | -------- | ------ | ---------------------------------------------------------------------------------------- |
 | `id`      | Yes      | ID     | Unique identifier. Referenced by `<part-data part="...">`.                               |
 | `type`    | No       | string | `"pitched"`, `"unpitched"`, or `"lyric"`. Determines what this part's measures hold. Default: `"pitched"`. |
-| `stack`   | No       | string | Joins this part to the other rows of the same instrument. Parts sharing a `stack` value read as one instrument. Omit for single-row instruments. See [Conformance](#conformance) below. |
+| `stack`   | No       | string | Joins this part to the other rows of the same instrument. Parts sharing a `stack` value read as one instrument. Omit for single-row instruments and for lyric parts. See [Conformance](#conformance) below. |
 | `row`     | If `stack` is present | integer | This part's position within the stack, counting from `1` at the top. See [Conformance](#conformance) below. |
 
 ## Children
@@ -68,7 +68,7 @@ A lyric part is an ordinary single-row part. It takes its own row in the grid, i
 
 One thing does set it apart. Every other part agrees with the rest of the score on beat count within a measure, and a lyric part does not have to. A vocal line often does not divide the way the melody does, so a lyric measure holds whatever the words need and the item count decides whether the syllables align to beats or sit centered in the cell. See [`<syllable>`](/en/v1_0/reference/elements/syllable/#counting).
 
-Nothing automatically joins a lyric part to the music it belongs with. Placement is the mechanism: if the words go under ระนาดเอก, list them under ระนาดเอก. A lyric part may also take `stack` like any other part, which binds it to that instrument as one of its rows and tightens the spacing accordingly.
+Nothing automatically joins a lyric part to the music it belongs with. Placement is the mechanism: if the words go under ระนาดเอก, list them under ระนาดเอก. A lyric part takes no `stack`: a stack is one instrument's own rows, and words are not a region of an instrument, so the words sit beside a stack rather than inside it.
 
 ## Stacked instruments
 
@@ -94,5 +94,6 @@ Three rows is the most seen in practice. Nothing caps it.
 - A `type="lyric"` part's measures must hold only [`<syllable>`](/en/v1_0/reference/elements/syllable/#conformance) and `<rest>` children, and are exempt from the beat-count agreement in [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
 - `stack` and `row` must appear together: a `<part>` with `stack` must also have `row`, and a `<part>` with `row` must also have `stack`.
 - A `stack` value must be shared by at least two `<part>` elements. One part alone is a single-row instrument and carries neither attribute.
+- A `type="lyric"` part must not carry `stack` or `row`. Every row of a stack is a notated part.
 - The `row` values within one stack must run from `1` upward with no gaps and no repeats.
 - A stack's `<part>` elements must be adjacent in [`<ensemble>`](/en/v1_0/reference/elements/ensemble/), in ascending `row` order. `row` must match position the way `number` does on [`<line>`](/en/v1_0/reference/elements/line/) and [`<measure>`](/en/v1_0/reference/elements/measure/).

@@ -230,6 +230,14 @@ function checkDirections(ctx, err, warn) {
 
 function checkStacks(ctx, err) {
   for (const [name, members] of ctx.stacks) {
+    // A stack is one instrument's own rows. A lyric part is words rather
+    // than a region of an instrument, so it sits beside a stack and never
+    // joins one - which is also what leaves every row of a stack notated,
+    // and so leaves a link span in one row with somewhere to reach.
+    for (const m of members)
+      if ((m.part.getAttribute("type") || "pitched") === "lyric")
+        err(`part "${m.part.getAttribute("id")}" is a lyric part and cannot carry stack`);
+
     if (members.length < 2)
       err(`stack "${name}" has one part; a single-row instrument carries neither stack nor row`);
 
@@ -351,20 +359,6 @@ function checkPartDataShape(ctx, err, warn) {
         }
       }
 
-      // Link spans
-      //
-      // With no stack the curve marks the span's own notes, so there is no
-      // other row it has to be able to reach. With one, there has to be a row
-      // there to reach: a lyric measure holds words rather than beats.
-      if (part?.hasAttribute("stack") && inOrder(sr, "link").length > 0) {
-        const stack = part.getAttribute("stack");
-        const others = (ctx.stacks.get(stack) ?? []).filter((m) => m.part !== part);
-        const notated = others.some(
-          (m) => (m.part.getAttribute("type") || "pitched") !== "lyric",
-        );
-        if (!notated)
-          err(`a link span in stack "${stack}", which has no other notated row`);
-      }
     }
   }
 }

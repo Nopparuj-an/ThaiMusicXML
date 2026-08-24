@@ -306,6 +306,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - `<part-data>` elements may appear in any order. A `<part-data>` must not reference the same section twice, and need not reference every section.
 - A `<section>` that no `<part-data>` references has no music. It is not played, contributes no rows to the page, and the rules below that count its lines and measures do not apply to it.
 - A `<part>` with `stack` must also have `row`, and vice versa. A `stack` value must be shared by at least two parts, their `row` values must run from `1` upward with no gaps or repeats, and they must be adjacent in `<ensemble>` in ascending `row` order.
+- A `type="lyric"` part must not carry `stack` or `row`. A stack is one instrument's own rows, and words are not a region of an instrument.
 
 :::danger[Rejected]
 ```xml
@@ -328,6 +329,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 
 <!-- ✗ rejected: stack without row -->
 <part id="P3" stack="khong">...</part>
+
+<!-- ✗ rejected: a lyric part joining a stack -->
+<part id="P5" type="lyric" stack="khong" row="3">...</part>
 
 <!-- ✗ rejected: row values with a gap (1, 3, not 1, 2) -->
 <part id="P3" stack="khong" row="1">...</part>
@@ -509,7 +513,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - `<chan>`'s `value` must be one of the five listed levels, matched exactly. Validators must reject any other value.
 - `<nathap>`'s `value` and `<tuning>`'s `reference` accept any non-empty string. Validators should warn on a value outside the recommended list on the element's page, and must not reject it.
 - `<bpm>` content must be a positive integer.
-- A `<link>` span is valid in any notated part. Where the containing `<part>` has a `stack`, at least one other row in that stack must be a notated part, since a stack whose other rows are all lyric has no beat position for the curve to reach. Where the part has no `stack`, the curve marks the span's own notes and there is nothing further to satisfy.
+- A `<link>` span is valid in any notated part. Where the containing `<part>` has a `stack`, the curve reaches that instrument's other rows; where it has none, the curve marks the span's own notes. Either way there is a row for it to reach, since a stack is made of notated parts only.
 
 :::danger[Rejected]
 ```xml
@@ -527,11 +531,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- ✗ rejected: bpm not a positive integer -->
 <bpm>0</bpm>
 
-<!-- ✗ rejected: a link span in a stack with no notated row, only lyric ones -->
-<part id="P1" stack="melody" row="1" type="lyric">...</part>
-<part id="P2" stack="melody" row="2" type="lyric">...</part>
-<!-- in P1: -->
-<link type="start"/><note.../><note.../><link type="stop"/>
+<!-- ✗ rejected: a lyric part carrying stack -->
+<part id="P1" stack="khong" row="1">...</part>
+<part id="P2" stack="khong" row="2" type="lyric">...</part>
 ```
 :::
 

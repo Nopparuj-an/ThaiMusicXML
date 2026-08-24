@@ -22,6 +22,8 @@
     - number attributes matching position
     - which children a measure may hold, since that depends on the part's
       type, declared elsewhere in the document
+    - that a stack is shared by at least two parts, adjacent in <ensemble>
+      and numbered from 1 up
     - at most one <text> per align value
     - ending line runs, pass ranges, and pass ordering
     - line-repeat ranges against the section's line count
@@ -223,22 +225,30 @@
   <define name="el-part">
     <element name="part">
       <attribute name="id"><ref name="identifier"/></attribute>
-      <optional>
-        <attribute name="type">
-          <choice>
-            <value>pitched</value>
-            <value>unpitched</value>
-            <value>lyric</value>
-          </choice>
-        </attribute>
-      </optional>
-      <!-- stack and row appear together or not at all. -->
-      <optional>
+      <!--
+        A lyric part is one row of words and joins no stack, so it takes
+        neither stack nor row. A notated part may be one row of a stacked
+        instrument, where stack and row appear together or not at all.
+      -->
+      <choice>
+        <attribute name="type"><value>lyric</value></attribute>
         <group>
-          <attribute name="stack"><ref name="non-empty-string"/></attribute>
-          <attribute name="row"><data type="positiveInteger"/></attribute>
+          <optional>
+            <attribute name="type">
+              <choice>
+                <value>pitched</value>
+                <value>unpitched</value>
+              </choice>
+            </attribute>
+          </optional>
+          <optional>
+            <group>
+              <attribute name="stack"><ref name="non-empty-string"/></attribute>
+              <attribute name="row"><data type="positiveInteger"/></attribute>
+            </group>
+          </optional>
         </group>
-      </optional>
+      </choice>
       <element name="instrument-name"><text/></element>
       <optional>
         <element name="instrument-short-name"><text/></element>
