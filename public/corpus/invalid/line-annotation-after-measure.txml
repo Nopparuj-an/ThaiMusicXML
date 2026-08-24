@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVALID: a <line>'s annotations come before its measures, the same order
+     <section-ref> uses. One sitting between two measures is rejected. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header><title>Invalid example</title></header>
+  <structure><section id="s1"/></structure>
+  <ensemble>
+    <part id="P1"><instrument-name>ระนาดเอก</instrument-name></part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/></measure>
+        <annotation>กรอ</annotation>
+        <measure number="2"><note pitch="ร"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

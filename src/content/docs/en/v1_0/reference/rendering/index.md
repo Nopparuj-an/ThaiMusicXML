@@ -147,6 +147,8 @@ One in `<structure>` between two sections renders as its own aligned row in the 
 
 One inside a [`<section-ref>`](/en/v1_0/reference/elements/section-ref/) or an [`<ending>`](/en/v1_0/reference/elements/ending/) belongs to one part, and renders above that part's first row in the section. Where a section carries both kinds, the score-wide annotations from `<structure>` come first, then the per-part ones in part order.
 
+One inside a [`<line>`](/en/v1_0/reference/elements/line/) belongs to that line of that part, and renders above that part's row for it, inside the grid rather than in the break between sections. It prints every time the line does: on the line it sits in, not once for the section the way a `<section-ref>`'s does. Where a line carries one and it is also the section's first line, the section's annotations print above it.
+
 A [`<br>`](/en/v1_0/reference/elements/br/) adds vertical space at the point it appears, pushing what follows further down the page. One `<br>` is worth one blank line, and consecutive ones stack, so three in a row push three lines down. It works the way blank lines do in a text document and carries no musical meaning.
 
 ## Instrument names

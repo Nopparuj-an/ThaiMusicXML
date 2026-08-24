@@ -5,13 +5,14 @@ description: A free-form comment ignored during playback
 
 The `<annotation>` element contains a free-form comment that is ignored during playback. It holds either one text value or up to three aligned text values on the same line.
 
-Its scope comes from where it sits. An annotation in `<structure>` applies to the score as a whole; one inside a `<section-ref>` or an `<ending>` applies to that part alone, which is how instrument-specific notation conventions are documented.
+Its scope comes from where it sits. An annotation in `<structure>` applies to the score as a whole; one inside a `<section-ref>` or an `<ending>` applies to that part alone, which is how instrument-specific notation conventions are documented; one inside a [`<line>`](/en/v1_0/reference/elements/line/) narrows that to the single line it sits in, for a note that belongs to one passage rather than to the section.
 
 ## Parents
 
 - [`<structure>`](/en/v1_0/reference/elements/structure/)
 - [`<repeat>`](/en/v1_0/reference/elements/repeat/)
 - [`<section-ref>`](/en/v1_0/reference/elements/section-ref/)
+- [`<line>`](/en/v1_0/reference/elements/line/)
 - [`<ending>`](/en/v1_0/reference/elements/ending/)
 
 ## Content

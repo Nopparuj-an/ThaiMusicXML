@@ -484,11 +484,48 @@ test("a heading annotation moves with the grid it introduces", () => {
   assert.equal(headingPage, gridPage, "the heading and its grid share a page");
 });
 
+test("a line's own annotation prints above that line, where a section-ref's prints once above the section", () => {
+  // A <section-ref> annotation belongs to the section and prints once, above
+  // its first line. A <line> annotation belongs to that line and prints above
+  // it wherever the line falls - here, above line 2 rather than line 1.
+  const doc = `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="1.0">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble><part id="P1"/></ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <annotation>0 = ฉิ่ง</annotation>
+      <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      <line number="2">
+        <annotation>กรอ</annotation>
+        <measure number="1"><note pitch="ร"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+  const { pages } = layout(parse(doc));
+  const texts = pages[0].elements.filter((el) => el.kind === "text");
+
+  const sectionNote = texts.find((el) => el.text === "0 = ฉิ่ง");
+  const lineNote = texts.find((el) => el.text === "กรอ");
+  const firstNote = texts.find((el) => el.text === "ด");
+  const secondNote = texts.find((el) => el.text === "ร");
+
+  assert.ok(sectionNote, "the section-ref annotation prints");
+  assert.ok(lineNote, "the line's own annotation prints");
+  assert.equal(texts.filter((el) => el.text === "กรอ").length, 1, "once, not once per box");
+
+  assert.ok(sectionNote.y < firstNote.y, "the section annotation heads the section's first line");
+  assert.ok(firstNote.y < lineNote.y, "the line annotation sits below line 1, not above it");
+  assert.ok(lineNote.y < secondNote.y, "...and above the line it belongs to");
+});
+
 // Repeat brackets.
 //
-// "line-repeat" only draws a bracket for times >= 2: a bare ซ้ำ for times="2",
-// "N ครั้ง" above that, and nothing at all for the default of 1, which is not
-// a repeat.
+// "line-repeat" only draws a bracket for times >= 2: a bare ซ้ำ, which is the
+// default, and "N ครั้ง" above that. times="1" is not a conforming document
+// and draws nothing.
 
 const byRole = (page, role) => page.elements.filter((el) => el.role === role);
 

@@ -284,11 +284,15 @@
     </element>
   </define>
 
-  <!-- One to eight measures. Eight is a hard limit. -->
+  <!--
+    One to eight measures. Eight is a hard limit. Annotations come first,
+    the same shape <section-ref> has, and belong to this line of this part.
+  -->
   <define name="el-line">
     <element name="line">
       <attribute name="number"><data type="positiveInteger"/></attribute>
       <optional><attribute name="id"><ref name="identifier"/></attribute></optional>
+      <zeroOrMore><ref name="el-annotation"/></zeroOrMore>
       <ref name="el-measure"/>
       <optional><ref name="el-measure"/>
       <optional><ref name="el-measure"/>

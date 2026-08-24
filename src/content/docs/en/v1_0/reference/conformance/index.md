@@ -613,6 +613,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - An `<annotation>` may hold at most one `<text>` per `align` value. Where it has `<text>` children they are its content, and any text beside them is ignored with a warning.
 - `<composer>`, `<lyricist>`, and `<arranger>` follow the same rule. Their plain-text default is centered rather than left.
 - An `<annotation>` or `<br>` inside a `<repeat>` is printed once, at its position in the document, and is not repeated per pass. A `<direction>` is re-read on every pass.
+- A `<line>`'s `<annotation>` children come before its measures. An annotation between two measures is invalid.
 
 :::danger[Rejected]
 ```xml

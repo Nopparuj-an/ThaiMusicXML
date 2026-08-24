@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Annotations at both scopes in one part: one on the <section-ref>, which
+     heads the section, and one on a <line>, which heads that line wherever it
+     falls. A line annotation takes <text> children like any other. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header>
+    <title>แขกบรเทศ</title>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <annotation>ระนาดเอก ท่อน 1</annotation>
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><note pitch="ร"/></measure>
+      </line>
+      <line number="2">
+        <annotation>กรอ</annotation>
+        <measure number="1"><note pitch="ม"/><note pitch="ซ"/></measure>
+      </line>
+      <line number="3">
+        <annotation>
+          <text align="left">เก็บ</text>
+          <text align="right">ถึงบรรทัดสุดท้าย</text>
+        </annotation>
+        <measure number="1"><note pitch="ล"/><note pitch="ท"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

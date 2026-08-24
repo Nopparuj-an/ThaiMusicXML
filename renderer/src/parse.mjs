@@ -109,6 +109,9 @@ function lyricItems(measure) {
 function parseLine(line, partType) {
   return {
     number: Number(line.getAttribute("number")),
+    // A line's own annotations, printed above this part's row for this line
+    // rather than once above the section. See "Annotations".
+    annotations: els(line, "annotation").map(annotation).filter(Boolean),
     measures: els(line, "measure").map((m) =>
       partType === "lyric"
         ? { number: Number(m.getAttribute("number")), items: lyricItems(m) }

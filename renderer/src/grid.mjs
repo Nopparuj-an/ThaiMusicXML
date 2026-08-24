@@ -90,11 +90,16 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
     for (const box of boxes) {
       // A part's own annotations sit directly on top of that instrument's
       // box, which is where they can only be once instruments are ruled
-      // separately. They belong to the section rather than to the line, so
-      // they print once, above the first line of it.
-      const notes = ownAnnotations
-        ? box.rows.flatMap((r) => score.music[r.part.id][section.id].annotations)
-        : [];
+      // separately. A <section-ref>'s belong to the section rather than to
+      // the line, so they print once, above the first line of it; a
+      // <line>'s belong to that line and print above it every time, which
+      // is the only difference between the two.
+      const notes = [
+        ...(ownAnnotations
+          ? box.rows.flatMap((r) => score.music[r.part.id][section.id].annotations)
+          : []),
+        ...box.rows.flatMap((r) => r.line?.annotations ?? []),
+      ];
       if (notes.length > 0) {
         pager.y = boxTop;
         // Clear of the instrument above, where there is one. The first box in
