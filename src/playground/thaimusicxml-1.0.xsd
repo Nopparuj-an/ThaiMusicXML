@@ -22,6 +22,8 @@
     - number attributes matching position
     - which children a measure may hold, since that depends on the part's
       type, declared elsewhere in the document
+    - that a stack is shared by at least two parts, adjacent in <ensemble>
+      and numbered from 1 up
     - at most one <text> per align value
     - ending line runs, pass ranges, and pass ordering
     - line-repeat ranges against the section's line count
@@ -41,6 +43,7 @@
         <xs:element ref="ns1:structure"/>
         <xs:element ref="ns1:ensemble"/>
         <xs:element maxOccurs="unbounded" ref="ns1:part-data"/>
+        <xs:group minOccurs="0" maxOccurs="unbounded" ref="ns1:el-extension"/>
       </xs:sequence>
       <xs:attribute name="version" use="required" type="ns1:non-empty-string"/>
     </xs:complexType>
@@ -109,6 +112,17 @@
   </xs:element>
   <!-- <repeat> takes exactly the children <structure> takes. -->
   <xs:element name="structure-content" abstract="true"/>
+  <!--
+    A section played again at a later point in the piece, without a second
+    copy of its music. <section> declares the section and gives it its first
+    place in the play order; <play> adds another. Whether the section it
+    names exists is checked outside this grammar.
+  -->
+  <xs:element name="play" substitutionGroup="ns1:structure-content">
+    <xs:complexType>
+      <xs:attribute name="section" use="required" type="ns1:identifier"/>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="annotation" substitutionGroup="ns1:structure-content" type="ns1:aligned-text-content"/>
   <xs:element name="br" substitutionGroup="ns1:structure-content">
     <xs:complexType/>
@@ -150,7 +164,7 @@
       <xs:sequence>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:structure-content"/>
       </xs:sequence>
-      <xs:attribute name="times" type="xs:positiveInteger"/>
+      <xs:attribute name="times" type="ns1:repeat-count"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="section" substitutionGroup="ns1:structure-content">
@@ -166,7 +180,7 @@
     <xs:complexType>
       <xs:attribute name="first" use="required" type="xs:positiveInteger"/>
       <xs:attribute name="last" use="required" type="xs:positiveInteger"/>
-      <xs:attribute name="times" type="xs:positiveInteger"/>
+      <xs:attribute name="times" type="ns1:repeat-count"/>
     </xs:complexType>
   </xs:element>
   <!--
@@ -191,9 +205,9 @@
       <xs:attribute name="type">
         <xs:simpleType>
           <xs:restriction base="xs:token">
+            <xs:enumeration value="lyric"/>
             <xs:enumeration value="pitched"/>
             <xs:enumeration value="unpitched"/>
-            <xs:enumeration value="lyric"/>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
@@ -235,10 +249,14 @@
       <xs:attribute name="pass" use="required" type="ns1:pass-list"/>
     </xs:complexType>
   </xs:element>
-  <!-- One to eight measures. Eight is a hard limit. -->
+  <!--
+    One to eight measures. Eight is a hard limit. Annotations come first,
+    the same shape <section-ref> has, and belong to this line of this part.
+  -->
   <xs:element name="line">
     <xs:complexType>
       <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:annotation"/>
         <xs:element ref="ns1:measure"/>
         <xs:sequence minOccurs="0">
           <xs:element ref="ns1:measure"/>
@@ -261,6 +279,7 @@
         </xs:sequence>
       </xs:sequence>
       <xs:attribute name="number" use="required" type="xs:positiveInteger"/>
+      <xs:attribute name="id" type="ns1:identifier"/>
     </xs:complexType>
   </xs:element>
   <!--
@@ -276,6 +295,7 @@
         <xs:group ref="ns1:lyric-measure-content"/>
       </xs:choice>
       <xs:attribute name="number" use="required" type="xs:positiveInteger"/>
+      <xs:attribute name="id" type="ns1:identifier"/>
     </xs:complexType>
   </xs:element>
   <!--
@@ -314,10 +334,13 @@
       <xs:attribute name="pitch" type="ns1:pitch-value"/>
       <xs:attribute name="sound" type="ns1:non-empty-string"/>
       <xs:attribute name="octave" type="xs:integer"/>
+      <xs:attribute name="id" type="ns1:identifier"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="rest">
-    <xs:complexType/>
+    <xs:complexType>
+      <xs:attribute name="id" type="ns1:identifier"/>
+    </xs:complexType>
   </xs:element>
   <!-- Two or more note/rest children. Groups do not nest. -->
   <xs:element name="group">
@@ -331,6 +354,7 @@
           <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:marker"/>
         </xs:sequence>
       </xs:sequence>
+      <xs:attribute name="id" type="ns1:identifier"/>
     </xs:complexType>
   </xs:element>
   <xs:group name="note-or-rest">
@@ -395,6 +419,29 @@
   <xs:element name="syllable" type="xs:string"/>
   <!--
     ==================================================================
+    Extensions
+    ==================================================================
+  -->
+  <!--
+    A foreign-namespace escape hatch for third-party tools, e.g. an editor
+    recording its own state as <nts:editor version="1"> after the last
+    <part-data>. A processor must preserve an extension it does not
+    recognize, unchanged, across a round trip, and an extension must never
+    change how the score renders or plays. See <thai-score>'s Conformance
+    section.
+    
+    Anything is accepted as long as it commits to a real namespace: the
+    ThaiMusicXML namespace is excluded (that's every other element in this
+    grammar) and so is no namespace at all, which would otherwise let an
+    unprefixed element pass as native markup.
+  -->
+  <xs:group name="el-extension">
+    <xs:sequence>
+      <xs:any namespace="##other" processContents="skip"/>
+    </xs:sequence>
+  </xs:group>
+  <!--
+    ==================================================================
     Datatypes
     ==================================================================
   -->
@@ -404,13 +451,19 @@
     </xs:restriction>
   </xs:simpleType>
   <!--
-    An id is any non-empty token. Deliberately not xsd:ID, whose uniqueness
-    is document-global: ThaiMusicXML scopes ids per kind, so a <part id="1">
-    and a <section id="1"> are distinct and must not collide.
+    An id is a non-empty run of characters with no whitespace in it.
+    Deliberately not xsd:ID, whose uniqueness is document-global:
+    ThaiMusicXML scopes ids per kind, so a <part id="1"> and a
+    <section id="1"> are distinct and must not collide.
+    
+    Whitespace is excluded so that comparing two ids never depends on whether
+    a processor normalized them first: ids are matched character for
+    character, and there is no value where that differs from matching after
+    a whitespace collapse.
   -->
   <xs:simpleType name="identifier">
-    <xs:restriction base="xs:token">
-      <xs:minLength value="1"/>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\S+"/>
     </xs:restriction>
   </xs:simpleType>
   <!--
@@ -431,6 +484,17 @@
   <xs:simpleType name="pitch-value">
     <xs:restriction base="xs:string">
       <xs:pattern value="[1-7DRMFSLTdrmfsltดรมฟซลท][ํฺ]?"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <!--
+    Total plays, not extra plays on top of the first: times="2" plays twice.
+    Two is also the default, so a bare <repeat> or <line-repeat> repeats. One
+    is excluded because a repeat that plays its content once is not a repeat,
+    and a document saying so is more likely to mean two.
+  -->
+  <xs:simpleType name="repeat-count">
+    <xs:restriction base="xs:positiveInteger">
+      <xs:minInclusive value="2"/>
     </xs:restriction>
   </xs:simpleType>
   <!--
