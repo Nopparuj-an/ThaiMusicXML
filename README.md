@@ -1,38 +1,78 @@
 # ThaiMusicXML
 
-An open, royalty-free digital notation standard for Thai traditional music (เพลงไทยเดิม/Phleng Thai Doem).
+**An open digital notation standard for Thai traditional music.**
 
 [![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.txt)
+[![Documentation](https://img.shields.io/badge/docs-thaimusicxml.anan.ovh-blue)](https://thaimusicxml.anan.ovh/en/)
 
-## About
+---
 
-ThaiMusicXML is an open, royalty-free file format for Thai traditional music (เพลงไทยเดิม/Phleng Thai Doem). It records the notation Thai musicians already read, in a form software can validate, search, print, and hand to another program without tying the score to one editor.
+## What is ThaiMusicXML?
 
-What the format records:
+ThaiMusicXML is a free, open file format for Thai traditional music (เพลงไทยเดิม). It records the notation the way Thai musicians expects (the 7-tone scale, the beat grid, curves, ornaments, and instrument parts) in a structured form that software can validate, search, and print without tying the score to any one editor.
 
-- The 7-tone scale ด ร ม ฟ ซ ล ท as scale degrees rather than fixed pitches. ด is the first degree wherever the ensemble is tuned, and the octave is a dot above or below the note.
-- The grid: each line (บรรทัด) holds up to eight measures (ห้อง), and every instrument shares the same measure, so the beats (จังหวะ) line up down the page.
-- A beat positioned at its end, so the last note lands on the beat and the notes before it lead in.
-- A rest that means no new stroke rather than silence, since Thai instruments have no notated sustain.
-- A row of its own for ฉิ่ง and other unpitched instruments, for lyrics (เนื้อร้อง), and for each hand of an instrument written across several rows, such as ฆ้องวงใหญ่. ชั้น and หน้าทับ are recorded alongside the piece.
-- Curves above the notation: the bow (คันชัก) held in one direction across a run of notes, and the arc that ties a run into one gesture (สะบัด), which reaches across both rows of an instrument when the hands share the beat.
-- Brackets around a passage that another instrument leads and the part waits out, and a repeat mark (ซ้ำ) in the margin beside the lines it covers.
+A ThaiMusicXML file is plain XML. It opens in a text editor, survives indefinitely without the program that created it, and can be processed by tools written in any language.
 
-A file stays close to what a musician reads on paper and still parses as data, so a score can be archived, corrected, and printed again long after the program that wrote it is gone.
+---
+
+## Who is this for?
+
+**Musicians and arrangers**: preserve your arrangements in a format that any future software can open, print, or convert, rather than locking them inside a proprietary file.
+
+**Developers**: build editors, renderers, converters, and search tools for Thai music on a documented, schema-validated standard with an Apache 2.0 license. No royalties, no restrictions.
+
+**Researchers and educators**: archive, analyse, and share scores as structured data. Search by instrument, ท่อน, ชั้น, or any other field without OCR or manual tagging.
+
+---
+
+## What the format captures
+
+- The 7-tone scale **ด ร ม ฟ ซ ล ท** as scale degrees, not fixed pitches: ด is always the first degree wherever the ensemble is tuned, with octave dots above or below the note.
+- The beat grid: each line (บรรทัด) holds up to eight measures (ห้อง), and every instrument shares the same measure so beats (จังหวะ) align down the page.
+- A beat positioned at its end: the last note falls on the beat, the notes before it lead in.
+- Rests as _no new stroke_, not silence, since Thai instruments have no notated sustain.
+- Dedicated rows for ฉิ่ง and other unpitched instruments, lyrics (เนื้อร้อง), and each hand of multi-row instruments such as ฆ้องวงใหญ่. ชั้น and หน้าทับ are recorded alongside the piece.
+- Bow curves (คันชัก) and gesture arcs (สะบัด) above the notation, spanning both rows of an instrument when the hands share a beat.
+- Brackets for cued passages and repeat marks (ซ้ำ) in the margin.
+
+---
+
+## Documentation & Playground
+
+Full specification, tutorials, and an interactive playground are at **[thaimusicxml.anan.ovh](https://thaimusicxml.anan.ovh/en/)**.
+
+---
 
 ## Development
 
-This project is built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build/).
+This repository contains the specification documentation, built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build/).
 
 ```sh
 pnpm install
 pnpm dev
 ```
 
+The schema lives at `public/schema/thaimusicxml-1.0.rng` (RELAX NG). Corpus examples are in `public/corpus/` and can be validated with:
+
+```sh
+npm run check:corpus
+```
+
+---
+
 ## Contributing
 
-Contributions are welcome from software developers, ethnomusicologists, Thai traditional musicians, and technical writers.
+Contributions are welcome from software developers, ethnomusicologists, Thai traditional musicians, and technical writers. You can help by:
+
+- Reporting ambiguities or errors in the specification
+- Writing parsers, renderers, or converters
+- Adding corpus examples (real scores in ThaiMusicXML format)
+- Improving documentation in English or Thai
+
+See [About > Contributions](https://thaimusicxml.anan.ovh/en/about/) for how to get your name listed as a contributor.
+
+---
 
 ## License
 
-This project is licensed under the [Apache License 2.0](LICENSE.txt). See [NOTICE](NOTICE) for attribution and [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.md) for the licenses of bundled dependencies, including the Sarabun font.
+Licensed under the [Apache License 2.0](LICENSE.txt): free to use, adapt, and ship inside any application, open or closed source. See [NOTICE](NOTICE) for attribution requirements and [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.md) for bundled dependency licenses.

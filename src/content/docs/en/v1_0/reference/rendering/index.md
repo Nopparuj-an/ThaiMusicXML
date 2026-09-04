@@ -13,21 +13,21 @@ The table below lists each display decision this page leaves open, with the defa
 
 None of these lives in the document. There is nowhere in a ThaiMusicXML file to write one and nothing to read one out of, and changing any of them leaves the markup untouched. Where a score genuinely needs one pinned down, the mechanism is a local attribute on the element concerned, the way `dim` and `mute` work on [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/). A document-wide display directive would end up fighting the reader's own preferences on every file they opened, which is why the format has none.
 
-| Decision | Default | Where |
-| --- | --- | --- |
-| Which pitch spelling appears | Whichever of the three the file is written in | [Inside a measure](#inside-a-measure) |
-| Case of romanized pitch letters | Uppercase | [Inside a measure](#inside-a-measure) |
-| Octave mark shape and size | A small dot, drawn independent of the typeface | [Octave marks](#octave-marks) |
-| How thoroughly rests print | A hyphen for every rest in every notated part, blank in a lyric row | [Inside a measure](#inside-a-measure) |
-| Lyric row type size | Smaller than the notated rows | [Lyric rows](#lyric-rows) |
-| What happens when the words do not fit | The syllables move off their beats first, then that measure sets smaller | [Words that do not fit](#words-that-do-not-fit) |
-| Instrument-name labels | Top-right corner on a solo score; a deduplicated label column on an ensemble score | [Instrument names](#instrument-names) |
-| `name` printed as a section heading | Off | [Section headings](#section-headings) |
-| `<tuning>`, `<license>`, and `<bpm>` on the page | Off | [The title band](#the-title-band) |
-| Numerals in labels the renderer writes itself | Arabic | [Section headings](#section-headings) |
-| Dimming and muting a cued passage | The renderer's own preference, overridden per span by `dim` and `mute` | [Cued passages](#cued-passages) |
-| Octaves outside `-1` to `1` | No default. The renderer decides, and must not pass off a capped spelling as exact | [Octaves beyond the Thai spellings](#octaves-beyond-the-thai-spellings) |
-| Typeface | Sarabun | [Typeface](#typeface) |
+| Decision                                         | Default                                                                            | Where                                                                   |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Which pitch spelling appears                     | Whichever of the three the file is written in                                      | [Inside a measure](#inside-a-measure)                                   |
+| Case of romanized pitch letters                  | Uppercase                                                                          | [Inside a measure](#inside-a-measure)                                   |
+| Octave mark shape and size                       | A small dot, drawn independent of the typeface                                     | [Octave marks](#octave-marks)                                           |
+| How thoroughly rests print                       | A hyphen for every rest in every notated part, blank in a lyric row                | [Inside a measure](#inside-a-measure)                                   |
+| Lyric row type size                              | Smaller than the notated rows                                                      | [Lyric rows](#lyric-rows)                                               |
+| What happens when the words do not fit           | The syllables move off their beats first, then that measure sets smaller           | [Words that do not fit](#words-that-do-not-fit)                         |
+| Instrument-name labels                           | Top-right corner on a solo score; a deduplicated label column on an ensemble score | [Instrument names](#instrument-names)                                   |
+| `name` printed as a section heading              | Off                                                                                | [Section headings](#section-headings)                                   |
+| `<tuning>`, `<license>`, and `<bpm>` on the page | Off                                                                                | [The title band](#the-title-band)                                       |
+| Numerals in labels the renderer writes itself    | Arabic                                                                             | [Section headings](#section-headings)                                   |
+| Dimming and muting a cued passage                | The renderer's own preference, overridden per span by `dim` and `mute`             | [Cued passages](#cued-passages)                                         |
+| Octaves outside `-1` to `1`                      | No default. The renderer decides, and must not pass off a capped spelling as exact | [Octaves beyond the Thai spellings](#octaves-beyond-the-thai-spellings) |
+| Typeface                                         | Sarabun                                                                            | [Typeface](#typeface)                                                   |
 
 ### Typeface
 
@@ -67,7 +67,7 @@ A four-beat measure where one beat carries a group of two is divided into five. 
 
 A beat arrives on its last slot rather than its first, so the shares a beat is given are the run-up to it and every part's note for that beat lands together at the far end of them. See [`<group>`](/en/v1_0/reference/elements/group/#where-the-children-fall), which is where that rule is stated.
 
-A part playing one note where another plays a group of two puts that note level with the group's *second* symbol, not its first. The measure's last note sits at the cell's right-hand edge, and the measure reads backwards from there toward the ลูกตก it arrives on.
+A part playing one note where another plays a group of two puts that note level with the group's _second_ symbol, not its first. The measure's last note sits at the cell's right-hand edge, and the measure reads backwards from there toward the ลูกตก it arrives on.
 
 This is the deepest difference between laying out a Thai score and laying out a Western one. An engraver who anchors beats to their onset will produce a grid that looks nearly right and lines the wrong notes up.
 
@@ -127,7 +127,7 @@ Below some size the words stop being legible, so a renderer stops shrinking ther
 
 ## The title band
 
-The [`<title>`](/en/v1_0/reference/elements/title/) sits centered at the top of the first page. On a score written for one instrument, the [`<instrument-name>`](/en/v1_0/reference/elements/instrument-name/) prints separately, in the top-right corner — see [Instrument names](#instrument-names).
+The [`<title>`](/en/v1_0/reference/elements/title/) sits centered at the top of the first page. On a score written for one instrument, the [`<instrument-name>`](/en/v1_0/reference/elements/instrument-name/) prints separately, in the top-right corner - see [Instrument names](#instrument-names).
 
 Below it comes a band holding the credits from [`<header>`](/en/v1_0/reference/elements/header/), meaning [`<composer>`](/en/v1_0/reference/elements/composer/), [`<lyricist>`](/en/v1_0/reference/elements/lyricist/), and [`<arranger>`](/en/v1_0/reference/elements/arranger/), followed by any [`<annotation>`](/en/v1_0/reference/elements/annotation/) that appears in `<structure>` before the first section.
 
@@ -157,7 +157,7 @@ On a solo score the [`<instrument-name>`](/en/v1_0/reference/elements/instrument
 
 On an ensemble score it prints as a label column left of the first measure of each line, the way Western scores do. Thai scores otherwise identify a part by its position in the stack, and that stops working once any part is tacet somewhere: a part that omits a [`<section-ref>`](/en/v1_0/reference/elements/section-ref/) has no row in that section's grid at all, and the parts below it move up to close the gap. The label column is what tells a reader which row is which regardless.
 
-A label does not repeat on every line, the way a Western score does not repeat a system's names when the instrumentation has not moved. It prints on the first grid line, on the first line of a page, and on the first line after the row lineup itself changes — which, since nothing else reorders rows, only a tacet part causes. Consecutive lines with the same parts in the same order print nothing.
+A label does not repeat on every line, the way a Western score does not repeat a system's names when the instrumentation has not moved. It prints on the first grid line, on the first line of a page, and on the first line after the row lineup itself changes - which, since nothing else reorders rows, only a tacet part causes. Consecutive lines with the same parts in the same order print nothing.
 
 Labels take their width from the margin rather than from the eight cells, so a long name never moves the grid. Where a part carries an [`<instrument-short-name>`](/en/v1_0/reference/elements/instrument-short-name/), the label column uses that instead of the full [`<instrument-name>`](/en/v1_0/reference/elements/instrument-name/), which stays reserved for the top-right corner and any other full-width use. A part with no short name uses its full name in the column regardless of whether it fits.
 
@@ -186,12 +186,12 @@ Skip any level that has only one member: a single-row instrument has no row leve
 
 That produces the four common arrangements:
 
-| Ensemble                        | Between rows | Between instruments | Between lines | Between sections |
-| ------------------------------- | ------------ | ------------------- | ------------- | ---------------- |
-| One single-row instrument       | n/a          | n/a                 | none          | small            |
-| One multi-row instrument        | none         | n/a                 | small         | larger           |
-| Several single-row instruments  | n/a          | none                | small         | larger           |
-| Single-row and multi-row mixed  | none         | small               | larger        | largest          |
+| Ensemble                       | Between rows | Between instruments | Between lines | Between sections |
+| ------------------------------ | ------------ | ------------------- | ------------- | ---------------- |
+| One single-row instrument      | n/a          | n/a                 | none          | small            |
+| One multi-row instrument       | none         | n/a                 | small         | larger           |
+| Several single-row instruments | n/a          | none                | small         | larger           |
+| Single-row and multi-row mixed | none         | small               | larger        | largest          |
 
 A stack of three behaves no differently from a stack of two. The row level absorbs the extra row, and the breaks outside it are unchanged.
 

@@ -31,11 +31,14 @@ const image = "https://thaimusicxml.anan.ovh/ThaiMusicXMLOG.png";
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={image} />
 
+		<!-- Fast redirect for real browsers -->
 		<script is:inline define:vars={{ enUrl, thUrl }}>
 			var lang = (navigator.language || "en").toLowerCase();
 			var target = lang.startsWith("th") ? thUrl : enUrl;
 			location.replace(target);
 		</script>
+		<!-- Fallback redirect for crawlers that do not run JavaScript -->
+		<meta http-equiv="refresh" content={`0; url=${enUrl}`} />
 	</head>
 	<body>
 		<h1>{title}</h1>

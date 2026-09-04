@@ -40,6 +40,7 @@ The author wrote something, and the file behaves as though they had not. That is
 This is a general principle rather than a rule of its own. Where a specific element page states the warning, that page is the authority.
 
 :::caution[Accepted, but a validator should warn]
+
 ```xml
 <!-- octave beside a Thai octave modifier: the modifier wins, octave="2" is ignored -->
 <note pitch="ดํ" octave="2"/>
@@ -53,6 +54,7 @@ This is a general principle rather than a rule of its own. Where a specific elem
   stray text here
 </annotation>
 ```
+
 :::
 
 ## Lexical types
@@ -64,6 +66,7 @@ The element pages name a type for each attribute. This section says what those n
 `true`, `false`, `1`, and `0`, matched by value. `dim="1"` and `dim="true"` are the same. Nothing else is accepted.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✓ valid -->
 <parenthesis type="start" dim="1"/>
@@ -72,6 +75,7 @@ The element pages name a type for each attribute. This section says what those n
 <!-- ✗ rejected: not one of true, false, 1, 0 -->
 <parenthesis type="start" dim="yes"/>
 ```
+
 :::
 
 ### Integers
@@ -79,6 +83,7 @@ The element pages name a type for each attribute. This section says what those n
 An optional sign followed by digits. `octave` takes any integer; `times`, `first`, `last`, `number`, `row`, and the content of `<bpm>` take positive ones, with the bounds each element page gives. `times` is the one with a floor above `1`: it must be `2` or more.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✓ valid: octave takes any integer, including negative -->
 <note pitch="ด" octave="-2"/>
@@ -92,6 +97,7 @@ An optional sign followed by digits. `octave` takes any integer; `times`, `first
 <!-- ✗ rejected: a repeat that plays once repeats nothing; the default is 2 -->
 <repeat times="1">...</repeat>
 ```
+
 :::
 
 ### Enumerations
@@ -99,6 +105,7 @@ An optional sign followed by digits. `octave` takes any integer; `times`, `first
 [`<chan>`](/en/v1_0/reference/elements/chan/)'s `value` is a closed enumeration, matched exactly as written: `0.5`, `1`, `2`, `3`, `4`, and neither `0.50` nor `.5`. Its five levels are the whole set, so anything else is an error.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✓ valid -->
 <chan value="0.5"/>
@@ -107,11 +114,13 @@ An optional sign followed by digits. `octave` takes any integer; `times`, `first
 <chan value="0.50"/>
 <chan value=".5"/>
 ```
+
 :::
 
 [`<nathap>`](/en/v1_0/reference/elements/nathap/)'s `value` and [`<tuning>`](/en/v1_0/reference/elements/tuning/)'s `reference` are open. Both take any non-empty string, and both publish a recommended list. A validator warns on a value outside that list and must not reject it, which catches a misspelling of a known name without turning an unusual one into an invalid document.
 
 :::caution[Accepted, but a validator should warn]
+
 ```xml
 <!-- ✓ valid, no warning: on the recommended list -->
 <tuning reference="c-major"/>
@@ -122,21 +131,22 @@ An optional sign followed by digits. `octave` takes any integer; `times`, `first
 <!-- ✓ valid, no warning: a real tuning this list hasn't reached yet -->
 <tuning reference="krung-thep-1990"/>
 ```
+
 :::
 
 ### `pitch`
 
 One base-note character, optionally followed by one Thai octave modifier.
 
-| Degree | Numeric | Thai | Thai code point | Romanized |
-| ------ | ------- | ---- | --------------- | --------- |
-| 1 | `1` | ด | U+0E14 | `D` or `d` |
-| 2 | `2` | ร | U+0E23 | `R` or `r` |
-| 3 | `3` | ม | U+0E21 | `M` or `m` |
-| 4 | `4` | ฟ | U+0E1F | `F` or `f` |
-| 5 | `5` | ซ | U+0E0B | `S` or `s` |
-| 6 | `6` | ล | U+0E25 | `L` or `l` |
-| 7 | `7` | ท | U+0E17 | `T` or `t` |
+| Degree | Numeric | Thai | Thai code point | Romanized  |
+| ------ | ------- | ---- | --------------- | ---------- |
+| 1      | `1`     | ด    | U+0E14          | `D` or `d` |
+| 2      | `2`     | ร    | U+0E23          | `R` or `r` |
+| 3      | `3`     | ม    | U+0E21          | `M` or `m` |
+| 4      | `4`     | ฟ    | U+0E1F          | `F` or `f` |
+| 5      | `5`     | ซ    | U+0E0B          | `S` or `s` |
+| 6      | `6`     | ล    | U+0E25          | `L` or `l` |
+| 7      | `7`     | ท    | U+0E17          | `T` or `t` |
 
 The two modifiers are นิคหิต U+0E4D, raising an octave, and พินทุ U+0E3A, lowering one. Either attaches to any of the three spellings.
 
@@ -145,6 +155,7 @@ Match on the code points. Both modifiers are combining characters, so in rendere
 Normalization is not a concern. Thai has no canonical compositions, so a `pitch` value is the same sequence of code points under NFC, under NFD, and as authored. No normalization pass is needed before matching.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✓ valid: three spellings of the same note, one Thai octave modifier each -->
 <note pitch="1ํ"/>
@@ -157,13 +168,16 @@ Normalization is not a concern. Thai has no canonical compositions, so a `pitch`
 <!-- ✗ rejected: two octave modifiers on one base note -->
 <note pitch="ดํฺ"/>
 ```
+
 :::
 
 :::caution[Accepted, but a validator should warn]
+
 ```xml
 <!-- octave is ignored: ดํ already carries นิคหิต, so octave="2" says nothing new -->
 <note pitch="ดํ" octave="2"/>
 ```
+
 :::
 
 ### `pass`
@@ -171,6 +185,7 @@ Normalization is not a concern. Thai has no canonical compositions, so a `pitch`
 Comma-separated integers, in ascending order, with no repeats: `2` and `2,4` are well formed, `4,2` and `2,2` are not. See [`<ending>`](/en/v1_0/reference/elements/ending/#conformance) for the bounds.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✓ valid -->
 <ending pass="2,4">...</ending>
@@ -181,6 +196,7 @@ Comma-separated integers, in ascending order, with no repeats: `2` and `2,4` are
 <!-- ✗ rejected: repeats -->
 <ending pass="2,2">...</ending>
 ```
+
 :::
 
 ### `id` and `IDREF`
@@ -192,6 +208,7 @@ An `id` must be unique among elements of its own kind. `<part id="…">` values 
 [`<line>`](/en/v1_0/reference/elements/line/), [`<measure>`](/en/v1_0/reference/elements/measure/), [`<note>`](/en/v1_0/reference/elements/note/), [`<rest>`](/en/v1_0/reference/elements/rest/), and [`<group>`](/en/v1_0/reference/elements/group/) also accept an optional `id`, each kind its own independent set the same way `part` and `section` are. Nothing inside ThaiMusicXML itself resolves one - no IDREF attribute names these kinds - since a document has no reason to point at its own note. They exist so a [foreign-namespace extension](#foreign-namespace-extensions) or some other tool outside the document has a stable handle to attach state to, which is also why nothing requires them: a file with none of these ids is as conforming as one with every note tagged.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✓ valid: a part id and a section id may share a value, they're independent sets -->
 <part id="1">...</part>
@@ -211,6 +228,7 @@ An `id` must be unique among elements of its own kind. `<part id="…">` values 
 <!-- ✗ rejected: whitespace in an id -->
 <section id="ท่อน 1"/>
 ```
+
 :::
 
 ### Foreign-namespace extensions
@@ -222,6 +240,7 @@ The rule applies at every depth, not just to the element directly under `<thai-s
 A processor must preserve an extension element it does not recognize, unchanged, across a round trip, and an extension must never affect how the document renders or plays. Those two rules are what let more than one tool's extensions sit side by side without either needing to understand the other, and what stops an extension from forking the format by becoming load-bearing.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✓ valid: another tool's own state, ignored by anything that doesn't know it -->
 <part-data part="P1">...</part-data>
@@ -232,13 +251,15 @@ A processor must preserve an extension element it does not recognize, unchanged,
 <!-- ✗ rejected: no namespace, indistinguishable from native markup -->
 <editor xmlns="" version="1"/>
 ```
+
 :::
 
 ### Text and mixed content
 
-Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elements/text/) children — [`<annotation>`](/en/v1_0/reference/elements/annotation/), [`<composer>`](/en/v1_0/reference/elements/composer/), [`<lyricist>`](/en/v1_0/reference/elements/lyricist/), [`<arranger>`](/en/v1_0/reference/elements/arranger/) — the `<text>` children win. Any text beside them is ignored, which is what allows the element to be indented over several lines without its own formatting becoming content. Ignored text that is not merely whitespace draws a warning.
+Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elements/text/) children - [`<annotation>`](/en/v1_0/reference/elements/annotation/), [`<composer>`](/en/v1_0/reference/elements/composer/), [`<lyricist>`](/en/v1_0/reference/elements/lyricist/), [`<arranger>`](/en/v1_0/reference/elements/arranger/) - the `<text>` children win. Any text beside them is ignored, which is what allows the element to be indented over several lines without its own formatting becoming content. Ignored text that is not merely whitespace draws a warning.
 
 :::caution[Accepted, but a validator should warn]
+
 ```xml
 <!-- ✓ valid, no warning: plain text, no <text> children -->
 <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
@@ -255,6 +276,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   leftover note
 </annotation>
 ```
+
 :::
 
 ## Rules by area
@@ -269,6 +291,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - `<nathap>`, `<chan>`, and `<bpm>` are each optional within a `<direction>` and appear at most once each, in any order.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✗ rejected: <ensemble> before <structure> -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
@@ -297,15 +320,18 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <bpm>90</bpm>
 </direction>
 ```
+
 :::
 
 :::caution[Accepted, but a validator should warn]
+
 ```xml
 <!-- accepted, warns: version doesn't match 1.0, the namespace's current release -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.3">
   ...
 </thai-score>
 ```
+
 :::
 
 ### Identity and reference
@@ -320,6 +346,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - A `type="lyric"` part must not carry `stack` or `row`. A stack is one instrument's own rows, and words are not a region of an instrument.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✗ rejected: <part id="P1"> exists in <ensemble> but no <part-data> references it -->
 <ensemble>
@@ -348,9 +375,11 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <part id="P3" stack="khong" row="1">...</part>
 <part id="P4" stack="khong" row="3">...</part>
 ```
+
 :::
 
 :::tip[Valid]
+
 ```xml
 <!-- valid: <part-data> in any order, and P3 leaves out s2 entirely -->
 <part-data part="P2">
@@ -366,6 +395,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <section id="s3" name="ท่อน 3"/>
 </structure>
 ```
+
 :::
 
 ### Timing
@@ -379,6 +409,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - A beat arrives on its last slot, so a `<group>`'s final child falls on the beat and the earlier ones space backwards from it within the beat's own span. A group can never reach outside its beat, and so never outside its measure. See [`<group>`](/en/v1_0/reference/elements/group/#why-a-group-cannot-leave-its-measure).
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✗ rejected: P1's measure 1 has 4 beats, P2's measure 1 has 3, for the same section -->
 <part-data part="P1">
@@ -421,9 +452,11 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <group><note pitch="ม"/><note pitch="ฟ"/></group>
 </group>
 ```
+
 :::
 
 :::tip[Valid]
+
 ```xml
 <!-- valid: a lyric part's measure count still has to match, but its beat count doesn't -->
 <part-data part="P-lyric">
@@ -437,6 +470,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- valid: a lyric measure may be empty -->
 <measure number="2"></measure>
 ```
+
 :::
 
 ### Repetition
@@ -451,6 +485,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - Every `<ending>` must carry at least one `<annotation>` captioning the variation.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✗ rejected: times="0" -->
 <repeat times="0">
@@ -500,9 +535,11 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <line number="4">...</line>
 </ending>
 ```
+
 :::
 
 :::tip[Valid]
+
 ```xml
 <!-- valid: properly nested line-repeats -->
 <section id="s1" name="ท่อน 1">
@@ -517,6 +554,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <line number="4">...</line>
 </ending>
 ```
+
 :::
 
 ### Notes and pitch
@@ -533,6 +571,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - A `<link>` span is valid in any notated part. Where the containing `<part>` has a `stack`, the curve reaches that instrument's other rows; where it has none, the curve marks the span's own notes. Either way there is a row for it to reach, since a stack is made of notated parts only.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✗ rejected: type isn't one of the three values -->
 <part id="P1" type="drum">...</part>
@@ -552,9 +591,11 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <part id="P1" stack="khong" row="1">...</part>
 <part id="P2" stack="khong" row="2" type="lyric">...</part>
 ```
+
 :::
 
 :::tip[Valid]
+
 ```xml
 <!-- valid: case carries no meaning -->
 <note pitch="d"/>
@@ -563,6 +604,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- valid, no warning: no Thai octave modifier, so octave applies normally -->
 <note pitch="D" octave="-1"/>
 ```
+
 :::
 
 ### Span markers
@@ -577,6 +619,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - A `<link>`, `<bow>`, or `<parenthesis>` marker inside a `<group>` has zero duration and does not count toward the equal division of that group's beat.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✗ rejected: a second start before the first is closed -->
 <bow type="start" direction="out"/>
@@ -599,9 +642,11 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- ✗ rejected: mute on a stop -->
 <parenthesis type="stop" mute="true"/>
 ```
+
 :::
 
 :::tip[Valid]
+
 ```xml
 <!-- valid: a bow span closed across a measure boundary -->
 <measure number="1">
@@ -613,6 +658,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <bow type="stop"/>
 </measure>
 ```
+
 :::
 
 ### Annotations
@@ -624,6 +670,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - A `<line>`'s `<annotation>` children come before its measures. An annotation between two measures is invalid.
 
 :::danger[Rejected]
+
 ```xml
 <!-- ✗ rejected: align missing -->
 <text>ท่อน 1</text>
@@ -640,11 +687,14 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- ✗ rejected: a child element inside <text> -->
 <text align="left"><br/></text>
 ```
+
 :::
 
 :::tip[Valid]
+
 ```xml
 <!-- valid: plain-text composer defaults to centered, not left -->
 <composer>Traditional</composer>
 ```
+
 :::

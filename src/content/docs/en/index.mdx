@@ -17,18 +17,22 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid } from "@astrojs/starlight/components";
 
-### This website is available in two languages [ไปหน้าภาษาไทย](/th)
+หน้านี้มีเวอร์ชันภาษาไทย - [ไปหน้าภาษาไทย](/th)
 
-| Mobile | Desktop |
-| --- | --- |
-| ![Mobile Interface](../../../assets/language_mobile.jpeg) | ![Desktop Interface](../../../assets/language_desktop.jpeg) |
+## What is ThaiMusicXML?
+
+ThaiMusicXML is an open, royalty-free file format for Thai traditional music (เพลงไทยเดิม / Phleng Thai Doem). It records the notation Thai musicians already read, in a form software can validate, search, print, and hand to another program - without tying the score to any one editor.
+
+The format captures the 7-tone scale (ด ร ม ฟ ซ ล ท) as scale degrees rather than fixed pitches, the beat-grid that aligns every instrument down the page, rests as "no new stroke" rather than silence, unpitched rows for ฉิ่ง and other percussion, lyrics, bow and gesture curves, cued passages, and repeat marks. A file stays close to what a musician reads on paper and still parses as data - so a score can be archived, corrected, and printed again long after the program that wrote it is gone.
+
+The specification is published under [Apache License 2.0](https://github.com/Nopparuj-an/ThaiMusicXML/blob/main/LICENSE.txt): free to use, adapt, and ship inside any application, open or closed source.
 
 ## Apps using ThaiMusicXML
 
 <CardGrid>
-	<Card title="Feature your app here" icon="music">
-		You can feature your app here if you use ThaiMusicXML format.
-	</Card>
+  <Card title="Feature your app here" icon="music">
+    You can feature your app here if you use ThaiMusicXML format.
+  </Card>
 </CardGrid>

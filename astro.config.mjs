@@ -52,18 +52,35 @@ export default defineConfig({
         {
           tag: "script",
           attrs: { type: "application/ld+json" },
-          content: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareSourceCode",
-            name: "ThaiMusicXML",
-            description:
-              "An open digital notation standard for Thai Traditional Music.",
-            url: "https://thaimusicxml.anan.ovh/en/",
-            codeRepository: "https://github.com/Nopparuj-an/ThaiMusicXML",
-            programmingLanguage: "XML",
-            license:
-              "https://github.com/Nopparuj-an/ThaiMusicXML/blob/main/LICENSE.txt",
-          }),
+          content: JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "TechArticle",
+              name: "ThaiMusicXML Specification",
+              headline:
+                "ThaiMusicXML: An open digital notation standard for Thai Traditional Music",
+              description:
+                "ThaiMusicXML is an open, royalty-free XML file format for Thai traditional music (เพลงไทยเดิม). It records notation in a form software can validate, search, print, and exchange without tying scores to any single editor.",
+              url: "https://thaimusicxml.anan.ovh/en/",
+              inLanguage: ["en", "th"],
+              author: {
+                "@type": "Person",
+                name: "Nopparuj Ananvoranich",
+                url: "https://anan.ovh/",
+              },
+              license:
+                "https://github.com/Nopparuj-an/ThaiMusicXML/blob/main/LICENSE.txt",
+              codeRepository: "https://github.com/Nopparuj-an/ThaiMusicXML",
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "ThaiMusicXML",
+              url: "https://thaimusicxml.anan.ovh/",
+              description:
+                "Documentation site for ThaiMusicXML, an open digital notation standard for Thai Traditional Music.",
+            },
+          ]),
         },
       ],
       components: {
