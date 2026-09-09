@@ -36,6 +36,20 @@ const at = (lineIndex, measureIndex, beatIndex, slotIndex) => ({
   slotIndex,
 });
 
+test("reports an unsupported namespace instead of crashing", () => {
+  const doc = score("").replace(`xmlns="${NS}"`, `xmlns="https://thaimusicxml.anan.ovh/ns/0.1"`);
+  assert.throws(() => parse(doc), {
+    message: `unsupported ThaiMusicXML namespace "https://thaimusicxml.anan.ovh/ns/0.1"; expected "${NS}"`,
+  });
+});
+
+test("reports a missing required top-level element", () => {
+  const doc = score("").replace("  <structure><section id=\"s1\" name=\"s1\"/></structure>", "");
+  assert.throws(() => parse(doc), {
+    message: "invalid ThaiMusicXML document: missing <structure> in <thai-score>",
+  });
+});
+
 // The shape of a measure.
 
 test("a bare note or rest is a beat of one slot, and a group is a beat of as many slots as it has children", () => {

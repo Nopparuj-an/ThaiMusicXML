@@ -23,6 +23,12 @@ const els = (node, name) =>
 
 const el = (node, name) => els(node, name)[0] ?? null;
 
+const required = (node, name, parent) => {
+  const found = el(node, name);
+  if (!found) throw new Error(`invalid ThaiMusicXML document: missing <${name}> in <${parent}>`);
+  return found;
+};
+
 const text = (node) => (node ? node.textContent.trim() : null);
 
 /** A <note> or <rest> becomes one slot. */
@@ -234,9 +240,21 @@ export function parse(source) {
   if (parseError) throw new Error(`the XML is not well-formed: ${parseError}`);
   if (!doc.documentElement) throw new Error("the XML is not well-formed: no root element");
   const score = doc.documentElement;
+  if (score.localName !== "thai-score")
+    throw new Error(`invalid ThaiMusicXML document: expected <thai-score>, got <${score.localName}>`);
+  if (score.namespaceURI !== NS)
+    throw new Error(
+      `unsupported ThaiMusicXML namespace "${score.namespaceURI ?? ""}"; expected "${NS}"`,
+    );
+  if (score.getAttribute("version") !== "1.0")
+    throw new Error(
+      `unsupported ThaiMusicXML version "${score.getAttribute("version")}"; expected "1.0"`,
+    );
 
-  const header = el(score, "header");
-  const parts = els(el(score, "ensemble"), "part").map((p) => ({
+  const header = required(score, "header", "thai-score");
+  const structureEl = required(score, "structure", "thai-score");
+  const ensemble = required(score, "ensemble", "thai-score");
+  const parts = els(ensemble, "part").map((p) => ({
     id: p.getAttribute("id"),
     type: p.getAttribute("type") || "pitched",
     stack: p.getAttribute("stack") || null,
@@ -293,7 +311,7 @@ export function parse(source) {
       }
     }
   };
-  collect(el(score, "structure"));
+  collect(structureEl);
   const sections = structure.filter((item) => item.kind === "section");
 
   // part id -> section id -> { annotations, lines, bow/paren/linkSpans, endings }
