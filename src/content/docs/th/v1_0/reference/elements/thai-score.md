@@ -1,6 +1,6 @@
 ---
 title: <thai-score>
-description: รากของเอกสาร ThaiMusicXML
+description: องค์ประกอบรากของเอกสาร ThaiMusicXML ทุกฉบับ บรรจุเนมสเปซและเวอร์ชัน Schema ที่ไฟล์นี้ยึดตาม
 sidebar:
   order: 2
 ---
