@@ -1,6 +1,6 @@
 ---
 title: <text>
-description: One aligned run of text within an annotation or a credit
+description: "One aligned run of text inside an annotation or a credit, claiming the left, center, or right of its parent's single line."
 ---
 
 The `<text>` element holds one aligned run of text inside an [`<annotation>`](/en/v1_0/reference/elements/annotation/) or a credit.

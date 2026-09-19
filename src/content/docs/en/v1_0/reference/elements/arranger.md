@@ -1,6 +1,6 @@
 ---
 title: <arranger>
-description: Who arranged this setting of the piece
+description: "Names whoever produced this setting of the piece. Much of the repertoire is traditional, so a score often has no composer but a known arranger."
 ---
 
 The `<arranger>` element names whoever produced this particular setting of the piece.

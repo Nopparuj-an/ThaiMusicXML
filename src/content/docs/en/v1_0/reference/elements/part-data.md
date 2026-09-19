@@ -1,6 +1,6 @@
 ---
 title: <part-data>
-description: Contains the music data for a single instrument
+description: "Holds the music for a single instrument. A part declares that the instrument exists; part-data is where its notes actually live."
 ---
 
 The `<part-data>` element contains the music data for a single instrument.

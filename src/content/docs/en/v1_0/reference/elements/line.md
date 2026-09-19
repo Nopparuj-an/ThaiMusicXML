@@ -1,6 +1,6 @@
 ---
 title: <line>
-description: A musical line (phrase) within a section
+description: "A musical line (บรรทัด) within one part's section, holding one to eight measures. Nine or more is a validation error."
 ---
 
 The `<line>` element contains a musical line or phrase within a section.

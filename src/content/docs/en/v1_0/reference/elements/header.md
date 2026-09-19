@@ -1,6 +1,6 @@
 ---
 title: <header>
-description: Contains score metadata
+description: "Score metadata: what the piece is called, who is behind it, what tuning it is written against, and the terms it is published under."
 ---
 
 The `<header>` element contains score metadata: what the piece is called, who is behind it, what tuning it is written against, and what terms it is published under.

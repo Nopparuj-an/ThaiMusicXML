@@ -1,6 +1,6 @@
 ---
 title: <nathap>
-description: Names the หน้าทับ rhythmic cycle in force
+description: "Names the หน้าทับ drum cycle the music is set against, which fixes the length of the cycle and the pattern of strokes inside it."
 ---
 
 The `<nathap>` element names the หน้าทับ the music is set against.

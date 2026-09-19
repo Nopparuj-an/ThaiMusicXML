@@ -1,6 +1,6 @@
 ---
 title: <note>
-description: A musical note
+description: "One attack in a part. A pitched part writes a scale degree from ด ร ม ฟ ซ ล ท with an octave mark; an unpitched part writes a sound code."
 ---
 
 The `<note>` element represents a musical note.

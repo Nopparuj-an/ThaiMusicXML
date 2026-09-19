@@ -1,6 +1,6 @@
 ---
 title: ThaiMusicXML v1.0
-description: Getting started with ThaiMusicXML v1.0
+description: "ThaiMusicXML v1.0 covers pitched, unpitched, and lyric parts; ท่อน with repeats and endings; octave dots, subdivided beats, curves, and cued passages."
 ---
 
 :::caution[Work in progress]

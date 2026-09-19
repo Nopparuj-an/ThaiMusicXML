@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: ThaiMusicXML v1.0 Roadmap
+description: "What ThaiMusicXML v1.0 covers, what is deliberately out of scope, and what is planned for later versions."
 ---
 
 ## Version v1.0 (Development Phase)

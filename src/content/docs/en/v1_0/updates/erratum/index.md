@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: ThaiMusicXML v1.0 Erratum Reference
+description: "Corrections published against the ThaiMusicXML v1.0 specification after its release."
 ---
 
 There are no errata reports for this version.

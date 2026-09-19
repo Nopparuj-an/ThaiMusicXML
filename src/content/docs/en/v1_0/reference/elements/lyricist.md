@@ -1,6 +1,6 @@
 ---
 title: <lyricist>
-description: The writer of the piece's lyrics
+description: "Names whoever wrote the words to the piece. The text prints exactly as typed, centered, or split into up to three aligned runs."
 ---
 
 The `<lyricist>` element names whoever wrote the words to the piece.

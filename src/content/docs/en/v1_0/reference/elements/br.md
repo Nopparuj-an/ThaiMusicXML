@@ -1,6 +1,6 @@
 ---
 title: <br>
-description: Line break
+description: "A line break between the annotations and directions that make up a score's structure."
 ---
 
 The `<br>` element indicates a line break.

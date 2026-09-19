@@ -1,6 +1,6 @@
 ---
 title: <ensemble>
-description: Lists the instruments in the score
+description: "Lists the instruments in the score. Parts render in the order given here, with the rows of a stacked instrument kept together."
 ---
 
 The `<ensemble>` element lists the instruments in the score.

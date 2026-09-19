@@ -1,6 +1,6 @@
 ---
 title: <section>
-description: A named section of the score
+description: "Declares that a named section of the score exists and where it falls in the play order. It holds no notes."
 ---
 
 The `<section>` element defines a named section of the score.

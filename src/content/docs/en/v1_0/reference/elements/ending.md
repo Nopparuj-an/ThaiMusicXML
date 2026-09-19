@@ -1,6 +1,6 @@
 ---
 title: <ending>
-description: A per-instrument variation played on specific repeat passes
+description: "Replaces specific lines on specific passes of a repeated section, so one part can play a variation without restructuring its section."
 ---
 
 The `<ending>` element replaces specific `<line>` elements on specific passes of a repeated section, so a part can play something different on a given pass without restructuring its `<section-ref>`.

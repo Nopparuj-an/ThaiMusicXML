@@ -1,6 +1,6 @@
 ---
 title: <group>
-description: Subdivides a single beat into two or more equal parts
+description: "Subdivides a single beat into two or more equal parts, for measures that pack more notes into a beat than usual."
 ---
 
 The `<group>` element subdivides a single beat into two or more equal parts, for measures that pack more notes into a beat than usual.

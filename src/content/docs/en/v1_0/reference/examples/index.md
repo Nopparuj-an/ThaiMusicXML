@@ -1,6 +1,6 @@
 ---
 title: ∙ Examples
-description: Examples for ThaiMusicXML
+description: "Complete ThaiMusicXML scores of real repertoire, each one annotated with the elements and concepts it demonstrates."
 ---
 
 Full scores demonstrating ThaiMusicXML concepts in context.

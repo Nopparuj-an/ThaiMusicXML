@@ -1,6 +1,6 @@
 ---
 title: <parenthesis>
-description: Marks a note/rest span as cued rather than played
+description: "Marks a span of notes and rests as cued rather than played, where the part waits for another instrument to carry the passage."
 ---
 
 The `<parenthesis>` element marks a span of sibling [`<note>`](/en/v1_0/reference/elements/note/) and [`<rest>`](/en/v1_0/reference/elements/rest/) elements as cued, not played: the part waits for another instrument in a leader/follower relationship to carry that passage.

@@ -1,6 +1,6 @@
 ---
 title: <repeat>
-description: Plays a run of sections more than once
+description: "Wraps a run of the score's structure and plays it more than once. Repeats nest, so a piece can be built from layers of them."
 ---
 
 The `<repeat>` element wraps a run of `<structure>` content and plays it more than once. Repeats nest, so a piece can be built from layers of them.

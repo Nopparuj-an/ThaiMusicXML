@@ -1,6 +1,6 @@
 ---
 title: <syllable>
-description: One syllable of a lyric line
+description: "One syllable of เนื้อร้อง, written the way it should be read, in a part whose type is lyric."
 ---
 
 The `<syllable>` element holds one syllable of เนื้อร้อง.

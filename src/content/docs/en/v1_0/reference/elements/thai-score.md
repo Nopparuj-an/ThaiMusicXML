@@ -1,6 +1,6 @@
 ---
 title: <thai-score>
-description: Root element of a ThaiMusicXML document
+description: "The root element of every ThaiMusicXML document, carrying the namespace and the schema version the file follows."
 sidebar:
   order: 2
 ---

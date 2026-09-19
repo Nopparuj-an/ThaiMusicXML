@@ -1,6 +1,6 @@
 ---
 title: <bpm>
-description: Sets the tempo in beats per minute
+description: "Sets the tempo in beats per minute, where one bpm beat is half a measure. Every measure lasts the same time whatever its beat count."
 ---
 
 The `<bpm>` element sets the tempo in beats per minute.

@@ -1,6 +1,6 @@
 ---
 title: <line-repeat>
-description: Repeats a range of lines inside one section
+description: "Repeats a consecutive range of lines within a section, without repeating the section as a whole."
 ---
 
 The `<line-repeat>` element repeats a consecutive range of lines within a section, without repeating the section as a whole.

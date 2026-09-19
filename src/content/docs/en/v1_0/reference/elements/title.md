@@ -1,6 +1,6 @@
 ---
 title: <title>
-description: The title of the musical piece
+description: "The title of the musical piece. Exactly one is required in every score header."
 ---
 
 The `<title>` element contains the title of the musical piece.

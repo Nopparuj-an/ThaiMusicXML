@@ -1,6 +1,6 @@
 ---
 title: <section-ref>
-description: References a section and contains its music data
+description: "Holds one part's music for a section the score's structure declared, as lines of measures, plus any variant endings."
 ---
 
 The `<section-ref>` element references a section and contains its music data.

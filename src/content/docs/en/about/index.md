@@ -1,6 +1,6 @@
 ---
 title: About ThaiMusicXML
-description: About ThaiMusicXML
+description: "What ThaiMusicXML records and why: scale degrees over fixed pitches, the eight-measure grid, rests as no new stroke, and the debt the format owes MusicXML."
 ---
 
 ## Project Vision

@@ -1,6 +1,6 @@
 ---
 title: <annotation>
-description: A free-form comment ignored during playback
+description: "A free-form comment ignored during playback. Its scope comes from where it sits: the whole score, one part's section, or a single line."
 ---
 
 The `<annotation>` element contains a free-form comment that is ignored during playback. It holds either one text value or up to three aligned text values on the same line.

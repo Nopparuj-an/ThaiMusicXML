@@ -1,6 +1,6 @@
 ---
 title: <tuning>
-description: The pitch reference the score is written against
+description: "States what absolute pitch the scale degrees stand for. Without it a score says what to play relative to the ensemble, but not at what pitch."
 ---
 
 The `<tuning>` element states what absolute pitch the scale degrees in this score stand for.

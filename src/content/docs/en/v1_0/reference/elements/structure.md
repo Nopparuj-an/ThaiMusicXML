@@ -1,6 +1,6 @@
 ---
 title: <structure>
-description: Defines the score layout with sections, directions, and annotations
+description: "Defines the score layout: which sections are played, in what order, how often, and with what directions along the way."
 ---
 
 The `<structure>` element defines the score layout: which sections are played, in what order, how often, and with what directions along the way.

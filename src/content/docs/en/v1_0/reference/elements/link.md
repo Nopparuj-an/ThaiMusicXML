@@ -1,6 +1,6 @@
 ---
 title: <link>
-description: Marks a span of notes as one connected gesture
+description: "Marks a span of notes as one connected gesture, สะบัด, and asks for a curve drawn above the notation saying so."
 ---
 
 The `<link>` element marks a span of notes as one connected gesture, and asks for a curve saying so.

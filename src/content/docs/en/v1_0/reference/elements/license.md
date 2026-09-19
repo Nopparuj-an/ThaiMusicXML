@@ -1,6 +1,6 @@
 ---
 title: <license>
-description: The terms the score is published under
+description: "States the terms the score is published under. The terms cover the transcription as a document, not the traditional music it records."
 ---
 
 The `<license>` element states the terms this score is published under.

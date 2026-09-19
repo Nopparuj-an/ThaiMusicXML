@@ -1,6 +1,6 @@
 ---
 title: <composer>
-description: The composer or attribution of the piece
+description: "Identifies the composer or attribution of the piece. The text prints exactly as typed, centered, or split into up to three aligned runs."
 ---
 
 The `<composer>` element identifies the composer or attribution of the piece.

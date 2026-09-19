@@ -1,6 +1,6 @@
 ---
 title: <part>
-description: Defines a single instrument in the ensemble
+description: "Declares that an instrument exists in the ensemble, with its type, name, and whether it stacks with another row. It holds no notes."
 ---
 
 The `<part>` element defines a single instrument in the ensemble.

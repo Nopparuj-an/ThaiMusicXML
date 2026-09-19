@@ -1,6 +1,6 @@
 ---
 title: <play>
-description: Plays a section again later in the piece, without a second copy of its music
+description: "Plays a section again later in the score, taking another place in the play order without a second copy of its music."
 ---
 
 The `<play>` element plays a section again at a later point in the score.

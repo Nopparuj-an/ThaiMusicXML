@@ -1,6 +1,6 @@
 ---
 title: <rest>
-description: A beat with no new attack
+description: "One beat on which the instrument plays nothing new. Thai instruments have no notated sustain, so a rest is no attack rather than silence."
 ---
 
 The `<rest>` element occupies one beat on which the instrument plays nothing new.

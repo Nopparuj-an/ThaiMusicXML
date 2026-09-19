@@ -1,6 +1,6 @@
 ---
 title: <direction>
-description: Performance directions for the score
+description: "Carries performance directions for the score: the หน้าทับ cycle, the ชั้น layer, and the tempo in beats per minute."
 ---
 
 The `<direction>` element contains performance directions for the score.

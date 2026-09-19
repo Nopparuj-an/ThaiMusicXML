@@ -1,6 +1,6 @@
 ---
 title: <measure>
-description: A single measure (ห้อง) containing notes and rests
+description: "A single measure (ห้อง) holding one part's notes and rests. Every part agrees on how many beats a given measure has."
 ---
 
 The `<measure>` element contains the notes and rests in a single measure (ห้อง).

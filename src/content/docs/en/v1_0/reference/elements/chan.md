@@ -1,6 +1,6 @@
 ---
 title: <chan>
-description: Sets the ชั้น (chan) rhythmic layer level
+description: "Sets the ชั้น (chan) rhythmic layer, which determines rhythmic density. One of five levels, from ครึ่งชั้น through ชั้นเดียว, สองชั้น, สามชั้น, to สี่ชั้น."
 ---
 
 The `<chan>` element sets the ชั้น (chan) rhythmic layer level.

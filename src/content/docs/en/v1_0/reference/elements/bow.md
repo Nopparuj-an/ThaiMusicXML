@@ -1,6 +1,6 @@
 ---
 title: <bow>
-description: Marks a span of notes played with one continuous bow stroke
+description: "Marks a span of notes played with one continuous bow stroke, without changing direction. A span may cross measures and lines, but not sections."
 ---
 
 The `<bow>` element marks a span of sibling [`<note>`](/en/v1_0/reference/elements/note/) elements played with one continuous bow stroke on a stringed instrument, without changing direction across the span.
