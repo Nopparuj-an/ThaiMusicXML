@@ -7,10 +7,11 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/generate-llms.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "check:links": "node scripts/check-docs-links.mjs",
+    "generate:llms": "node scripts/generate-llms.mjs",
     "check:corpus": "node scripts/check-corpus.mjs",
     "check:layout": "node --test \"renderer/test/*.test.mjs\"",
     "check:convert": "node --test \"converter/test/*.test.mjs\"",
