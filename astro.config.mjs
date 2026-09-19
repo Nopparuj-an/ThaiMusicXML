@@ -2,10 +2,13 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
+import { lastmodForUrl } from "./scripts/doc-lastmod.mjs";
+
+const site = "https://thaimusicxml.anan.ovh";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://thaimusicxml.anan.ovh",
+  site,
   integrations: [
     starlight({
       title: "ThaiMusicXML",
@@ -194,7 +197,17 @@ export default defineConfig({
       ],
     }),
     sitemap({
-      filter: (page) => page !== "https://thaimusicxml.anan.ovh/",
+      // The root is the language gateway; /en/ and /th/ are the real entries.
+      filter: (page) => page !== `${site}/`,
+      // Emits xhtml:link alternates so each URL declares its translation.
+      i18n: {
+        defaultLocale: "en",
+        locales: { en: "en", th: "th" },
+      },
+      serialize: (item) => {
+        const lastmod = lastmodForUrl(item.url, site);
+        return lastmod ? { ...item, lastmod } : item;
+      },
     }),
   ],
 });
