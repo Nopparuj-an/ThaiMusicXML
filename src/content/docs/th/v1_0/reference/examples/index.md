@@ -15,7 +15,7 @@ description: โน้ตเพลง ThaiMusicXML ฉบับสมบูร�
 - [`<ensemble>`](/th/v1_0/reference/elements/ensemble/), [`<part>`](/th/v1_0/reference/elements/part/), และ [`<part-data>`](/th/v1_0/reference/elements/part-data/) สำหรับเครื่องดนตรีหลายตัวที่ใช้ท่อนเดียวกัน
 - แอตทริบิวต์ `stack` และ `row` ของ `<part>` ที่เชื่อมฆ้องวงใหญ่ R และ L เป็นสองแถวของเครื่องดนตรีเดียว
 - เนื้อหา [`<section-ref>`](/th/v1_0/reference/elements/section-ref/) หลายบรรทัดที่ซิงค์ข้ามพาร์ต
-- ระดับเสียง [`<note>`](/th/v1_0/reference/elements/note/) ที่ใช้ตัวปรับ octaves ของไทย (นิคหิตและพินทุ)
+- ระดับเสียง [`<note>`](/th/v1_0/reference/elements/note/) ที่ใช้เครื่องหมายกำกับ octaves ของไทย (นิคหิตและพินทุ)
 - [`<rest>`](/th/v1_0/reference/elements/rest/)
 - [`<group>`](/th/v1_0/reference/elements/group/) ที่แบ่งจังหวะเป็นสามส่วน พร้อมช่วง [`<link>`](/th/v1_0/reference/elements/link/) ที่เชื่อมสะบัดกับโน้ตของอีกแถว
 
@@ -25,7 +25,7 @@ description: โน้ตเพลง ThaiMusicXML ฉบับสมบูร�
 
 - [`<section>`](/th/v1_0/reference/elements/section/) สี่ส่วนที่แบ่งตรงจุดแยกทางที่ต้นฉบับกำกับไว้ด้วยสัญญาณสด แต่ละจุดถ่ายทอดมาเป็น [`<annotation>`](/th/v1_0/reference/elements/annotation/) แทนที่จะเข้ารหัสเป็นการเล่นซ้ำ
 - แอตทริบิวต์ `stack` และ `row` ของ `<part>` ที่เชื่อมฆ้องวงใหญ่ R และ L เป็นสองแถวของเครื่องดนตรีเดียว
-- โน้ตยาวที่เขียนโดยไม่มีตัวปรับ octave ของไทยเลยสักตัว
+- โน้ตยาวที่เขียนโดยไม่มีเครื่องหมายกำกับ octave ของไทยเลยสักตัว
 - [`<rest>`](/th/v1_0/reference/elements/rest/) โดยไม่มี [`<direction>`](/th/v1_0/reference/elements/direction/) เลย
 
 ## [ชื่นชุมนุม - กลุ่มดนตรี](/th/v1_0/reference/examples/chuen-chumnum/)
@@ -35,7 +35,7 @@ description: โน้ตเพลง ThaiMusicXML ฉบับสมบูร�
 - [`<direction>`](/th/v1_0/reference/elements/direction/) ที่ตั้งเฉพาะ [`<chan>`](/th/v1_0/reference/elements/chan/) โดยไม่มี [`<bpm>`](/th/v1_0/reference/elements/bpm/)
 - สองเพลงในไฟล์เดียวเป็น [`<section>`](/th/v1_0/reference/elements/section/) สองส่วน โดย `name` ของแต่ละส่วนใช้ภายในไฟล์เท่านั้น ส่วนหัวข้อที่พิมพ์บนโน้ตมาจาก [`<annotation>`](/th/v1_0/reference/elements/annotation/) แบบกึ่งกลางใน `<structure>` แทน
 - [`<br>`](/th/v1_0/reference/elements/br/) เว้นที่ว่างก่อนหัวข้อแต่ละอัน
-- ระดับเสียง [`<note>`](/th/v1_0/reference/elements/note/) ที่ใช้ตัวปรับ octave เฉพาะนิคหิต ไม่มีพินทุ
+- ระดับเสียง [`<note>`](/th/v1_0/reference/elements/note/) ที่ใช้เครื่องหมายกำกับ octave เฉพาะนิคหิต ไม่มีพินทุ
 - ช่วง [`<bow>`](/th/v1_0/reference/elements/bow/) ที่กำกับการสีต่อเนื่องหนึ่งจังหวะคันชัก รวมถึงช่วงที่มีโน้ตเดียวและช่วงที่ข้ามเส้นห้อง
 
 ## [โหมโรงจอมสุรางค์](/th/v1_0/reference/examples/chomsurang/)
