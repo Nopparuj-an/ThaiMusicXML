@@ -17,7 +17,7 @@ description: โน้ตเพลง ThaiMusicXML ฉบับสมบูร�
 - เนื้อหา [`<section-ref>`](/th/v1_0/reference/elements/section-ref/) หลายบรรทัดที่ซิงค์ข้ามพาร์ต
 - ระดับเสียง [`<note>`](/th/v1_0/reference/elements/note/) ที่ใช้ตัวปรับ octaves ของไทย (นิคหิตและพินทุ)
 - [`<rest>`](/th/v1_0/reference/elements/rest/)
-- [`<group>`](/th/v1_0/reference/elements/group/) ที่แบ่งจังหวะเป็นสามส่วน พร้อมช่วง [`<link>`](/th/v1_0/reference/elements/link/) ที่เชื่อมการรัวกับโน้ตของอีกแถว
+- [`<group>`](/th/v1_0/reference/elements/group/) ที่แบ่งจังหวะเป็นสามส่วน พร้อมช่วง [`<link>`](/th/v1_0/reference/elements/link/) ที่เชื่อมสะบัดกับโน้ตของอีกแถว
 
 ## [สาธุการ](/th/v1_0/reference/examples/sathukan/)
 

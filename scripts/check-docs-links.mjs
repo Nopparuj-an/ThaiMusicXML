@@ -72,9 +72,17 @@ const pages = new Map(); // slug -> Set of anchors
 
 for (const file of files) {
   const body = stripFences(readFileSync(file, "utf8"));
-  const anchors = new Set(
-    [...body.matchAll(/^#{1,6}\s+(.+?)\s*$/gm)].map((m) => slugify(m[1])),
-  );
+  // Two headings that slugify the same get "-1", "-2" and so on appended, in
+  // document order, the way github-slugger numbers a repeat. A page with both
+  // a MusicXML and a MIDI "### Pitch" really does have #pitch and #pitch-1.
+  const anchors = new Set();
+  const seen = new Map();
+  for (const [, heading] of body.matchAll(/^#{1,6}\s+(.+?)\s*$/gm)) {
+    const base = slugify(heading);
+    const n = seen.get(base) ?? 0;
+    seen.set(base, n + 1);
+    anchors.add(n === 0 ? base : `${base}-${n}`);
+  }
   pages.set(pageSlug(file).replace(/\/$/, ""), anchors);
 }
 
@@ -116,9 +124,12 @@ const report = (file, link, reason) => problems.push({ file, link, reason });
 
 for (const file of files) {
   const body = stripFences(readFileSync(file, "utf8"));
-  for (const [, link] of body.matchAll(/\]\((\/[^)\s]*)\)/g)) {
+  // Absolute links carry their own page; a bare "#anchor" is same-page, and
+  // resolves against the file it was written in.
+  const self = pageSlug(file).replace(/\/$/, "");
+  for (const [, link] of body.matchAll(/\]\(((?:\/|#)[^)\s]*)\)/g)) {
     const [rawPath, anchor] = link.split("#");
-    const slug = rawPath.replace(/\/$/, "");
+    const slug = rawPath === "" ? self : rawPath.replace(/\/$/, "");
     const target = resolve(slug);
     if (!target) report(file, link, "no such page");
     else if (anchor && !pages.get(target).has(anchor))
