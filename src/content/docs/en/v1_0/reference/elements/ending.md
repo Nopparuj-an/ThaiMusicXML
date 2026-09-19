@@ -82,6 +82,10 @@ A [lyric part](/en/v1_0/reference/elements/part/#part-types) takes an `<ending>`
 
 The "unchanged measure" shorthand above is the one thing that does not carry over. An empty measure in a lyric part already means nothing is sung there, and it keeps that meaning inside an `<ending>`.
 
+### Varying the chords
+
+A [chord part](/en/v1_0/reference/elements/chord/) works the same way. Its replacement line matches the line it replaces on measure count, and each measure holds no more items than that measure has beats, on the second pass as on the first. An empty measure keeps its own meaning here too: the chord already sounding carries on, rather than the replaced measure's content coming back.
+
 ### Spans across an overridden line
 
 [`<bow>`](/en/v1_0/reference/elements/bow/), [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/), and [`<link>`](/en/v1_0/reference/elements/link/) markers pair up in the order the lines are read once a pass is resolved, which is not the same as their order in the file. An `<ending>` sits after all the regular lines in the document but stands in for one of them, so the two orders come apart wherever a span reaches into a line an ending overrides.

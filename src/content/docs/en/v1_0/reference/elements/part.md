@@ -1,11 +1,11 @@
 ---
 title: <part>
-description: "Declares that an instrument exists in the ensemble, with its type, name, and whether it stacks with another row. It holds no notes."
+description: "Declares that a part exists in the ensemble, with its type, name, and whether it stacks with another row. It holds no notes."
 ---
 
 The `<part>` element defines a single instrument in the ensemble.
 
-`<part>` declares that an instrument exists and describes its type, name, and whether it stacks with another row. It holds no notes.
+`<part>` declares that a row of the score exists and describes its type, name, and whether it stacks with another row. It holds no notes. Most rows are instruments; the [text types](#text-parts) are the exception.
 
 ## Parent
 
@@ -16,8 +16,8 @@ The `<part>` element defines a single instrument in the ensemble.
 | Attribute | Required | Type   | Description                                                                             |
 | --------- | -------- | ------ | ---------------------------------------------------------------------------------------- |
 | `id`      | Yes      | ID     | Unique identifier. Referenced by `<part-data part="...">`.                               |
-| `type`    | No       | string | `"pitched"`, `"unpitched"`, or `"lyric"`. Determines what this part's measures hold. Default: `"pitched"`. |
-| `stack`   | No       | string | Joins this part to the other rows of the same instrument. Parts sharing a `stack` value read as one instrument. Omit for single-row instruments and for lyric parts. See [Conformance](#conformance) below. |
+| `type`    | No       | string | `"pitched"`, `"unpitched"`, `"lyric"`, or `"chord"`. Determines what this part's measures hold. Default: `"pitched"`. |
+| `stack`   | No       | string | Joins this part to the other rows of the same instrument. Parts sharing a `stack` value read as one instrument. Omit for single-row instruments and for lyric and chord parts. See [Conformance](#conformance) below. |
 | `row`     | If `stack` is present | integer | This part's position within the stack, counting from `1` at the top. See [Conformance](#conformance) below. |
 
 ## Children
@@ -54,6 +54,12 @@ The `<part>` element defines a single instrument in the ensemble.
 </part>
 ```
 
+```xml
+<part id="P6" type="chord">
+  <instrument-name>คอร์ด</instrument-name>
+</part>
+```
+
 ## Part types
 
 `type` says what a part's measures hold, and each value takes a different element:
@@ -63,12 +69,15 @@ The `<part>` element defines a single instrument in the ensemble.
 | `pitched` | [`<note>`](/en/v1_0/reference/elements/note/), [`<rest>`](/en/v1_0/reference/elements/rest/), [`<group>`](/en/v1_0/reference/elements/group/) | `pitch` |
 | `unpitched` | the same | `sound` |
 | `lyric` | [`<syllable>`](/en/v1_0/reference/elements/syllable/), `<rest>` | n/a |
+| `chord` | [`<chord>`](/en/v1_0/reference/elements/chord/), `<rest>` | n/a |
 
-A lyric part is an ordinary single-row part. It takes its own row in the grid, it sits wherever it is listed in [`<ensemble>`](/en/v1_0/reference/elements/ensemble/), and where that is depends on how the score is laid out rather than on any rule here: above the instruments, below them, or between two of them. Its `<instrument-name>` is conventionally `เนื้อร้อง` or `ร้อง`, and like every other part name it labels the row for an editor rather than printing.
+## Text parts
 
-One thing does set it apart. Every other part agrees with the rest of the score on beat count within a measure, and a lyric part does not have to. A vocal line often does not divide the way the melody does, so a lyric measure holds whatever the words need and the item count decides whether the syllables align to beats or sit centered in the cell. See [`<syllable>`](/en/v1_0/reference/elements/syllable/#counting).
+Two of the four types hold text rather than music: `lyric` and `chord`. Both are ordinary single-row parts. Each takes its own row in the grid, and sits wherever it is listed in [`<ensemble>`](/en/v1_0/reference/elements/ensemble/), which depends on how the score is laid out rather than on any rule here: above the instruments, below them, or between two of them. A lyric part's `<instrument-name>` is conventionally `เนื้อร้อง` or `ร้อง` and a chord part's `คอร์ด`, and like every other part name it labels the row for an editor rather than printing.
 
-Nothing automatically joins a lyric part to the music it belongs with. Placement is the mechanism: if the words go under ระนาดเอก, list them under ระนาดเอก. A lyric part takes no `stack`: a stack is one instrument's own rows, and words are not a region of an instrument, so the words sit beside a stack rather than inside it.
+One thing sets both apart. Every other part agrees with the rest of the score on beat count within a measure, and neither of these has to. A vocal line often does not divide the way the melody does, so a lyric measure holds whatever the words need and the item count decides whether the syllables align to beats or sit centered in the cell. A chord measure holds one item per beat it claims and no more, flushed against the end of the measure, so a measure of one chord is a measure that changes chord once. See [`<syllable>`](/en/v1_0/reference/elements/syllable/#counting) and [`<chord>`](/en/v1_0/reference/elements/chord/#counting).
+
+Nothing automatically joins either kind of part to the music it belongs with. Placement is the mechanism: if the words go under ระนาดเอก, list them under ระนาดเอก. Neither takes a `stack`, because a stack is one instrument's own rows, and words and chord symbols are not a region of an instrument. They sit beside a stack rather than inside it.
 
 ## Stacked instruments
 
@@ -82,7 +91,7 @@ Three rows is the most seen in practice. Nothing caps it.
 
 ## Notes
 
-- `type` describes the part, not any particular performance. It is declared once here and never repeated in `<part-data>`. A lyric part is the one value that is not an instrument at all, which is a stretch of the word `<ensemble>` worth knowing about: reusing `<part>` is what gives a lyric line the whole line and measure grid for free.
+- `type` describes the part, not any particular performance. It is declared once here and never repeated in `<part-data>`. The two text types are not instruments at all, which is a stretch of the word `<ensemble>` worth knowing about: reusing `<part>` is what gives a line of words or of chord symbols the whole line and measure grid for free.
 - See [`<note>`](/en/v1_0/reference/elements/note/) for how `type` determines which attribute a note uses.
 - `stack` describes the instrument too. See [`<ensemble>`](/en/v1_0/reference/elements/ensemble/#rendering) for how it affects rendering, and [`<link>`](/en/v1_0/reference/elements/link/) for the cross-row curve it enables.
 - A stack's parts sit together in `<ensemble>`, in row order. Their `<part-data>` is unaffected and still references each part on its own by `id`.
@@ -90,10 +99,11 @@ Three rows is the most seen in practice. Nothing caps it.
 ## Conformance
 
 - Every `<part>` must have exactly one matching [`<part-data>`](/en/v1_0/reference/elements/part-data/#conformance).
-- `type` must be `"pitched"`, `"unpitched"`, or `"lyric"`. Validators must reject any other value.
+- `type` must be `"pitched"`, `"unpitched"`, `"lyric"`, or `"chord"`. Validators must reject any other value.
 - A `type="lyric"` part's measures must hold only [`<syllable>`](/en/v1_0/reference/elements/syllable/#conformance) and `<rest>` children, and are exempt from the beat-count agreement in [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
+- A `type="chord"` part's measures must hold only [`<chord>`](/en/v1_0/reference/elements/chord/#conformance) and `<rest>` children, with no more items than the measure has beats, and are exempt from that same agreement.
 - `stack` and `row` must appear together: a `<part>` with `stack` must also have `row`, and a `<part>` with `row` must also have `stack`.
 - A `stack` value must be shared by at least two `<part>` elements. One part alone is a single-row instrument and carries neither attribute.
-- A `type="lyric"` part must not carry `stack` or `row`. Every row of a stack is a notated part.
+- A `type="lyric"` or `type="chord"` part must not carry `stack` or `row`. Every row of a stack is a notated part.
 - The `row` values within one stack must run from `1` upward with no gaps and no repeats.
 - A stack's `<part>` elements must be adjacent in [`<ensemble>`](/en/v1_0/reference/elements/ensemble/), in ascending `row` order. `row` must match position the way `number` does on [`<line>`](/en/v1_0/reference/elements/line/) and [`<measure>`](/en/v1_0/reference/elements/measure/).

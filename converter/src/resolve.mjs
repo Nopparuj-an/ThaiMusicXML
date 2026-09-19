@@ -13,6 +13,7 @@
 
 import { DOMParser } from "#dom-parser";
 import { parse } from "../../renderer/src/parse.mjs";
+import { isTextPart } from "../../renderer/src/parts.mjs";
 import { frac, add, subtract, compare, ZERO } from "./fraction.mjs";
 
 const NS = "https://thaimusicxml.anan.ovh/ns/1";
@@ -407,12 +408,12 @@ export function resolve(source, { warn = () => {} } = {}) {
     parsed.sections.map((s) => [s.id, s.lineRepeats]),
   );
 
-  /** Other notated rows of the same <ensemble> stack - a lyric row has no beats to strike, so it's excluded, per link.md. */
+  /** Other notated rows of the same <ensemble> stack - a text row has no beats to strike, so it's excluded, per link.md. */
   function siblingIdsOf(partId) {
     const part = parsed.parts.find((p) => p.id === partId);
     if (!part?.stack) return [];
     return parsed.parts
-      .filter((p) => p.stack === part.stack && p.id !== partId && p.type !== "lyric")
+      .filter((p) => p.stack === part.stack && p.id !== partId && !isTextPart(p.type))
       .map((p) => p.id);
   }
 
@@ -445,8 +446,8 @@ export function resolve(source, { warn = () => {} } = {}) {
    * entirely") in lockstep with the rest of the ensemble. section-ref's own
    * Conformance rule guarantees every part that *does* reference a section
    * agrees on this shape, so any one of them is an equally valid stand-in;
-   * a lyric part is skipped as a candidate since its measures hold syllable
-   * items rather than beats and have no comparable shape to borrow. `null`
+   * a lyric or chord part is skipped as a candidate since its measures hold
+   * text items rather than beats and have no comparable shape to borrow. `null`
    * only when no notated part anywhere references the section either - a
    * section that exists in `<structure>` but nothing ever plays.
    */
@@ -464,7 +465,7 @@ export function resolve(source, { warn = () => {} } = {}) {
 
   function referenceSectionResolution(sectionId, totalPasses) {
     const candidate = parsed.parts.find(
-      (p) => p.type !== "lyric" && parsed.music[p.id]?.[sectionId],
+      (p) => !isTextPart(p.type) && parsed.music[p.id]?.[sectionId],
     );
     return candidate ? resolveSection(candidate.id, sectionId, totalPasses) : null;
   }

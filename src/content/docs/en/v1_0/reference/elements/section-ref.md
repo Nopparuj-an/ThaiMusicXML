@@ -39,6 +39,8 @@ All `<section-ref>` elements referencing the same `<section>` must agree on thre
 
 A [lyric part](/en/v1_0/reference/elements/part/#part-types) is bound by the first two counts and exempt from the third. It shares the line and measure grid like everything else, but its measures hold as many items as the words need rather than one per beat, so there is no beat count to compare. A lyric part also takes no part in the comparison for other parts: a four-beat measure stays a four-beat measure whatever the lyric row above it contains.
 
+A [chord part](/en/v1_0/reference/elements/chord/) has the same exemption, with one string attached. It contributes nothing to the beat count either, but its own item count is read against the count the notated parts settled on and must not exceed it, since every chord symbol claims a beat. See [`<chord>`](/en/v1_0/reference/elements/chord/#counting-against-the-music).
+
 Within a measure, how a part fills its beats is its own business. A measure's beat count is the number of its `<note>`, `<rest>`, and `<group>` children, so one part may play four notes where another plays a note, two rests, and a `<group>` of three. All four still add up to four beats. See [`<measure>`](/en/v1_0/reference/elements/measure/#beats).
 
 If the section repeats, the rule applies per resolved pass. Resolve every part's [`<ending>`](/en/v1_0/reference/elements/ending/) overrides first, then compare counts across parts.

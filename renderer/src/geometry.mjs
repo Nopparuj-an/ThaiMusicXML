@@ -192,13 +192,14 @@ export function nudge(targets, widths, gap, lo, hi) {
 }
 
 /**
- * The largest type size a measure's syllables all fit into its cell at.
+ * The largest type size a measure's printing text items - syllables in a lyric
+ * row, symbols in a chord row - all fit into its cell at.
  *
  * Widths, the gaps between them and the padding at the cell's edges all scale
  * with the size, so the answer is one division rather than a search. Returns
  * Infinity for a measure with nothing to fit, which then constrains nothing.
  */
-export function lyricFitSize(texts, cellWidth, settings) {
+export function textFitSize(texts, cellWidth, settings) {
   if (texts.length === 0) return Infinity;
   const perSize =
     texts.reduce((total, text) => total + textWidth(text, 1), 0) +

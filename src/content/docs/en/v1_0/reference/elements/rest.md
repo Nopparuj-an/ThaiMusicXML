@@ -13,6 +13,8 @@ Thai instruments have no notated sustain. A `<rest>` means only that no note is 
 
 A `<measure>` in a [lyric part](/en/v1_0/reference/elements/part/#part-types) takes `<rest>` too, where it means no new syllable begins. The vowel already being sung carries on, which is เอื้อน, and it is the same reading as above: no new attack, not silence. See [`<syllable>`](/en/v1_0/reference/elements/syllable/#เอื้อน-and-gaps).
 
+A `<measure>` in a chord part takes `<rest>` as well, and there it is the one place the element is only spacing. It holds a beat so that the symbols beside it land where the arranger wants them, and prints nothing. See [`<chord>`](/en/v1_0/reference/elements/chord/#counting).
+
 ## Attributes
 
 | Attribute | Required | Type | Description |

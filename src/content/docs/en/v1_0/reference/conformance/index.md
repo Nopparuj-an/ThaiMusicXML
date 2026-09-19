@@ -343,7 +343,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - A `<part-data>`'s `<section-ref>` elements may also appear in any order, and that order means nothing. What order the sections play in is `<structure>`'s to say; a `<section-ref>` only says which section a run of lines belongs to.
 - A `<section>` that no `<part-data>` references has no music. It is not played, contributes no rows to the page, and the rules below that count its lines and measures do not apply to it.
 - A `<part>` with `stack` must also have `row`, and vice versa. A `stack` value must be shared by at least two parts, their `row` values must run from `1` upward with no gaps or repeats, and they must be adjacent in `<ensemble>` in ascending `row` order.
-- A `type="lyric"` part must not carry `stack` or `row`. A stack is one instrument's own rows, and words are not a region of an instrument.
+- A `type="lyric"` or `type="chord"` part must not carry `stack` or `row`. A stack is one instrument's own rows, and neither words nor chord symbols are a region of an instrument.
 
 :::danger[Rejected]
 
@@ -370,6 +370,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 
 <!-- ✗ rejected: a lyric part joining a stack -->
 <part id="P5" type="lyric" stack="khong" row="3">...</part>
+
+<!-- ✗ rejected: so does a chord part, for the same reason -->
+<part id="P6" type="chord" stack="khong" row="3">...</part>
 
 <!-- ✗ rejected: row values with a gap (1, 3, not 1, 2) -->
 <part id="P3" stack="khong" row="1">...</part>
@@ -402,9 +405,10 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 
 - All `<section-ref>` elements referencing the same `<section>` must agree on line count, on measure count per line, and on beat count per measure. Validators must reject documents that violate this.
 - A `type="lyric"` part is bound by line count and measure count per line, and exempt from beat count per measure. Its measures hold any number of items, and it is excluded from the comparison other parts are held to.
+- A `type="chord"` part has the same exemption and one limit on top of it: its measures must hold no more items than the corresponding measure has beats in the notated parts, since every item claims a beat. It is likewise excluded from the comparison other parts are held to.
 - A `<line>` must hold one to eight `<measure>` elements.
 - `number` on `<line>` and `<measure>` must match position, counting from `1`, in ascending order.
-- A measure in a pitched or unpitched part must hold at least one `<note>`, `<rest>`, or `<group>`. A lyric measure may be empty.
+- A measure in a pitched or unpitched part must hold at least one `<note>`, `<rest>`, or `<group>`. A lyric measure may be empty, and so may a chord measure.
 - A `<group>` must hold at least two `<note>` or `<rest>` children, and must not contain another `<group>`.
 - A beat arrives on its last slot, so a `<group>`'s final child falls on the beat and the earlier ones space backwards from it within the beat's own span. A group can never reach outside its beat, and so never outside its measure. See [`<group>`](/en/v1_0/reference/elements/group/#why-a-group-cannot-leave-its-measure).
 
@@ -469,6 +473,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 
 <!-- valid: a lyric measure may be empty -->
 <measure number="2"></measure>
+
+<!-- valid: three chord symbols under a four-beat measure, so they take beats 2, 3, 4 -->
+<measure number="1"><chord>Am</chord><chord>F</chord><chord>G</chord></measure>
 ```
 
 :::
@@ -481,6 +488,7 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 - Two `<line-repeat>` ranges in one section must be properly nested or wholly disjoint.
 - `<ending>` is valid only when the section's total pass count exceeds `1`. Every `pass` value must fall within that count, every `<line number="N">` must replace an existing line, and the replacement must match the original's measure count. In a notated part it must match the beat counts too - except that a measure left completely empty means "unchanged from the line being replaced", regardless of that measure's own beat count. See [`<ending>`'s "Unchanged measures"](/en/v1_0/reference/elements/ending/#unchanged-measures).
 - A lyric part's `<ending>` matches on measure count alone, the same exemption it has everywhere else. See [Varying the words](/en/v1_0/reference/elements/ending/#varying-the-words).
+- A chord part's `<ending>` matches on measure count, and each replacement measure is held to the same item ceiling as any other chord measure. An empty measure there means the chord carries on, not that the replaced measure's content returns.
 - An `<ending>`'s lines must form a consecutive run ending on the section's last line. An ending over the middle of a section is invalid, since the section would carry on normally afterwards and so would not be ending on the variation.
 - Every `<ending>` must carry at least one `<annotation>` captioning the variation.
 
@@ -559,8 +567,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 
 ### Notes and pitch
 
-- `type` on a `<part>` must be `"pitched"`, `"unpitched"`, or `"lyric"`. Validators must reject any other value.
-- A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part. `<note>`, `<group>`, `<bow>`, `<parenthesis>`, and `<link>` are not valid in a lyric part, and `<syllable>` is not valid outside one.
+- `type` on a `<part>` must be `"pitched"`, `"unpitched"`, `"lyric"`, or `"chord"`. Validators must reject any other value.
+- A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part, `<chord>` and `<rest>` in a chord part. `<note>`, `<group>`, `<bow>`, `<parenthesis>`, and `<link>` are valid in neither text part; `<syllable>` and `<chord>` are each valid only in their own.
+- `<chord>` content must be a non-empty string. Nothing parses it further: root, quality, and bass note are not modelled in v1.0.
 - A note in a `pitched` part uses `pitch`; one in an `unpitched` part uses `sound`. The two are mutually exclusive.
 - `pitch` must be one of the seven base-note characters in any of the three spellings, optionally followed by one Thai octave modifier. Validators must reject any other value. See [Lexical types](#pitch).
 - A romanized base note may be written in upper or lower case. Case carries no meaning, and the renderer decides which case appears on the page.
@@ -590,6 +599,11 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- ✗ rejected: a lyric part carrying stack -->
 <part id="P1" stack="khong" row="1">...</part>
 <part id="P2" stack="khong" row="2" type="lyric">...</part>
+
+<!-- ✗ rejected: five chord symbols where the notated parts have four beats -->
+<part id="P3" type="chord">...</part>
+<!-- ... -->
+<measure number="1"><chord>C</chord><chord>Am</chord><chord>F</chord><chord>G</chord><chord>C</chord></measure>
 ```
 
 :::

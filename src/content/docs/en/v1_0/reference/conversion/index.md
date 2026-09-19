@@ -31,6 +31,7 @@ Both targets fit a fixed-rate slot grid with no notated sustain into a model bui
 | `<link>` (gesture curve) | Dropped in both formats; it marks the page, not the sound | [Bowing](#bowing) |
 | A `pitch`/`sound` value that doesn't match its part's declared type | Converts as a rest, with a warning, rather than sounding on the wrong kind of channel or notehead | [Unpitched and lyric parts](#unpitched-and-lyric-parts) |
 | Lyric part pairing to a notated part (MusicXML only) | The first lyric part (ensemble order) pairs to the first notated part or stack; a command-line option states an explicit pairing, or turns lyric export off entirely | [Unpitched and lyric parts](#unpitched-and-lyric-parts) |
+| Chord parts, either format | Dropped, with a warning | [Chord parts](#chord-parts) |
 
 ## Pitch
 
@@ -115,6 +116,14 @@ A [lyric part](/en/v1_0/reference/elements/part/#part-types) converts to MusicXM
 **Pairing.** With no further input, the first lyric part in ensemble order pairs to the first notated part or stack; any further lyric part is dropped, with a warning, since guessing a second pairing has no better basis than guessing the first. A command-line option (`--lyrics-map`) states an explicit pairing instead - by part id, or, for a paired stack, a specific row's id - and replaces the default guess entirely rather than adding to it. `--no-lyrics` turns lyric export off. This applies to MusicXML only; MIDI export does not carry lyrics in v1.0.
 
 **Timing.** A syllable's position within its measure follows [`<syllable>`'s counting rule](/en/v1_0/reference/elements/syllable/#counting): item *i* of *n* lands at `beat count × i ÷ n`, which is exactly beat *i* when the item count matches the beat count, and spreads the items evenly across the measure otherwise - a defined time is needed either way for something to attach a `<lyric>` to, even where the source measure was written free of the beat grid. A `<rest>` in the lyric measure (เอื้อน: the vowel already being sung carries on) still occupies a slot in that spacing but contributes no `<lyric>` element of its own.
+
+### Chord parts
+
+A [chord part](/en/v1_0/reference/elements/chord/) does not convert in v1.0. Both exports drop it, with a warning naming the part.
+
+MusicXML's `<harmony>` wants a root step, an alteration, and a kind from a fixed list, and [`<chord>`](/en/v1_0/reference/elements/chord/#content) holds none of those. It holds the text the arranger typed. Turning `Am7/G` into that structure means writing a chord-symbol parser and settling what its spellings mean, and neither the grammar nor the prose of v1.0 defines one, so a converter that guessed would be exporting its own reading of the symbol rather than the document's. MIDI has no chord-symbol event to carry it into at all.
+
+The gap is listed in the [roadmap](/en/v1_0/updates/roadmap/#not-covered-in-v10).
 
 ## MIDI export
 

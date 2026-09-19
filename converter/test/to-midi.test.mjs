@@ -307,6 +307,26 @@ test("a lyric part is skipped with a warning rather than exported", () => {
   assert.ok(warnings.some((w) => w.includes("lyric")));
 });
 
+test("a chord part is skipped with a warning rather than exported", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1"><measure number="1"><note pitch="ด"/></measure></line>
+      </section-ref></part-data>
+      <part-data part="P2"><section-ref section="s1">
+        <line number="1"><measure number="1"><chord>Am</chord></measure></line>
+      </section-ref></part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>Melody</instrument-name></part><part id="P2" type="chord"><instrument-name>Chords</instrument-name></part>`,
+      },
+    ),
+  );
+  const warnings = [];
+  const { tracks } = readMidi(toMidi(doc, { warn: (w) => warnings.push(w) }));
+  assert.equal(tracks.length, 2); // meta + only the melody part
+  assert.ok(warnings.some((w) => w.includes("chord part \"P2\"")));
+});
+
 test("a note with sound in a part not declared unpitched converts as a rest, with a warning, rather than crashing", () => {
   // Regression: example-lao-duang-duean.txml has a stray <note sound="x"/> in
   // a part with no type="unpitched" (a real, pre-existing inconsistency in

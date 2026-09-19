@@ -11,7 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { shares, arrivals, columnX, linkSpan, layout, glyph, nudge, lyricFitSize } from "../src/layout.mjs";
+import { shares, arrivals, columnX, linkSpan, layout, glyph, nudge, textFitSize } from "../src/layout.mjs";
 import { parse } from "../src/parse.mjs";
 import { defaults } from "../src/settings.mjs";
 import { textReady, textWidth } from "../src/text.mjs";
@@ -961,6 +961,70 @@ test("a lyric measure not matching the beat count centers as one group, and a ly
   assert.notEqual(syllables[0].x, noteArrival, "the centered group makes no claim on any beat's arrival");
 });
 
+// Chord rows.
+
+const chordDoc = (chordMeasures) => `<?xml version="1.0" encoding="UTF-8"?>
+<thai-score xmlns="${NS}" version="1.0">
+  <header><title>ทดสอบ</title></header>
+  <structure><section id="s1" name="s1"/></structure>
+  <ensemble>
+    <part id="P1"/>
+    <part id="P2" type="chord"/>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+        <measure number="2"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ฟ"/></measure>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+${chordMeasures}
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>`;
+
+test("chord symbols flush right: a lone symbol lands on the measure's last beat", () => {
+  const { pages } = layout(
+    parse(chordDoc('        <measure number="1"><chord>Am</chord></measure>\n        <measure number="2"><chord>F</chord><chord>G</chord></measure>')),
+  );
+  const notes = byRole(pages[0], "symbol");
+  const chords = byRole(pages[0], "chord");
+
+  assert.deepEqual(chords.map((c) => c.text), ["Am", "F", "G"]);
+  near(chords[0].x, notes[3].x, "one symbol in a four-beat measure sits on beat 4");
+  near(chords[1].x, notes[6].x, "two symbols start on beat 3");
+  near(chords[2].x, notes[7].x, "and finish on beat 4");
+});
+
+test("a trailing rest moves a chord symbol earlier, and an empty chord measure prints nothing", () => {
+  const { pages } = layout(
+    parse(chordDoc('        <measure number="1"><rest/><chord>Am</chord><rest/><chord>G</chord></measure>\n        <measure number="2"/>')),
+  );
+  const notes = byRole(pages[0], "symbol");
+  const chords = byRole(pages[0], "chord");
+
+  assert.deepEqual(chords.map((c) => c.text), ["Am", "G"], "rests print nothing at all, not a hyphen");
+  near(chords[0].x, notes[1].x, "four items claim four beats, so Am lands on beat 2");
+  near(chords[1].x, notes[3].x, "and G on beat 4");
+});
+
+test("a chord row does not divide the cell the notated rows settled on", () => {
+  const plain = layout(parse(chordDoc('        <measure number="1"/>\n        <measure number="2"/>')));
+  const filled = layout(
+    parse(chordDoc('        <measure number="1"><chord>Cmaj7</chord><chord>Am7</chord><chord>Dm7</chord><chord>G7</chord></measure>\n        <measure number="2"/>')),
+  );
+  assert.deepEqual(
+    byRole(filled.pages[0], "symbol").map((t) => t.x),
+    byRole(plain.pages[0], "symbol").map((t) => t.x),
+    "the notes sit where they sat before the chords were written in",
+  );
+});
+
 // Fitting words into a cell.
 
 test("boxes already clear of each other are left where they were", () => {
@@ -987,11 +1051,11 @@ test("a run wider than the cell overhangs both edges equally rather than one", (
 
 test("the fitted size is the one that fills the cell exactly, gaps and padding included", () => {
   const s = defaults;
-  const size = lyricFitSize(["กก", "ขข"], 100, s);
+  const size = textFitSize(["กก", "ขข"], 100, s);
   const used =
     textWidth("กก", size) + textWidth("ขข", size) + s.lyricGap * size + 2 * s.lyricPad * size;
   near(used, 100, "the words, the gap between them and both margins add up to the cell");
-  assert.equal(lyricFitSize([], 100, s), Infinity, "a measure with no words constrains nothing");
+  assert.equal(textFitSize([], 100, s), Infinity, "a measure with no words constrains nothing");
 });
 
 test("syllables too wide for their beats shift apart, and shrink only where shifting cannot save them", () => {

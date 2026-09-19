@@ -1,6 +1,6 @@
 ---
 title: <measure>
-description: "A single measure (ห้อง) holding one part's notes and rests. Every part agrees on how many beats a given measure has."
+description: "A single measure (ห้อง) holding one part's notes and rests, or its words or chord symbols. Every notated part agrees on how many beats a given measure has."
 ---
 
 The `<measure>` element contains the notes and rests in a single measure (ห้อง).
@@ -20,7 +20,7 @@ The `<measure>` element contains the notes and rests in a single measure (ห้
 
 In a pitched or unpitched part, a sequence of [`<note>`](/en/v1_0/reference/elements/note/), [`<rest>`](/en/v1_0/reference/elements/rest/), and [`<group>`](/en/v1_0/reference/elements/group/) elements, optionally interspersed with [`<bow>`](/en/v1_0/reference/elements/bow/), [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/), and [`<link>`](/en/v1_0/reference/elements/link/) markers.
 
-In a lyric part, a sequence of [`<syllable>`](/en/v1_0/reference/elements/syllable/) and `<rest>` elements, and nothing else. See [`<part>`](/en/v1_0/reference/elements/part/#part-types).
+In a lyric part, a sequence of [`<syllable>`](/en/v1_0/reference/elements/syllable/) and `<rest>` elements, and nothing else. In a chord part, a sequence of [`<chord>`](/en/v1_0/reference/elements/chord/) and `<rest>` elements. See [`<part>`](/en/v1_0/reference/elements/part/#part-types).
 
 ## Beats
 
@@ -36,7 +36,7 @@ A beat arrives on its last slot, so a measure is read as travelling toward its f
 
 Every part plays the same measure over the same span of time, so corresponding measures must agree on beat count across parts. What each part does within those beats is free: one instrument may play four notes where another plays a note, two rests, and a `<group>` of three.
 
-A lyric part is outside this. Its measures hold as many items as the words need, so they have no beat count to agree on, and the item count is instead what decides how the syllables sit in the cell. See [`<syllable>`](/en/v1_0/reference/elements/syllable/#counting).
+The two text parts are outside this. A lyric measure holds as many items as the words need, so it has no beat count to agree on, and the item count is instead what decides how the syllables sit in the cell. A chord measure holds one item per beat it claims, flushed against the end of the measure, so its count is capped by the beat count but never sets it. See [`<syllable>`](/en/v1_0/reference/elements/syllable/#counting) and [`<chord>`](/en/v1_0/reference/elements/chord/#counting).
 
 ## Numbering
 
@@ -53,7 +53,8 @@ Measure numbers are local to the containing `<line>`. They start at `1` for each
 ## Conformance
 
 - `number` must match the measure's position in its `<line>`, counting from `1`. Measures must appear in ascending order.
-- Corresponding measures across all parts referencing the same section must have the same beat count. Lyric parts are excluded from this. See [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
-- A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part.
-- A measure in a pitched or unpitched part must hold at least one `<note>`, `<rest>`, or `<group>`. An empty one would be a measure of no beats, and the agreement above would force every other part's corresponding measure to no beats with it. A lyric measure may be empty, meaning nothing is sung there.
+- Corresponding measures across all parts referencing the same section must have the same beat count. Lyric and chord parts are excluded from this. See [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
+- A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part, `<chord>` and `<rest>` in a chord part.
+- A chord measure must not hold more items than the measure has beats.
+- A measure in a pitched or unpitched part must hold at least one `<note>`, `<rest>`, or `<group>`. An empty one would be a measure of no beats, and the agreement above would force every other part's corresponding measure to no beats with it. A lyric measure may be empty, meaning nothing is sung there, and a chord measure may be empty, meaning the chord already sounding carries on.
 - `id`, when present, must be unique among all `<measure>` elements in the document.

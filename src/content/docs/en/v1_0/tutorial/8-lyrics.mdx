@@ -1,13 +1,13 @@
 ---
-title: Lyrics
-description: Vocal parts, syllables, and the counting rule
+title: Lyrics and chords
+description: Vocal parts, syllables, the counting rule, and chord symbols on their own row
 sidebar:
   order: 8
 ---
 
 import ExampleXml from "@/components/ExampleXml.astro";
 
-This page adds a vocal part. Thai lyrics are notated as a `<part>` with `type="lyric"`, using `<syllable>` elements instead of `<note>`.
+This page adds a vocal part, and then a row of chord symbols. Both are written as a `<part>`, the same way an instrument is, with `type="lyric"` or `type="chord"` saying what the measures hold.
 
 ![ลาวดวงเดือน, ระนาดเอก and เนื้อร้อง](../../../../../assets/docs/v1_0/tutorial/8-lyrics/image.png)
 
@@ -63,9 +63,43 @@ Four items, four beats. ดวง falls on beat 2, เดือน on beat 4.
 
 Two items in a four-beat measure. They centre, sitting roughly on beats 2 and 3. Both are ordinary ways to write a vocal line; the choice is the arranger's.
 
+## Chords
+
+A chord part is the other kind of part that holds text rather than music. Declare it the same way:
+
+```xml
+<part id="P3" type="chord">
+  <instrument-name>คอร์ด</instrument-name>
+</part>
+```
+
+Inside a measure, `<chord>` holds one symbol, written exactly as it should print. Nothing parses it, so `Am`, `G7`, and `C/E` are all just text:
+
+```xml
+<measure number="1">
+  <chord>Am</chord>
+</measure>
+```
+
+That measure has one symbol where the music underneath has four beats, and chord symbols flush right: the symbol lands on beat 4. Two symbols would land on beats 3 and 4, and so on backwards from the end of the measure.
+
+To put a chord anywhere else, pad the measure out with `<rest>`. A rest in a chord row holds a beat and prints nothing:
+
+```xml
+<measure number="2">
+  <rest/><chord>Am</chord><rest/><chord>G</chord>
+</measure>
+```
+
+Four items, four beats: Am on beat 2 and G on beat 4.
+
+A measure you write nothing in means no change, and the chord already sounding carries on through it. That is why a chord part usually has far fewer items than a lyric part does.
+
+The one hard limit is the ceiling. A chord measure may hold no more items than the measure has beats, because every item claims one.
+
 ## Example file
 
-This tutorial file has a ระนาดเอก part and a lyric part for ท่อน 1, line 1. The lyrics enter in measure 3 with "โอ้", then "ละ - หนอ" in measure 4, with rests where the singer pauses.
+This tutorial file has a ระนาดเอก part and a lyric part for ท่อน 1, line 1. The lyrics enter in measure 3 with "โอ้", then "ละ - หนอ" in measure 4, with rests where the singer pauses. It has no chord part; the chord markup above stands on its own.
 
 <ExampleXml file="tutorial8-lyrics.txml" />
 
@@ -74,7 +108,7 @@ This tutorial file has a ระนาดเอก part and a lyric part for ท�
 Next, see [Marking the score](/en/v1_0/tutorial/9-marking_the_score/) for bow spans, cued passages, annotations, and metadata.
 
 :::note[Elements introduced]
-[`type="lyric"`](/en/v1_0/reference/elements/part/#part-types), [`<syllable>`](/en/v1_0/reference/elements/syllable/)
+[`type="lyric"`](/en/v1_0/reference/elements/part/#part-types), [`<syllable>`](/en/v1_0/reference/elements/syllable/), [`type="chord"`](/en/v1_0/reference/elements/part/#text-parts), [`<chord>`](/en/v1_0/reference/elements/chord/)
 :::
 
 [Try it in the Playground](/en/playground/)

@@ -22,6 +22,7 @@
     - number attributes matching position
     - which children a measure may hold, since that depends on the part's
       type, declared elsewhere in the document
+    - a chord measure's item count against the measure's beat count
     - that a stack is shared by at least two parts, adjacent in <ensemble>
       and numbered from 1 up
     - at most one <text> per align value
@@ -205,6 +206,7 @@
       <xs:attribute name="type">
         <xs:simpleType>
           <xs:restriction base="xs:token">
+            <xs:enumeration value="chord"/>
             <xs:enumeration value="lyric"/>
             <xs:enumeration value="pitched"/>
             <xs:enumeration value="unpitched"/>
@@ -283,16 +285,17 @@
     </xs:complexType>
   </xs:element>
   <!--
-    A measure holds either notated content or lyric content. Which one is
+    A measure holds either notated content or text content. Which one is
     legal depends on the containing part's type, which is declared in
     <ensemble> and so is out of this grammar's reach. Both are accepted
-    here; the type match is checked outside.
+    here, and so is a <syllable> beside a <chord>; the type match is checked
+    outside.
   -->
   <xs:element name="measure">
     <xs:complexType>
       <xs:choice>
         <xs:group ref="ns1:notated-measure-content"/>
-        <xs:group ref="ns1:lyric-measure-content"/>
+        <xs:group ref="ns1:text-measure-content"/>
       </xs:choice>
       <xs:attribute name="number" use="required" type="xs:positiveInteger"/>
       <xs:attribute name="id" type="ns1:identifier"/>
@@ -311,11 +314,15 @@
       </xs:sequence>
     </xs:sequence>
   </xs:group>
-  <!-- A lyric measure may be empty, meaning nothing is sung there. -->
-  <xs:group name="lyric-measure-content">
+  <!--
+    A lyric or chord measure. Either may be empty: nothing is sung there, or
+    the chord already sounding carries on.
+  -->
+  <xs:group name="text-measure-content">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="ns1:syllable"/>
+        <xs:element ref="ns1:chord"/>
         <xs:element ref="ns1:rest"/>
       </xs:choice>
     </xs:sequence>
@@ -417,6 +424,12 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="syllable" type="xs:string"/>
+  <!--
+    A chord symbol, as the arranger typed it. The grammar checks that it is
+    not empty and nothing else: no root, quality, or bass note is parsed out
+    of it here or anywhere else in v1.0.
+  -->
+  <xs:element name="chord" type="ns1:non-empty-string"/>
   <!--
     ==================================================================
     Extensions

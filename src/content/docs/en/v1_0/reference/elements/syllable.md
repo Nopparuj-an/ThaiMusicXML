@@ -41,7 +41,9 @@ A lyric measure holds as many or as few items as the words need, and the count i
 
 Both are ordinary ways to write a lyric line. A vocal line frequently does not divide the way the melody underneath it does, and three syllables written across a four-beat measure say the words belong to that measure without claiming which beat each one lands on. See [Lyric rows](/en/v1_0/reference/rendering/#lyric-rows).
 
-This is why a lyric part is the one part exempt from agreeing on beat count. It still shares the line and measure grid with every other part. See [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
+This is why a lyric part does not have to agree on beat count. It still shares the line and measure grid with every other part. See [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
+
+A [chord part](/en/v1_0/reference/elements/chord/) is exempt in the same way but counts differently: its items flush right and claim one beat each, so the count is capped rather than free. See [`<chord>`'s Counting](/en/v1_0/reference/elements/chord/#counting).
 
 ## เอื้อน and gaps
 

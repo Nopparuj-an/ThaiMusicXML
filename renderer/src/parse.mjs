@@ -13,6 +13,7 @@
 // reference/rendering/index.md works on.
 
 import { DOMParser } from "#dom-parser";
+import { isTextPart } from "./parts.mjs";
 
 export const NS = "https://thaimusicxml.anan.ovh/ns/1";
 
@@ -100,12 +101,17 @@ function beats(measure) {
   return out;
 }
 
-/** A lyric measure's children: a <syllable> or a <rest>, in document order. */
-function lyricItems(measure) {
+/**
+ * A text measure's children, in document order: <syllable> in a lyric part,
+ * <chord> in a chord part, and <rest> in either. A rest carries no text - it
+ * is เอื้อน in a lyric row and spacing in a chord row, and prints in neither.
+ */
+function textItems(measure) {
   const out = [];
   for (const child of Array.from(measure.childNodes)) {
     if (child.nodeType !== 1) continue;
     if (child.localName === "syllable") out.push({ kind: "syllable", text: text(child) });
+    else if (child.localName === "chord") out.push({ kind: "chord", text: text(child) });
     else if (child.localName === "rest") out.push({ kind: "rest" });
   }
   return out;
@@ -113,8 +119,8 @@ function lyricItems(measure) {
 
 /**
  * One <line>'s measures, shaped by the part's type: a notated part gets beats
- * of slots, a lyric part gets items that do not divide into beats at all. See
- * "Lyric rows" in reference/rendering.
+ * of slots, a lyric or chord part gets items that do not divide into beats at
+ * all. See "Lyric rows" and "Chord rows" in reference/rendering.
  */
 function parseLine(line, partType) {
   return {
@@ -123,8 +129,8 @@ function parseLine(line, partType) {
     // rather than once above the section. See "Annotations".
     annotations: els(line, "annotation").map(annotation).filter(Boolean),
     measures: els(line, "measure").map((m) =>
-      partType === "lyric"
-        ? { number: Number(m.getAttribute("number")), items: lyricItems(m) }
+      isTextPart(partType)
+        ? { number: Number(m.getAttribute("number")), items: textItems(m) }
         : { number: Number(m.getAttribute("number")), beats: beats(m) },
     ),
   };
@@ -335,10 +341,10 @@ export function parse(source, { warn = () => {} } = {}) {
     music[partId] = {};
     for (const ref of els(pd, "section-ref")) {
       const lineEls = els(ref, "line");
-      // Bow and parenthesis spans are invalid inside a lyric part, so there is
+      // Bow and parenthesis spans are invalid inside a text part, so there is
       // nothing to resolve there.
       const { bowSpans, parenSpans, linkSpans } =
-        partType === "lyric"
+        isTextPart(partType)
           ? { bowSpans: [], parenSpans: [], linkSpans: [] }
           : resolveSpans(lineEls);
 
@@ -355,7 +361,7 @@ export function parse(source, { warn = () => {} } = {}) {
         endings: els(ref, "ending").map((endingEl) => {
           const endingLineEls = els(endingEl, "line");
           const spans =
-            partType === "lyric"
+            isTextPart(partType)
               ? { bowSpans: [], parenSpans: [], linkSpans: [] }
               : resolveSpans(endingLineEls);
           return {

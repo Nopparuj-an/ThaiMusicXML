@@ -70,6 +70,19 @@ function descendants(node, name) {
 const BEAT_ELEMENTS = new Set(["note", "rest", "group"]);
 const beats = (measure) => els(measure).filter((c) => BEAT_ELEMENTS.has(c.localName));
 
+const typeOf = (part) => part?.getAttribute("type") || "pitched";
+
+// The two part types whose measures hold text rather than beats. Both share
+// the line and measure grid and neither takes part in the beat-count
+// agreement - see part.md's "Text parts".
+const isText = (type) => type === "lyric" || type === "chord";
+
+const MEASURE_CHILDREN = {
+  lyric: ["syllable", "rest"],
+  chord: ["chord", "rest"],
+  notated: ["note", "rest", "group", "bow", "parenthesis", "link"],
+};
+
 // Text directly inside an element, ignoring any <text> children.
 const ownText = (el) =>
   Array.from(el.childNodes ?? [])
@@ -250,13 +263,13 @@ function checkDirections(ctx, err, warn) {
 
 function checkStacks(ctx, err) {
   for (const [name, members] of ctx.stacks) {
-    // A stack is one instrument's own rows. A lyric part is words rather
-    // than a region of an instrument, so it sits beside a stack and never
-    // joins one - which is also what leaves every row of a stack notated,
-    // and so leaves a link span in one row with somewhere to reach.
+    // A stack is one instrument's own rows. A lyric or chord part is text
+    // rather than a region of an instrument, so it sits beside a stack and
+    // never joins one - which is also what leaves every row of a stack
+    // notated, and so leaves a link span in one row with somewhere to reach.
     for (const m of members)
-      if ((m.part.getAttribute("type") || "pitched") === "lyric")
-        err(`part "${m.part.getAttribute("id")}" is a lyric part and cannot carry stack`);
+      if (isText(typeOf(m.part)))
+        err(`part "${m.part.getAttribute("id")}" is a ${typeOf(m.part)} part and cannot carry stack`);
 
     if (members.length < 2)
       err(`stack "${name}" has one part; a single-row instrument carries neither stack nor row`);
@@ -336,13 +349,14 @@ function checkAlignedText(ctx, err, warn) {
     }
 }
 
-// Lines, measures, and what a measure may hold - the shape a lyric part's
-// data and a notated part's data each have to have.
+// Lines, measures, and what a measure may hold - the shape a text part's data
+// and a notated part's data each have to have.
 function checkPartDataShape(ctx, err, warn) {
   for (const pd of ctx.partDatas) {
     const part = ctx.partById.get(pd.getAttribute("part"));
-    const type = part?.getAttribute("type") || "pitched";
-    const lyric = type === "lyric";
+    const type = typeOf(part);
+    const text = isText(type);
+    const allowed = MEASURE_CHILDREN[text ? type : "notated"];
 
     for (const sr of kids(pd, "section-ref")) {
       const lines = kids(sr, "line");
@@ -355,15 +369,11 @@ function checkPartDataShape(ctx, err, warn) {
           if (num(measure, "number") !== j + 1)
             err(`measure number ${measure.getAttribute("number")} does not match its position ${j + 1}`);
 
-          for (const child of els(measure)) {
-            const ok = lyric
-              ? ["syllable", "rest"].includes(child.localName)
-              : ["note", "rest", "group", "bow", "parenthesis", "link"].includes(child.localName);
-            if (!ok)
+          for (const child of els(measure))
+            if (!allowed.includes(child.localName))
               err(`<${child.localName}> is not valid in a measure of a ${type} part`);
-          }
 
-          if (!lyric && beats(measure).length === 0)
+          if (!text && beats(measure).length === 0)
             err("a measure in a pitched or unpitched part holds no beats");
         });
       });
@@ -391,7 +401,7 @@ function checkEndingsAndSpans(ctx, err) {
   for (const pd of ctx.partDatas)
     for (const sr of kids(pd, "section-ref")) {
       const part = ctx.partById.get(pd.getAttribute("part"));
-      const lyric = (part?.getAttribute("type") || "pitched") === "lyric";
+      const text = isText(typeOf(part));
       const sectionId = sr.getAttribute("section");
       const total = ctx.passCount.get(sectionId) ?? 1;
       const lines = kids(sr, "line");
@@ -433,12 +443,13 @@ function checkEndingsAndSpans(ctx, err) {
             err(`<ending> line ${line.getAttribute("number")} has ${a.length} measure(s) where the line it replaces has ${b.length}`);
             continue;
           }
-          // A lyric part holds as many items as the words need, in an
-          // ending as anywhere else, so it is exempt from the beat-count
-          // comparison here the same way it is exempt from the cross-part
-          // one. Its ending line still has to match on measure count, which
-          // the check above already made.
-          if (lyric) continue;
+          // A text part's measures hold items rather than beats, in an
+          // ending as anywhere else, so both are exempt from the beat-count
+          // comparison here the same way they are exempt from the cross-part
+          // one. The ending line still has to match on measure count, which
+          // the check above already made, and a chord part's own item
+          // ceiling is checked in checkChordCounts.
+          if (text) continue;
           a.forEach((measure, i) => {
             // A completely empty measure in a notated part's ending means
             // "unchanged from the line being replaced" - see ending.md's
@@ -477,7 +488,7 @@ function checkEndingsAndSpans(ctx, err) {
           const overrideLine = override.get(num(line, "number"));
           if (!overrideLine) return baseMeasures;
           return kids(overrideLine, "measure").map((measure, i) =>
-            !lyric && beats(measure).length === 0 ? baseMeasures[i] : measure,
+            !text && beats(measure).length === 0 ? baseMeasures[i] : measure,
           );
         });
 
@@ -506,11 +517,11 @@ function checkCrossPartAgreement(ctx, err) {
   const bySection = new Map();
   for (const pd of ctx.partDatas) {
     const part = ctx.partById.get(pd.getAttribute("part"));
-    const lyric = (part?.getAttribute("type") || "pitched") === "lyric";
+    const text = isText(typeOf(part));
     for (const sr of kids(pd, "section-ref")) {
       const id = sr.getAttribute("section");
       if (!bySection.has(id)) bySection.set(id, []);
-      bySection.get(id).push({ sr, lyric, part: pd.getAttribute("part") });
+      bySection.get(id).push({ sr, text, part: pd.getAttribute("part") });
     }
   }
 
@@ -532,14 +543,69 @@ function checkCrossPartAgreement(ctx, err) {
           err(`section "${id}" line ${i + 1}: part "${other.part}" has ${b.length} measure(s) where part "${first.part}" has ${a.length}`);
           return;
         }
-        // A lyric part holds as many items as the words need, so it takes no
-        // part in the beat-count comparison on either side.
-        if (first.lyric || other.lyric) return;
+        // A text part's measures hold items rather than beats, so neither
+        // kind takes part in the beat-count comparison on either side.
+        if (first.text || other.text) return;
         a.forEach((measure, j) => {
           if (beats(measure).length !== beats(b[j]).length)
             err(`section "${id}" line ${i + 1} measure ${j + 1}: part "${other.part}" has ${beats(b[j]).length} beat(s) where part "${first.part}" has ${beats(measure).length}`);
         });
       });
+    }
+  }
+}
+
+// Every chord item claims a beat, so a chord measure may hold no more items
+// than the notated parts give that measure. Below that ceiling a chord part is
+// as free of the beat grid as a lyric part - see chord.md's "Counting against
+// the music". A section no notated part references has no beat count to read,
+// and nothing to check against.
+function checkChordCounts(ctx, err) {
+  const chordParts = new Set(
+    ctx.parts.filter((p) => typeOf(p) === "chord").map((p) => p.getAttribute("id")),
+  );
+  if (chordParts.size === 0) return;
+
+  // section id -> per line, per measure, the beat count. section-ref's own
+  // agreement rule makes any one notated part as good a source as another,
+  // and an <ending> has to match the line it replaces on beat count too, so
+  // the base lines settle it for every pass.
+  const beatGrid = new Map();
+  for (const pd of ctx.partDatas) {
+    if (isText(typeOf(ctx.partById.get(pd.getAttribute("part"))))) continue;
+    for (const sr of kids(pd, "section-ref")) {
+      const id = sr.getAttribute("section");
+      if (beatGrid.has(id)) continue;
+      beatGrid.set(
+        id,
+        kids(sr, "line").map((line) => kids(line, "measure").map((m) => beats(m).length)),
+      );
+    }
+  }
+
+  for (const pd of ctx.partDatas) {
+    const partId = pd.getAttribute("part");
+    if (!chordParts.has(partId)) continue;
+    for (const sr of kids(pd, "section-ref")) {
+      const id = sr.getAttribute("section");
+      const grid = beatGrid.get(id);
+      if (!grid) continue;
+
+      const check = (line, where) => {
+        const row = grid[num(line, "number") - 1];
+        if (!row) return;
+        kids(line, "measure").forEach((measure, i) => {
+          const beatCount = row[i];
+          const items = els(measure).length;
+          if (beatCount !== undefined && items > beatCount)
+            err(`section "${id}" ${where} measure ${i + 1}: chord part "${partId}" has ${items} item(s) where the measure has ${beatCount} beat(s)`);
+        });
+      };
+
+      for (const line of kids(sr, "line")) check(line, `line ${line.getAttribute("number")}`);
+      for (const ending of kids(sr, "ending"))
+        for (const line of kids(ending, "line"))
+          check(line, `<ending> line ${line.getAttribute("number")}`);
     }
   }
 }
@@ -558,6 +624,7 @@ const RULES = [
   checkPartDataShape,
   checkEndingsAndSpans,
   checkCrossPartAgreement,
+  checkChordCounts,
 ];
 
 function checkRules(doc) {

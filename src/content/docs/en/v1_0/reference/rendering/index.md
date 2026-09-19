@@ -18,9 +18,10 @@ None of these lives in the document. There is nowhere in a ThaiMusicXML file to 
 | Which pitch spelling appears                     | Whichever of the three the file is written in                                      | [Inside a measure](#inside-a-measure)                                   |
 | Case of romanized pitch letters                  | Uppercase                                                                          | [Inside a measure](#inside-a-measure)                                   |
 | Octave mark shape and size                       | A small dot, drawn independent of the typeface                                     | [Octave marks](#octave-marks)                                           |
-| How thoroughly rests print                       | A hyphen for every rest in every notated part, blank in a lyric row                | [Inside a measure](#inside-a-measure)                                   |
+| How thoroughly rests print                       | A hyphen for every rest in every notated part, blank in a lyric or chord row       | [Inside a measure](#inside-a-measure)                                   |
 | Lyric row type size                              | Smaller than the notated rows                                                      | [Lyric rows](#lyric-rows)                                               |
 | What happens when the words do not fit           | The syllables move off their beats first, then that measure sets smaller           | [Words that do not fit](#words-that-do-not-fit)                         |
+| Chord row type size                              | The same size the lyric rows are set in                                            | [Chord rows](#chord-rows)                                               |
 | Instrument-name labels                           | Top-right corner on a solo score; a deduplicated label column on an ensemble score | [Instrument names](#instrument-names)                                   |
 | `name` printed as a section heading              | Off                                                                                | [Section headings](#section-headings)                                   |
 | `<tuning>`, `<license>`, and `<bpm>` on the page | Off                                                                                | [The title band](#the-title-band)                                       |
@@ -124,6 +125,18 @@ The syllables move first. A word that would otherwise print on top of its neighb
 Where the words are wider than the cell however they are arranged, that measure sets in a smaller size. Per measure, not per row: the cells beside it keep the size the rest of the score is set in. The step between two neighbouring cells is visible, and it costs less than taking a whole line down for the sake of one measure of it.
 
 Below some size the words stop being legible, so a renderer stops shrinking there and lets what is left overhang. A single word wider than a cell at that floor is past what layout can do for it, and the fix is the arranger's: write it as the syllables it is sung on.
+
+## Chord rows
+
+A [chord part](/en/v1_0/reference/elements/chord/) renders as a row of symbols in the grid, ruled and sized like any other row, sitting wherever the part appears in [`<ensemble>`](/en/v1_0/reference/elements/ensemble/). Above the instruments is the usual place, since that is where someone comping from the score expects to look, but nothing here requires it.
+
+Where the symbols sit inside a cell is fixed rather than counted. A measure's items take the last beats of the measure, one each, and each symbol centers on [the beat's arrival](#beats-anchor-to-the-right) the way a syllable does in the aligned lyric form. One symbol in a four-beat measure therefore prints at the right-hand end of the cell, over the note the measure lands on.
+
+There is no centered form and no fallback to one. A chord symbol is always a claim about a particular beat, so an arranger who wants one earlier in the measure writes rests after it rather than leaving the renderer to guess. A measure with nothing in it prints nothing, which is what says the chord carried on unchanged.
+
+Chord rows take no part in the [subdivision count](#inside-a-measure), exactly as lyric rows do not. The cell is divided by what the notated parts need and the symbols fit into what is left. A chord symbol is wider than a pitch letter and often wider than a syllable, and nothing widens the cell to help, so where a measure's symbols will not fit the two steps in [Words that do not fit](#words-that-do-not-fit) apply unchanged and in the same order: the symbols shift off their arrivals first, then that measure alone sets smaller.
+
+A `<rest>` in a chord row prints nothing, not the hyphen it takes in a notated part. It is holding a beat open and saying nothing about the music.
 
 ## The title band
 
