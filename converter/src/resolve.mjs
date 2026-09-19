@@ -398,8 +398,8 @@ function resolveSectionPass(sectionMusic, ranges, pass, siblingSectionMusics = [
   return { notes, length: cursor, measureBoundaries };
 }
 
-export function resolve(source) {
-  const parsed = parse(source);
+export function resolve(source, { warn = () => {} } = {}) {
+  const parsed = parse(source, { warn });
   const doc = new DOMParser().parseFromString(source, "text/xml");
   const structureEl = els(doc.documentElement, "structure")[0];
   const order = playOrder(structureEl);

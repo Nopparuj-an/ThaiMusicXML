@@ -16,6 +16,10 @@ import { DOMParser } from "#dom-parser";
 
 export const NS = "https://thaimusicxml.anan.ovh/ns/1";
 
+/** The release this parser implements. The namespace is the compatibility
+ *  boundary; this only tells releases apart inside it. */
+export const VERSION = "1.0";
+
 const els = (node, name) =>
   Array.from(node.getElementsByTagNameNS(NS, name)).filter(
     (el) => el.parentNode === node,
@@ -234,7 +238,7 @@ function parserErrorMessage(doc) {
   return errorEl.textContent.trim().replace(/\s+/g, " ");
 }
 
-export function parse(source) {
+export function parse(source, { warn = () => {} } = {}) {
   const doc = new DOMParser().parseFromString(source, "text/xml");
   const parseError = parserErrorMessage(doc);
   if (parseError) throw new Error(`the XML is not well-formed: ${parseError}`);
@@ -246,9 +250,18 @@ export function parse(source) {
     throw new Error(
       `unsupported ThaiMusicXML namespace "${score.namespaceURI ?? ""}"; expected "${NS}"`,
     );
-  if (score.getAttribute("version") !== "1.0")
-    throw new Error(
-      `unsupported ThaiMusicXML version "${score.getAttribute("version")}"; expected "1.0"`,
+  // The namespace above is the compatibility boundary, and it matched. `version`
+  // only tells releases apart inside that boundary, so a document from another
+  // release of a namespace this parser implements is readable - it may just use
+  // optional elements added after this parser was written. Per <thai-score>'s
+  // conformance rules, a mismatch warns and must not reject on its own.
+  // The attribute itself is still required, and the RNG demands it non-empty.
+  const version = score.getAttribute("version");
+  if (version === null || version === "")
+    throw new Error("invalid ThaiMusicXML document: <thai-score> has no version");
+  if (version !== VERSION)
+    warn(
+      `ThaiMusicXML version "${version}" does not match "${VERSION}", the current release of this namespace; reading it as "${VERSION}"`,
     );
 
   const header = required(score, "header", "thai-score");

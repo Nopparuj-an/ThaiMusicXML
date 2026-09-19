@@ -2915,10 +2915,15 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
 
   function convertAndRenderMusicXml(): void {
     const source = editor.getValue();
+    // Warnings about the document itself, raised by parse() before either
+    // converter sees it - a `version` from another release of a namespace this
+    // build implements, say. Grouped apart from the converter targets below
+    // because it says something about the file, not about one export of it.
+    const docWarnings: string[] = [];
     const mxmlWarnings: string[] = [];
     const midiWarnings: string[] = [];
     try {
-      const doc = resolve(source);
+      const doc = resolve(source, { warn: (m: string) => docWarnings.push(m) });
       const tuningOverride = CONVERTER_REGISTRY.overrides.tuning;
       const tuning =
         tuningOverride === "auto" ? undefined : (tuningOverride as string);
@@ -2967,6 +2972,7 @@ const templates: { value: string; label: Record<Lang, string> }[] = [
       if (currentView === "musicxml") statusEl.textContent = "";
       setConverterExportEnabled(true);
       renderWarnings([
+        { label: t({ en: "Document", th: "เอกสาร" }), warnings: docWarnings },
         { label: "MusicXML", warnings: mxmlWarnings },
         { label: "MIDI", warnings: midiWarnings },
       ]);

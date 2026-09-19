@@ -12,7 +12,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parse, NS } from "../src/parse.mjs";
+import { parse, NS, VERSION } from "../src/parse.mjs";
 
 /** A one-part score whose section-ref body is written out in full. */
 const score = (body, { partAttrs = "", structure = `<section id="s1" name="s1"/>` } = {}) =>
@@ -40,6 +40,34 @@ test("reports an unsupported namespace instead of crashing", () => {
   const doc = score("").replace(`xmlns="${NS}"`, `xmlns="https://thaimusicxml.anan.ovh/ns/0.1"`);
   assert.throws(() => parse(doc), {
     message: `unsupported ThaiMusicXML namespace "https://thaimusicxml.anan.ovh/ns/0.1"; expected "${NS}"`,
+  });
+});
+
+// The namespace is the compatibility boundary; `version` only tells releases
+// apart inside it. <thai-score>'s conformance rules: a validator "should warn
+// when `version` does not match the namespace it appears in, and must not
+// reject on that alone."
+
+test("a version from another release of a namespace it implements warns and parses", () => {
+  const doc = score("").replace(`${NS}" version="${VERSION}"`, `${NS}" version="1.3"`);
+  const warnings = [];
+
+  const parsed = parse(doc, { warn: (m) => warnings.push(m) });
+
+  assert.equal(parsed.title, "ทดสอบ", "the document is read, not rejected");
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /version "1\.3" does not match "1\.0"/);
+});
+
+test("a version mismatch parses even when the caller passes no warn callback", () => {
+  const doc = score("").replace(`${NS}" version="${VERSION}"`, `${NS}" version="1.3"`);
+  assert.equal(parse(doc).title, "ทดสอบ");
+});
+
+test("rejects a root carrying no version at all, which the attribute being required means", () => {
+  const doc = score("").replace(`${NS}" version="${VERSION}"`, `${NS}"`);
+  assert.throws(() => parse(doc), {
+    message: "invalid ThaiMusicXML document: <thai-score> has no version",
   });
 });
 
