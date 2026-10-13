@@ -15,7 +15,7 @@ page; swap `/en/` for `/th/` for the Thai translation.
 ## Getting started
 
 - [ThaiMusicXML](https://thaimusicxml.anan.ovh/en/): An open, royalty-free XML format for Thai traditional music (เพลงไทยเดิม). Records the 7-tone scale ด ร ม ฟ ซ ล ท, the beat grid, and what a musician reads.
-- [ThaiMusicXML v1.0](https://thaimusicxml.anan.ovh/en/introduction/): ThaiMusicXML v1.0 covers pitched, unpitched, and lyric parts; ท่อน with repeats and endings; octave dots, subdivided beats, curves, and cued passages.
+- [ThaiMusicXML v1.1](https://thaimusicxml.anan.ovh/en/introduction/): ThaiMusicXML v1.1 covers pitched, unpitched, and lyric parts; ท่อน with repeats and endings; octave dots, subdivided beats, curves, and cued passages.
 - [Playground](https://thaimusicxml.anan.ovh/en/playground/): Write and validate ThaiMusicXML in the browser, with live score rendering
 
 ## Tutorial
@@ -85,7 +85,7 @@ page; swap `/en/` for `/th/` for the Thai translation.
 - [Conformance](https://thaimusicxml.anan.ovh/en/reference/conformance/): What it means for a document or a processor to conform to ThaiMusicXML v1.0
 - [Conversion](https://thaimusicxml.anan.ovh/en/reference/conversion/): How a ThaiMusicXML document maps to other notation and playback formats
 - [Rendering](https://thaimusicxml.anan.ovh/en/reference/rendering/): Non-normative guidance for laying out and displaying a ThaiMusicXML score
-- [Schema and test suite](https://thaimusicxml.anan.ovh/en/reference/schema/): The RELAX NG schema for ThaiMusicXML v1.0 and the conformance corpus that goes with it
+- [Schema and test suite](https://thaimusicxml.anan.ovh/en/reference/schema/): The RELAX NG schema for ThaiMusicXML v1.x and the conformance corpus that goes with it
 
 ## Updates
 
