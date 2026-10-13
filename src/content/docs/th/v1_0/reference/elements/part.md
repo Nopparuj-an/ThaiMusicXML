@@ -1,6 +1,8 @@
 ---
 title: <part>
-description: ประกาศว่าเครื่องดนตรีหนึ่งมีอยู่ในวง พร้อมประเภท ชื่อ และว่าซ้อนแถวกับพาร์ตอื่นหรือไม่ ไม่มีโน้ตอยู่ในนั้น
+description: ประกาศว่าเครื่องดนตรีหนึ่งมีอยู่ในวง พร้อมประเภท ชื่อ
+  และว่าซ้อนแถวกับพาร์ตอื่นหรือไม่ ไม่มีโน้ตอยู่ในนั้น
+slug: th/v1_0/reference/elements/part
 ---
 
 องค์ประกอบ `<part>` กำหนดเครื่องดนตรีเดียวในวง
@@ -22,8 +24,8 @@ description: ประกาศว่าเครื่องดนตรีห�
 
 ## ลูก
 
-- [`<instrument-name>`](/th/v1_0/reference/elements/instrument-name/) - จำเป็น
-- [`<instrument-short-name>`](/th/v1_0/reference/elements/instrument-short-name/) - เป็นทางเลือก
+* [`<instrument-name>`](/th/v1_0/reference/elements/instrument-name/) - จำเป็น
+* [`<instrument-short-name>`](/th/v1_0/reference/elements/instrument-short-name/) - เป็นทางเลือก
 
 ## ตัวอย่าง
 
@@ -82,18 +84,18 @@ description: ประกาศว่าเครื่องดนตรีห�
 
 ## หมายเหตุ
 
-- `type` อธิบายพาร์ตไม่ใช่การแสดง ประกาศที่นี่ครั้งเดียวไม่เคยซ้ำใน `<part-data>` พาร์ตเนื้อเพลงเป็นค่าเดียวที่ไม่ใช่เครื่องดนตรีเลย เป็นการยืดคำ `<ensemble>` ที่ควรรู้: การใช้ `<part>` ซ้ำทำให้เสียงร้องมีกริดบรรทัดและห้องทั้งหมดฟรี
-- ดู [`<note>`](/th/v1_0/reference/elements/note/) สำหรับวิธีที่ `type` กำหนดแอตทริบิวต์ที่โน้ตใช้
-- `stack` อธิบายเครื่องดนตรีด้วย ดู [`<ensemble>`](/th/v1_0/reference/elements/ensemble/#การแสดงผล) สำหรับผลต่อการแสดงผล และ [`<link>`](/th/v1_0/reference/elements/link/) สำหรับเส้นโค้งข้ามแถวที่เปิดใช้
-- พาร์ตของ stack อยู่ด้วยกันใน `<ensemble>` ตามลำดับแถว `<part-data>` ไม่เปลี่ยนและยังอ้างแต่ละพาร์ตด้วย `id`
+* `type` อธิบายพาร์ตไม่ใช่การแสดง ประกาศที่นี่ครั้งเดียวไม่เคยซ้ำใน `<part-data>` พาร์ตเนื้อเพลงเป็นค่าเดียวที่ไม่ใช่เครื่องดนตรีเลย เป็นการยืดคำ `<ensemble>` ที่ควรรู้: การใช้ `<part>` ซ้ำทำให้เสียงร้องมีกริดบรรทัดและห้องทั้งหมดฟรี
+* ดู [`<note>`](/th/v1_0/reference/elements/note/) สำหรับวิธีที่ `type` กำหนดแอตทริบิวต์ที่โน้ตใช้
+* `stack` อธิบายเครื่องดนตรีด้วย ดู [`<ensemble>`](/th/v1_0/reference/elements/ensemble/#การแสดงผล) สำหรับผลต่อการแสดงผล และ [`<link>`](/th/v1_0/reference/elements/link/) สำหรับเส้นโค้งข้ามแถวที่เปิดใช้
+* พาร์ตของ stack อยู่ด้วยกันใน `<ensemble>` ตามลำดับแถว `<part-data>` ไม่เปลี่ยนและยังอ้างแต่ละพาร์ตด้วย `id`
 
 ## การสอดคล้องมาตรฐาน
 
-- `<part>` ทุกตัวต้องมี [`<part-data>`](/th/v1_0/reference/elements/part-data/#การสอดคล้องมาตรฐาน) ตรงกันหนึ่งตัว
-- `type` ต้องเป็น `"pitched"`, `"unpitched"`, หรือ `"lyric"` ตัวตรวจสอบต้องปฏิเสธค่าอื่น
-- ห้องของพาร์ต `type="lyric"` ต้องมีเฉพาะ [`<syllable>`](/th/v1_0/reference/elements/syllable/#การสอดคล้องมาตรฐาน) และ `<rest>` ได้รับการยกเว้นจากกฎจำนวนจังหวะใน [`<section-ref>`](/th/v1_0/reference/elements/section-ref/#การสอดคล้องมาตรฐาน)
-- `stack` และ `row` ต้องปรากฏด้วยกัน: `<part>` ที่มี `stack` ต้องมี `row` และ `<part>` ที่มี `row` ต้องมี `stack`
-- ค่า `stack` ต้องใช้ร่วมกันอย่างน้อยสอง `<part>` พาร์ตเดียวเป็นเครื่องดนตรีแถวเดียวไม่มีแอตทริบิวต์ทั้งสอง
-- พาร์ต `type="lyric"` ต้องไม่มี `stack` หรือ `row` ทุกแถวของ stack เป็นพาร์ตที่มีโน้ต
-- ค่า `row` ใน stack เดียวกันต้องเริ่มจาก `1` ไม่มีช่องว่างหรือซ้ำ
-- `<part>` ของ stack ต้องอยู่ติดกันใน [`<ensemble>`](/th/v1_0/reference/elements/ensemble/) ตามลำดับ `row` `row` ต้องตรงกับตำแหน่งเหมือน `number` บน [`<line>`](/th/v1_0/reference/elements/line/) และ [`<measure>`](/th/v1_0/reference/elements/measure/)
+* `<part>` ทุกตัวต้องมี [`<part-data>`](/th/v1_0/reference/elements/part-data/#การสอดคล้องมาตรฐาน) ตรงกันหนึ่งตัว
+* `type` ต้องเป็น `"pitched"`, `"unpitched"`, หรือ `"lyric"` ตัวตรวจสอบต้องปฏิเสธค่าอื่น
+* ห้องของพาร์ต `type="lyric"` ต้องมีเฉพาะ [`<syllable>`](/th/v1_0/reference/elements/syllable/#การสอดคล้องมาตรฐาน) และ `<rest>` ได้รับการยกเว้นจากกฎจำนวนจังหวะใน [`<section-ref>`](/th/v1_0/reference/elements/section-ref/#การสอดคล้องมาตรฐาน)
+* `stack` และ `row` ต้องปรากฏด้วยกัน: `<part>` ที่มี `stack` ต้องมี `row` และ `<part>` ที่มี `row` ต้องมี `stack`
+* ค่า `stack` ต้องใช้ร่วมกันอย่างน้อยสอง `<part>` พาร์ตเดียวเป็นเครื่องดนตรีแถวเดียวไม่มีแอตทริบิวต์ทั้งสอง
+* พาร์ต `type="lyric"` ต้องไม่มี `stack` หรือ `row` ทุกแถวของ stack เป็นพาร์ตที่มีโน้ต
+* ค่า `row` ใน stack เดียวกันต้องเริ่มจาก `1` ไม่มีช่องว่างหรือซ้ำ
+* `<part>` ของ stack ต้องอยู่ติดกันใน [`<ensemble>`](/th/v1_0/reference/elements/ensemble/) ตามลำดับ `row` `row` ต้องตรงกับตำแหน่งเหมือน `number` บน [`<line>`](/th/v1_0/reference/elements/line/) และ [`<measure>`](/th/v1_0/reference/elements/measure/)

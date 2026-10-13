@@ -1,6 +1,7 @@
 ---
 title: ★ Conformance
 description: What it means for a document or a processor to conform to ThaiMusicXML v1.0
+slug: en/v1_0/reference/conformance
 ---
 
 This page defines what conformance means in ThaiMusicXML v1.0 and collects the rules that the element pages state individually.
@@ -9,9 +10,9 @@ This page defines what conformance means in ThaiMusicXML v1.0 and collects the r
 
 The keywords **must**, **must not**, **should**, **should not**, and **may** carry their usual specification meanings:
 
-- **must** and **must not** are absolute requirements. A document that breaks one is not a ThaiMusicXML document.
-- **should** and **should not** describe behaviour with good reasons behind it. Ignore them only with the full implications understood.
-- **may** marks something genuinely optional. A processor that does not implement it stays conforming.
+* **must** and **must not** are absolute requirements. A document that breaks one is not a ThaiMusicXML document.
+* **should** and **should not** describe behaviour with good reasons behind it. Ignore them only with the full implications understood.
+* **may** marks something genuinely optional. A processor that does not implement it stays conforming.
 
 ## Conforming document
 
@@ -40,7 +41,6 @@ The author wrote something, and the file behaves as though they had not. That is
 This is a general principle rather than a rule of its own. Where a specific element page states the warning, that page is the authority.
 
 :::caution[Accepted, but a validator should warn]
-
 ```xml
 <!-- octave beside a Thai octave modifier: the modifier wins, octave="2" is ignored -->
 <note pitch="ดํ" octave="2"/>
@@ -54,7 +54,6 @@ This is a general principle rather than a rule of its own. Where a specific elem
   stray text here
 </annotation>
 ```
-
 :::
 
 ## Lexical types
@@ -66,7 +65,6 @@ The element pages name a type for each attribute. This section says what those n
 `true`, `false`, `1`, and `0`, matched by value. `dim="1"` and `dim="true"` are the same. Nothing else is accepted.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✓ valid -->
 <parenthesis type="start" dim="1"/>
@@ -75,7 +73,6 @@ The element pages name a type for each attribute. This section says what those n
 <!-- ✗ rejected: not one of true, false, 1, 0 -->
 <parenthesis type="start" dim="yes"/>
 ```
-
 :::
 
 ### Integers
@@ -83,7 +80,6 @@ The element pages name a type for each attribute. This section says what those n
 An optional sign followed by digits. `octave` takes any integer; `times`, `first`, `last`, `number`, `row`, and the content of `<bpm>` take positive ones, with the bounds each element page gives. `times` is the one with a floor above `1`: it must be `2` or more.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✓ valid: octave takes any integer, including negative -->
 <note pitch="ด" octave="-2"/>
@@ -97,7 +93,6 @@ An optional sign followed by digits. `octave` takes any integer; `times`, `first
 <!-- ✗ rejected: a repeat that plays once repeats nothing; the default is 2 -->
 <repeat times="1">...</repeat>
 ```
-
 :::
 
 ### Enumerations
@@ -105,7 +100,6 @@ An optional sign followed by digits. `octave` takes any integer; `times`, `first
 [`<chan>`](/en/v1_0/reference/elements/chan/)'s `value` is a closed enumeration, matched exactly as written: `0.5`, `1`, `2`, `3`, `4`, and neither `0.50` nor `.5`. Its five levels are the whole set, so anything else is an error.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✓ valid -->
 <chan value="0.5"/>
@@ -114,13 +108,11 @@ An optional sign followed by digits. `octave` takes any integer; `times`, `first
 <chan value="0.50"/>
 <chan value=".5"/>
 ```
-
 :::
 
 [`<nathap>`](/en/v1_0/reference/elements/nathap/)'s `value` and [`<tuning>`](/en/v1_0/reference/elements/tuning/)'s `reference` are open. Both take any non-empty string, and both publish a recommended list. A validator warns on a value outside that list and must not reject it, which catches a misspelling of a known name without turning an unusual one into an invalid document.
 
 :::caution[Accepted, but a validator should warn]
-
 ```xml
 <!-- ✓ valid, no warning: on the recommended list -->
 <tuning reference="c-major"/>
@@ -131,7 +123,6 @@ An optional sign followed by digits. `octave` takes any integer; `times`, `first
 <!-- ✓ valid, no warning: a real tuning this list hasn't reached yet -->
 <tuning reference="krung-thep-1990"/>
 ```
-
 :::
 
 ### `pitch`
@@ -155,7 +146,6 @@ Match on the code points. Both modifiers are combining characters, so in rendere
 Normalization is not a concern. Thai has no canonical compositions, so a `pitch` value is the same sequence of code points under NFC, under NFD, and as authored. No normalization pass is needed before matching.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✓ valid: three spellings of the same note, one Thai octave modifier each -->
 <note pitch="1ํ"/>
@@ -168,16 +158,13 @@ Normalization is not a concern. Thai has no canonical compositions, so a `pitch`
 <!-- ✗ rejected: two octave modifiers on one base note -->
 <note pitch="ดํฺ"/>
 ```
-
 :::
 
 :::caution[Accepted, but a validator should warn]
-
 ```xml
 <!-- octave is ignored: ดํ already carries นิคหิต, so octave="2" says nothing new -->
 <note pitch="ดํ" octave="2"/>
 ```
-
 :::
 
 ### `pass`
@@ -185,7 +172,6 @@ Normalization is not a concern. Thai has no canonical compositions, so a `pitch`
 Comma-separated integers, in ascending order, with no repeats: `2` and `2,4` are well formed, `4,2` and `2,2` are not. See [`<ending>`](/en/v1_0/reference/elements/ending/#conformance) for the bounds.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✓ valid -->
 <ending pass="2,4">...</ending>
@@ -196,7 +182,6 @@ Comma-separated integers, in ascending order, with no repeats: `2` and `2,4` are
 <!-- ✗ rejected: repeats -->
 <ending pass="2,2">...</ending>
 ```
-
 :::
 
 ### `id` and `IDREF`
@@ -208,7 +193,6 @@ An `id` must be unique among elements of its own kind. `<part id="…">` values 
 [`<line>`](/en/v1_0/reference/elements/line/), [`<measure>`](/en/v1_0/reference/elements/measure/), [`<note>`](/en/v1_0/reference/elements/note/), [`<rest>`](/en/v1_0/reference/elements/rest/), and [`<group>`](/en/v1_0/reference/elements/group/) also accept an optional `id`, each kind its own independent set the same way `part` and `section` are. Nothing inside ThaiMusicXML itself resolves one - no IDREF attribute names these kinds - since a document has no reason to point at its own note. They exist so a [foreign-namespace extension](#foreign-namespace-extensions) or some other tool outside the document has a stable handle to attach state to, which is also why nothing requires them: a file with none of these ids is as conforming as one with every note tagged.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✓ valid: a part id and a section id may share a value, they're independent sets -->
 <part id="1">...</part>
@@ -228,7 +212,6 @@ An `id` must be unique among elements of its own kind. `<part id="…">` values 
 <!-- ✗ rejected: whitespace in an id -->
 <section id="ท่อน 1"/>
 ```
-
 :::
 
 ### Foreign-namespace extensions
@@ -240,7 +223,6 @@ The rule applies at every depth, not just to the element directly under `<thai-s
 A processor must preserve an extension element it does not recognize, unchanged, across a round trip, and an extension must never affect how the document renders or plays. Those two rules are what let more than one tool's extensions sit side by side without either needing to understand the other, and what stops an extension from forking the format by becoming load-bearing.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✓ valid: another tool's own state, ignored by anything that doesn't know it -->
 <part-data part="P1">...</part-data>
@@ -251,7 +233,6 @@ A processor must preserve an extension element it does not recognize, unchanged,
 <!-- ✗ rejected: no namespace, indistinguishable from native markup -->
 <editor xmlns="" version="1"/>
 ```
-
 :::
 
 ### Text and mixed content
@@ -259,7 +240,6 @@ A processor must preserve an extension element it does not recognize, unchanged,
 Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elements/text/) children - [`<annotation>`](/en/v1_0/reference/elements/annotation/), [`<composer>`](/en/v1_0/reference/elements/composer/), [`<lyricist>`](/en/v1_0/reference/elements/lyricist/), [`<arranger>`](/en/v1_0/reference/elements/arranger/) - the `<text>` children win. Any text beside them is ignored, which is what allows the element to be indented over several lines without its own formatting becoming content. Ignored text that is not merely whitespace draws a warning.
 
 :::caution[Accepted, but a validator should warn]
-
 ```xml
 <!-- ✓ valid, no warning: plain text, no <text> children -->
 <annotation>บรรทัดที่ 1 มี 7 ห้อง</annotation>
@@ -276,22 +256,20 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   leftover note
 </annotation>
 ```
-
 :::
 
 ## Rules by area
 
 ### Document shape
 
-- `<thai-score>` must be the single root element, carrying `version` and the namespace.
-- A processor must reject a document whose root is in a namespace it does not implement. The namespace URI names the compatibility boundary: through 0.x each release carries its own, and from 1.0 the URI carries the major version alone. `version` tells releases apart within a boundary and is informational to a processor that already understands the namespace, so a mismatch between the two draws a warning rather than a rejection.
-- Its children appear in order: `<header>`, `<structure>`, `<ensemble>`, one or more `<part-data>`, then zero or more [foreign-namespace extension elements](#foreign-namespace-extensions).
-- `<structure>` and `<repeat>` take `<annotation>`, `<br>`, `<direction>`, `<section>`, `<play>`, and `<repeat>`, in any order.
-- `<header>` must contain exactly one `<title>`. Everything else in the header is optional, and `<tuning>` and `<license>` appear at most once each.
-- `<nathap>`, `<chan>`, and `<bpm>` are each optional within a `<direction>` and appear at most once each, in any order.
+* `<thai-score>` must be the single root element, carrying `version` and the namespace.
+* A processor must reject a document whose root is in a namespace it does not implement. The namespace URI names the compatibility boundary: through 0.x each release carries its own, and from 1.0 the URI carries the major version alone. `version` tells releases apart within a boundary and is informational to a processor that already understands the namespace, so a mismatch between the two draws a warning rather than a rejection.
+* Its children appear in order: `<header>`, `<structure>`, `<ensemble>`, one or more `<part-data>`, then zero or more [foreign-namespace extension elements](#foreign-namespace-extensions).
+* `<structure>` and `<repeat>` take `<annotation>`, `<br>`, `<direction>`, `<section>`, `<play>`, and `<repeat>`, in any order.
+* `<header>` must contain exactly one `<title>`. Everything else in the header is optional, and `<tuning>` and `<license>` appear at most once each.
+* `<nathap>`, `<chan>`, and `<bpm>` are each optional within a `<direction>` and appear at most once each, in any order.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✗ rejected: <ensemble> before <structure> -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
@@ -320,33 +298,29 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <bpm>90</bpm>
 </direction>
 ```
-
 :::
 
 :::caution[Accepted, but a validator should warn]
-
 ```xml
 <!-- accepted, warns: version doesn't match 1.0, the namespace's current release -->
 <thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.3">
   ...
 </thai-score>
 ```
-
 :::
 
 ### Identity and reference
 
-- Every `<part>` must have exactly one `<part-data>` referencing it through `part`.
-- Every `<section-ref>` must reference a `<section>` that exists in `<structure>` through `section`.
-- Every `<play>` must reference a `<section>` that exists in `<structure>`. `<play>` adds a play of that section to the score's order without declaring one, so a section is still declared by exactly one `<section>`.
-- `<part-data>` elements may appear in any order. A `<part-data>` must not reference the same section twice, and need not reference every section.
-- A `<part-data>`'s `<section-ref>` elements may also appear in any order, and that order means nothing. What order the sections play in is `<structure>`'s to say; a `<section-ref>` only says which section a run of lines belongs to.
-- A `<section>` that no `<part-data>` references has no music. It is not played, contributes no rows to the page, and the rules below that count its lines and measures do not apply to it.
-- A `<part>` with `stack` must also have `row`, and vice versa. A `stack` value must be shared by at least two parts, their `row` values must run from `1` upward with no gaps or repeats, and they must be adjacent in `<ensemble>` in ascending `row` order.
-- A `type="lyric"` part must not carry `stack` or `row`. A stack is one instrument's own rows, and words are not a region of an instrument.
+* Every `<part>` must have exactly one `<part-data>` referencing it through `part`.
+* Every `<section-ref>` must reference a `<section>` that exists in `<structure>` through `section`.
+* Every `<play>` must reference a `<section>` that exists in `<structure>`. `<play>` adds a play of that section to the score's order without declaring one, so a section is still declared by exactly one `<section>`.
+* `<part-data>` elements may appear in any order. A `<part-data>` must not reference the same section twice, and need not reference every section.
+* A `<part-data>`'s `<section-ref>` elements may also appear in any order, and that order means nothing. What order the sections play in is `<structure>`'s to say; a `<section-ref>` only says which section a run of lines belongs to.
+* A `<section>` that no `<part-data>` references has no music. It is not played, contributes no rows to the page, and the rules below that count its lines and measures do not apply to it.
+* A `<part>` with `stack` must also have `row`, and vice versa. A `stack` value must be shared by at least two parts, their `row` values must run from `1` upward with no gaps or repeats, and they must be adjacent in `<ensemble>` in ascending `row` order.
+* A `type="lyric"` part must not carry `stack` or `row`. A stack is one instrument's own rows, and words are not a region of an instrument.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✗ rejected: <part id="P1"> exists in <ensemble> but no <part-data> references it -->
 <ensemble>
@@ -375,11 +349,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <part id="P3" stack="khong" row="1">...</part>
 <part id="P4" stack="khong" row="3">...</part>
 ```
-
 :::
 
 :::tip[Valid]
-
 ```xml
 <!-- valid: <part-data> in any order, and P3 leaves out s2 entirely -->
 <part-data part="P2">
@@ -395,21 +367,19 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <section id="s3" name="ท่อน 3"/>
 </structure>
 ```
-
 :::
 
 ### Timing
 
-- All `<section-ref>` elements referencing the same `<section>` must agree on line count, on measure count per line, and on beat count per measure. Validators must reject documents that violate this.
-- A `type="lyric"` part is bound by line count and measure count per line, and exempt from beat count per measure. Its measures hold any number of items, and it is excluded from the comparison other parts are held to.
-- A `<line>` must hold one to eight `<measure>` elements.
-- `number` on `<line>` and `<measure>` must match position, counting from `1`, in ascending order.
-- A measure in a pitched or unpitched part must hold at least one `<note>`, `<rest>`, or `<group>`. A lyric measure may be empty.
-- A `<group>` must hold at least two `<note>` or `<rest>` children, and must not contain another `<group>`.
-- A beat arrives on its last slot, so a `<group>`'s final child falls on the beat and the earlier ones space backwards from it within the beat's own span. A group can never reach outside its beat, and so never outside its measure. See [`<group>`](/en/v1_0/reference/elements/group/#why-a-group-cannot-leave-its-measure).
+* All `<section-ref>` elements referencing the same `<section>` must agree on line count, on measure count per line, and on beat count per measure. Validators must reject documents that violate this.
+* A `type="lyric"` part is bound by line count and measure count per line, and exempt from beat count per measure. Its measures hold any number of items, and it is excluded from the comparison other parts are held to.
+* A `<line>` must hold one to eight `<measure>` elements.
+* `number` on `<line>` and `<measure>` must match position, counting from `1`, in ascending order.
+* A measure in a pitched or unpitched part must hold at least one `<note>`, `<rest>`, or `<group>`. A lyric measure may be empty.
+* A `<group>` must hold at least two `<note>` or `<rest>` children, and must not contain another `<group>`.
+* A beat arrives on its last slot, so a `<group>`'s final child falls on the beat and the earlier ones space backwards from it within the beat's own span. A group can never reach outside its beat, and so never outside its measure. See [`<group>`](/en/v1_0/reference/elements/group/#why-a-group-cannot-leave-its-measure).
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✗ rejected: P1's measure 1 has 4 beats, P2's measure 1 has 3, for the same section -->
 <part-data part="P1">
@@ -452,11 +422,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <group><note pitch="ม"/><note pitch="ฟ"/></group>
 </group>
 ```
-
 :::
 
 :::tip[Valid]
-
 ```xml
 <!-- valid: a lyric part's measure count still has to match, but its beat count doesn't -->
 <part-data part="P-lyric">
@@ -470,22 +438,20 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- valid: a lyric measure may be empty -->
 <measure number="2"></measure>
 ```
-
 :::
 
 ### Repetition
 
-- `times` on `<repeat>` and `<line-repeat>` must be an integer of `2` or greater, and defaults to `2`. It counts total plays, not extra plays on top of the first. An element that played its content once would repeat nothing, so `times="1"` is rejected rather than treated as a no-op.
-- A `<repeat>` must contain at least one `<section>` or `<play>`, directly or nested.
-- `<line-repeat>` requires both `first` and `last`, with `first` no greater than `last`, and `last` no greater than the section's line count.
-- Two `<line-repeat>` ranges in one section must be properly nested or wholly disjoint.
-- `<ending>` is valid only when the section's total pass count exceeds `1`. Every `pass` value must fall within that count, every `<line number="N">` must replace an existing line, and the replacement must match the original's measure count. In a notated part it must match the beat counts too - except that a measure left completely empty means "unchanged from the line being replaced", regardless of that measure's own beat count. See [`<ending>`'s "Unchanged measures"](/en/v1_0/reference/elements/ending/#unchanged-measures).
-- A lyric part's `<ending>` matches on measure count alone, the same exemption it has everywhere else. See [Varying the words](/en/v1_0/reference/elements/ending/#varying-the-words).
-- An `<ending>`'s lines must form a consecutive run ending on the section's last line. An ending over the middle of a section is invalid, since the section would carry on normally afterwards and so would not be ending on the variation.
-- Every `<ending>` must carry at least one `<annotation>` captioning the variation.
+* `times` on `<repeat>` and `<line-repeat>` must be an integer of `2` or greater, and defaults to `2`. It counts total plays, not extra plays on top of the first. An element that played its content once would repeat nothing, so `times="1"` is rejected rather than treated as a no-op.
+* A `<repeat>` must contain at least one `<section>` or `<play>`, directly or nested.
+* `<line-repeat>` requires both `first` and `last`, with `first` no greater than `last`, and `last` no greater than the section's line count.
+* Two `<line-repeat>` ranges in one section must be properly nested or wholly disjoint.
+* `<ending>` is valid only when the section's total pass count exceeds `1`. Every `pass` value must fall within that count, every `<line number="N">` must replace an existing line, and the replacement must match the original's measure count. In a notated part it must match the beat counts too - except that a measure left completely empty means "unchanged from the line being replaced", regardless of that measure's own beat count. See [`<ending>`'s "Unchanged measures"](/en/v1_0/reference/elements/ending/#unchanged-measures).
+* A lyric part's `<ending>` matches on measure count alone, the same exemption it has everywhere else. See [Varying the words](/en/v1_0/reference/elements/ending/#varying-the-words).
+* An `<ending>`'s lines must form a consecutive run ending on the section's last line. An ending over the middle of a section is invalid, since the section would carry on normally afterwards and so would not be ending on the variation.
+* Every `<ending>` must carry at least one `<annotation>` captioning the variation.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✗ rejected: times="0" -->
 <repeat times="0">
@@ -535,11 +501,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <line number="4">...</line>
 </ending>
 ```
-
 :::
 
 :::tip[Valid]
-
 ```xml
 <!-- valid: properly nested line-repeats -->
 <section id="s1" name="ท่อน 1">
@@ -554,24 +518,22 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <line number="4">...</line>
 </ending>
 ```
-
 :::
 
 ### Notes and pitch
 
-- `type` on a `<part>` must be `"pitched"`, `"unpitched"`, or `"lyric"`. Validators must reject any other value.
-- A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part. `<note>`, `<group>`, `<bow>`, `<parenthesis>`, and `<link>` are not valid in a lyric part, and `<syllable>` is not valid outside one.
-- A note in a `pitched` part uses `pitch`; one in an `unpitched` part uses `sound`. The two are mutually exclusive.
-- `pitch` must be one of the seven base-note characters in any of the three spellings, optionally followed by one Thai octave modifier. Validators must reject any other value. See [Lexical types](#pitch).
-- A romanized base note may be written in upper or lower case. Case carries no meaning, and the renderer decides which case appears on the page.
-- When `pitch` carries a Thai octave modifier, that modifier wins and `octave` is ignored. Validators should warn rather than reject.
-- `<chan>`'s `value` must be one of the five listed levels, matched exactly. Validators must reject any other value.
-- `<nathap>`'s `value` and `<tuning>`'s `reference` accept any non-empty string. Validators should warn on a value outside the recommended list on the element's page, and must not reject it.
-- `<bpm>` content must be a positive integer.
-- A `<link>` span is valid in any notated part. Where the containing `<part>` has a `stack`, the curve reaches that instrument's other rows; where it has none, the curve marks the span's own notes. Either way there is a row for it to reach, since a stack is made of notated parts only.
+* `type` on a `<part>` must be `"pitched"`, `"unpitched"`, or `"lyric"`. Validators must reject any other value.
+* A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part. `<note>`, `<group>`, `<bow>`, `<parenthesis>`, and `<link>` are not valid in a lyric part, and `<syllable>` is not valid outside one.
+* A note in a `pitched` part uses `pitch`; one in an `unpitched` part uses `sound`. The two are mutually exclusive.
+* `pitch` must be one of the seven base-note characters in any of the three spellings, optionally followed by one Thai octave modifier. Validators must reject any other value. See [Lexical types](#pitch).
+* A romanized base note may be written in upper or lower case. Case carries no meaning, and the renderer decides which case appears on the page.
+* When `pitch` carries a Thai octave modifier, that modifier wins and `octave` is ignored. Validators should warn rather than reject.
+* `<chan>`'s `value` must be one of the five listed levels, matched exactly. Validators must reject any other value.
+* `<nathap>`'s `value` and `<tuning>`'s `reference` accept any non-empty string. Validators should warn on a value outside the recommended list on the element's page, and must not reject it.
+* `<bpm>` content must be a positive integer.
+* A `<link>` span is valid in any notated part. Where the containing `<part>` has a `stack`, the curve reaches that instrument's other rows; where it has none, the curve marks the span's own notes. Either way there is a row for it to reach, since a stack is made of notated parts only.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✗ rejected: type isn't one of the three values -->
 <part id="P1" type="drum">...</part>
@@ -591,11 +553,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <part id="P1" stack="khong" row="1">...</part>
 <part id="P2" stack="khong" row="2" type="lyric">...</part>
 ```
-
 :::
 
 :::tip[Valid]
-
 ```xml
 <!-- valid: case carries no meaning -->
 <note pitch="d"/>
@@ -604,22 +564,20 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- valid, no warning: no Thai octave modifier, so octave applies normally -->
 <note pitch="D" octave="-1"/>
 ```
-
 :::
 
 ### Span markers
 
-- `<bow>`, `<parenthesis>`, and `<link>` markers pair in document order within a resolved pass. The three kinds are matched independently of one another, so a span of one kind may open inside a span of another. Resolve the section's `<ending>` substitutions for a pass, then match within the lines that pass actually plays. See [Spans across an overridden line](/en/v1_0/reference/elements/ending/#spans-across-an-overridden-line).
-- A `<line-repeat>` does not affect matching. The lines are read once, in the order they are written, however many times playback runs through them.
-- On every resolved pass, a `type="start"` must be closed by a matching `type="stop"` before another `start` appears. Spans cannot nest or overlap.
-- On every resolved pass, each `start` must have a matching `stop` within the same `<section-ref>`. A span left open at the end of a pass is invalid even if another pass closes it, and spans cannot cross section boundaries.
-- `direction` is required on `<bow type="start">` and must not appear on `type="stop"`.
-- `dim` and `mute` are valid only on `<parenthesis type="start">`.
-- `<link>` carries no attribute but `type`, on either marker.
-- A `<link>`, `<bow>`, or `<parenthesis>` marker inside a `<group>` has zero duration and does not count toward the equal division of that group's beat.
+* `<bow>`, `<parenthesis>`, and `<link>` markers pair in document order within a resolved pass. The three kinds are matched independently of one another, so a span of one kind may open inside a span of another. Resolve the section's `<ending>` substitutions for a pass, then match within the lines that pass actually plays. See [Spans across an overridden line](/en/v1_0/reference/elements/ending/#spans-across-an-overridden-line).
+* A `<line-repeat>` does not affect matching. The lines are read once, in the order they are written, however many times playback runs through them.
+* On every resolved pass, a `type="start"` must be closed by a matching `type="stop"` before another `start` appears. Spans cannot nest or overlap.
+* On every resolved pass, each `start` must have a matching `stop` within the same `<section-ref>`. A span left open at the end of a pass is invalid even if another pass closes it, and spans cannot cross section boundaries.
+* `direction` is required on `<bow type="start">` and must not appear on `type="stop"`.
+* `dim` and `mute` are valid only on `<parenthesis type="start">`.
+* `<link>` carries no attribute but `type`, on either marker.
+* A `<link>`, `<bow>`, or `<parenthesis>` marker inside a `<group>` has zero duration and does not count toward the equal division of that group's beat.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✗ rejected: a second start before the first is closed -->
 <bow type="start" direction="out"/>
@@ -642,11 +600,9 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- ✗ rejected: mute on a stop -->
 <parenthesis type="stop" mute="true"/>
 ```
-
 :::
 
 :::tip[Valid]
-
 ```xml
 <!-- valid: a bow span closed across a measure boundary -->
 <measure number="1">
@@ -658,19 +614,17 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
   <bow type="stop"/>
 </measure>
 ```
-
 :::
 
 ### Annotations
 
-- `align` is required on every `<text>` and must be `"left"`, `"center"`, or `"right"`. A `<text>` must hold text only, with no child elements.
-- An `<annotation>` may hold at most one `<text>` per `align` value. Where it has `<text>` children they are its content, and any text beside them is ignored with a warning.
-- `<composer>`, `<lyricist>`, and `<arranger>` follow the same rule. Their plain-text default is centered rather than left.
-- An `<annotation>` or `<br>` inside a `<repeat>` is printed once, at its position in the document, and is not repeated per pass. A `<direction>` is re-read on every pass.
-- A `<line>`'s `<annotation>` children come before its measures. An annotation between two measures is invalid.
+* `align` is required on every `<text>` and must be `"left"`, `"center"`, or `"right"`. A `<text>` must hold text only, with no child elements.
+* An `<annotation>` may hold at most one `<text>` per `align` value. Where it has `<text>` children they are its content, and any text beside them is ignored with a warning.
+* `<composer>`, `<lyricist>`, and `<arranger>` follow the same rule. Their plain-text default is centered rather than left.
+* An `<annotation>` or `<br>` inside a `<repeat>` is printed once, at its position in the document, and is not repeated per pass. A `<direction>` is re-read on every pass.
+* A `<line>`'s `<annotation>` children come before its measures. An annotation between two measures is invalid.
 
 :::danger[Rejected]
-
 ```xml
 <!-- ✗ rejected: align missing -->
 <text>ท่อน 1</text>
@@ -687,14 +641,11 @@ Where an element takes either plain text or [`<text>`](/en/v1_0/reference/elemen
 <!-- ✗ rejected: a child element inside <text> -->
 <text align="left"><br/></text>
 ```
-
 :::
 
 :::tip[Valid]
-
 ```xml
 <!-- valid: plain-text composer defaults to centered, not left -->
 <composer>Traditional</composer>
 ```
-
 :::

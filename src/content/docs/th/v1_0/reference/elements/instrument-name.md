@@ -1,6 +1,7 @@
 ---
 title: <instrument-name>
 description: ชื่อเครื่องดนตรี
+slug: th/v1_0/reference/elements/instrument-name
 ---
 
 องค์ประกอบ `<instrument-name>` ให้ชื่อเครื่องดนตรี

@@ -1,6 +1,9 @@
 ---
 title: <bow>
-description: "Marks a span of notes played with one continuous bow stroke, without changing direction. A span may cross measures and lines, but not sections."
+description: Marks a span of notes played with one continuous bow stroke,
+  without changing direction. A span may cross measures and lines, but not
+  sections.
+slug: en/v1_0/reference/elements/bow
 ---
 
 The `<bow>` element marks a span of sibling [`<note>`](/en/v1_0/reference/elements/note/) elements played with one continuous bow stroke on a stringed instrument, without changing direction across the span.
@@ -13,8 +16,8 @@ The `<bow>` element marks a span of sibling [`<note>`](/en/v1_0/reference/elemen
 
 | Attribute | Required | Type | Description |
 | --------- | -------- | ---- | ----------- |
-| `type` | Yes | `"start"` \| `"stop"` | Whether this marker opens or closes a span. |
-| `direction` | If `type="start"` | `"in"` \| `"out"` | Bow direction for this span. Only valid, and required, on `type="start"`. |
+| `type` | Yes | `"start"` | `"stop"` | Whether this marker opens or closes a span. |
+| `direction` | If `type="start"` | `"in"` | `"out"` | Bow direction for this span. Only valid, and required, on `type="start"`. |
 
 ## Semantics
 
@@ -66,12 +69,12 @@ A span that crosses a `<line>` boundary is still one span. The renderer splits t
 
 ## Conformance
 
-- On every resolved pass of a section, a `type="start"` must be closed by a matching `type="stop"` before another `type="start"` appears. Bow spans cannot nest or overlap.
-- On every resolved pass, each `type="start"` must have a matching `type="stop"` within the same `<section-ref>`. A span left open at the end of a pass is invalid, even if another pass closes it.
-- `direction` is required on `type="start"` and must not appear on `type="stop"`.
-- Bow spans cannot cross `<section>` boundaries.
-- Bow spans are independent per part. Marking a span in one part's notes has no effect on any other part.
+* On every resolved pass of a section, a `type="start"` must be closed by a matching `type="stop"` before another `type="start"` appears. Bow spans cannot nest or overlap.
+* On every resolved pass, each `type="start"` must have a matching `type="stop"` within the same `<section-ref>`. A span left open at the end of a pass is invalid, even if another pass closes it.
+* `direction` is required on `type="start"` and must not appear on `type="stop"`.
+* Bow spans cannot cross `<section>` boundaries.
+* Bow spans are independent per part. Marking a span in one part's notes has no effect on any other part.
 
 ## Notes
 
-- This element describes a bowing technique. It is unrelated to the tie of Western notation, which joins two notes of the same pitch into one sounding note.
+* This element describes a bowing technique. It is unrelated to the tie of Western notation, which joins two notes of the same pitch into one sounding note.

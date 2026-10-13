@@ -1,6 +1,8 @@
 ---
 title: <text>
-description: ข้อความจัดตำแหน่งหนึ่งช่วงภายในหมายเหตุประกอบหรือเครดิต จับจองตำแหน่งซ้าย กลาง หรือขวาของบรรทัดเดียวขององค์ประกอบแม่
+description: ข้อความจัดตำแหน่งหนึ่งช่วงภายในหมายเหตุประกอบหรือเครดิต
+  จับจองตำแหน่งซ้าย กลาง หรือขวาของบรรทัดเดียวขององค์ประกอบแม่
+slug: th/v1_0/reference/elements/text
 ---
 
 องค์ประกอบ `<text>` บรรจุข้อความจัดตำแหน่งหนึ่งช่วงภายใน [`<annotation>`](/th/v1_0/reference/elements/annotation/) หรือเครดิต
@@ -9,10 +11,10 @@ description: ข้อความจัดตำแหน่งหนึ่ง�
 
 ## องค์ประกอบแม่
 
-- [`<annotation>`](/th/v1_0/reference/elements/annotation/)
-- [`<composer>`](/th/v1_0/reference/elements/composer/)
-- [`<lyricist>`](/th/v1_0/reference/elements/lyricist/)
-- [`<arranger>`](/th/v1_0/reference/elements/arranger/)
+* [`<annotation>`](/th/v1_0/reference/elements/annotation/)
+* [`<composer>`](/th/v1_0/reference/elements/composer/)
+* [`<lyricist>`](/th/v1_0/reference/elements/lyricist/)
+* [`<arranger>`](/th/v1_0/reference/elements/arranger/)
 
 ## แอตทริบิวต์
 
@@ -56,10 +58,10 @@ description: ข้อความจัดตำแหน่งหนึ่ง�
 
 ## การสอดคล้องมาตรฐาน
 
-- `align` จำเป็น ต้องเป็น `"left"`, `"center"`, หรือ `"right"` ตัวตรวจสอบต้องปฏิเสธค่าอื่น
-- องค์ประกอบแม่อาจมี `<text>` ไม่เกินหนึ่งตัวต่อค่า `align`
-- `<text>` ต้องมีเฉพาะข้อความ ลูกไม่ถูกต้อง
-- เมื่อองค์ประกอบแม่มีลูก `<text>` ลูกเหล่านั้นเป็นเนื้อหา ข้อความอื่นข้าง ๆ ถูกละเลย ตัวตรวจสอบควรแจ้งเตือนเมื่อข้อความที่ถูกละเลยไม่ใช่ช่องว่างล้วน ดู [`<annotation>`](/th/v1_0/reference/elements/annotation/#การสอดคล้องมาตรฐาน)
+* `align` จำเป็น ต้องเป็น `"left"`, `"center"`, หรือ `"right"` ตัวตรวจสอบต้องปฏิเสธค่าอื่น
+* องค์ประกอบแม่อาจมี `<text>` ไม่เกินหนึ่งตัวต่อค่า `align`
+* `<text>` ต้องมีเฉพาะข้อความ ลูกไม่ถูกต้อง
+* เมื่อองค์ประกอบแม่มีลูก `<text>` ลูกเหล่านั้นเป็นเนื้อหา ข้อความอื่นข้าง ๆ ถูกละเลย ตัวตรวจสอบควรแจ้งเตือนเมื่อข้อความที่ถูกละเลยไม่ใช่ช่องว่างล้วน ดู [`<annotation>`](/th/v1_0/reference/elements/annotation/#การสอดคล้องมาตรฐาน)
 
 ## การแสดงผล
 

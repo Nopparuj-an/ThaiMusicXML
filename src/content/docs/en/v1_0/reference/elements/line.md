@@ -1,6 +1,8 @@
 ---
 title: <line>
-description: "A musical line (บรรทัด) within one part's section, holding one to eight measures. Nine or more is a validation error."
+description: A musical line (บรรทัด) within one part's section, holding one to
+  eight measures. Nine or more is a validation error.
+slug: en/v1_0/reference/elements/line
 ---
 
 The `<line>` element contains a musical line or phrase within a section.
@@ -20,8 +22,8 @@ The `<line>` element contains a musical line or phrase within a section.
 
 In order:
 
-- [`<annotation>`](/en/v1_0/reference/elements/annotation/) - zero or more, before the measures
-- [`<measure>`](/en/v1_0/reference/elements/measure/) - one to eight
+* [`<annotation>`](/en/v1_0/reference/elements/annotation/) - zero or more, before the measures
+* [`<measure>`](/en/v1_0/reference/elements/measure/) - one to eight
 
 Eight measures is a hard limit. Many lines have fewer, depending on the song.
 
@@ -33,10 +35,10 @@ Line numbers are local to the containing `<section-ref>`. They start at `1` for 
 
 ## Conformance
 
-- A `<line>` must contain between one and eight `<measure>` elements. Validators must reject a line with nine or more.
-- Any `<annotation>` children come before the measures, not between them.
-- `number` must match the line's position in its `<section-ref>`, counting from `1`. Lines must appear in ascending order.
-- `id`, when present, must be unique among all `<line>` elements in the document.
+* A `<line>` must contain between one and eight `<measure>` elements. Validators must reject a line with nine or more.
+* Any `<annotation>` children come before the measures, not between them.
+* `number` must match the line's position in its `<section-ref>`, counting from `1`. Lines must appear in ascending order.
+* `id`, when present, must be unique among all `<line>` elements in the document.
 
 ## Rendering
 

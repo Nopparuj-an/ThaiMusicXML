@@ -1,6 +1,8 @@
 ---
 title: <composer>
-description: "Identifies the composer or attribution of the piece. The text prints exactly as typed, centered, or split into up to three aligned runs."
+description: Identifies the composer or attribution of the piece. The text
+  prints exactly as typed, centered, or split into up to three aligned runs.
+slug: en/v1_0/reference/elements/composer
 ---
 
 The `<composer>` element identifies the composer or attribution of the piece.
@@ -36,11 +38,11 @@ The text prints exactly as written. Nothing is prefixed or appended, so a score 
 
 ## Notes
 
-- Optional. Omit it if the composer is unknown or not applicable, rather than filling it with a placeholder.
-- Use one `<composer>` element per composer when a piece has several.
-- Renders in the title band. See [The title band](/en/v1_0/reference/rendering/#the-title-band).
+* Optional. Omit it if the composer is unknown or not applicable, rather than filling it with a placeholder.
+* Use one `<composer>` element per composer when a piece has several.
+* Renders in the title band. See [The title band](/en/v1_0/reference/rendering/#the-title-band).
 
 ## Conformance
 
-- Where a `<composer>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
-- At most one `<text>` child per `align` value.
+* Where a `<composer>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
+* At most one `<text>` child per `align` value.

@@ -1,6 +1,8 @@
 ---
 title: <bpm>
-description: "Sets the tempo in beats per minute, where one bpm beat is half a measure. Every measure lasts the same time whatever its beat count."
+description: Sets the tempo in beats per minute, where one bpm beat is half a
+  measure. Every measure lasts the same time whatever its beat count.
+slug: en/v1_0/reference/elements/bpm
 ---
 
 The `<bpm>` element sets the tempo in beats per minute.
@@ -47,8 +49,8 @@ Ninety pulses a minute, so forty-five measures a minute. At the usual four beats
 
 ## Conformance
 
-- Content must be a positive integer.
-- One bpm beat is half a measure. A measure lasts the same time whatever its beat count, and its slots divide that time evenly among themselves.
+* Content must be a positive integer.
+* One bpm beat is half a measure. A measure lasts the same time whatever its beat count, and its slots divide that time evenly among themselves.
 
 ## Rendering
 

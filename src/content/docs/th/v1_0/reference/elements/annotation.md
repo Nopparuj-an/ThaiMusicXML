@@ -1,6 +1,7 @@
 ---
 title: <annotation>
 description: กล่องข้อความ/หมายเหตุอิสระ
+slug: th/v1_0/reference/elements/annotation
 ---
 
 องค์ประกอบ `<annotation>` บรรจุข้อความ/หมายเหตุอิสระ อาจมีข้อความค่าเดียว หรือข้อความที่จัดตำแหน่งได้ไม่เกินสามค่าบนบรรทัดเดียวกัน
@@ -9,11 +10,11 @@ description: กล่องข้อความ/หมายเหตุอิ
 
 ## องค์ประกอบแม่
 
-- [`<structure>`](/th/v1_0/reference/elements/structure/)
-- [`<repeat>`](/th/v1_0/reference/elements/repeat/)
-- [`<section-ref>`](/th/v1_0/reference/elements/section-ref/)
-- [`<line>`](/th/v1_0/reference/elements/line/)
-- [`<ending>`](/th/v1_0/reference/elements/ending/)
+* [`<structure>`](/th/v1_0/reference/elements/structure/)
+* [`<repeat>`](/th/v1_0/reference/elements/repeat/)
+* [`<section-ref>`](/th/v1_0/reference/elements/section-ref/)
+* [`<line>`](/th/v1_0/reference/elements/line/)
+* [`<ending>`](/th/v1_0/reference/elements/ending/)
 
 ## เนื้อหา
 
@@ -58,8 +59,8 @@ description: กล่องข้อความ/หมายเหตุอิ
 
 ## การสอดคล้องมาตรฐาน
 
-- มีลูก `<text>` ได้ไม่เกินหนึ่งตัวต่อค่า `align` หนึ่งค่า
-- เมื่อ `<annotation>` มีลูก `<text>` ลูกเหล่านั้นคือเนื้อหาทั้งหมด ข้อความพี่น้องอื่นจะถูกละเลย ตัวตรวจสอบควรแจ้งเตือนเมื่อข้อความที่ถูกละเลยไม่ใช่ช่องว่างล้วน
+* มีลูก `<text>` ได้ไม่เกินหนึ่งตัวต่อค่า `align` หนึ่งค่า
+* เมื่อ `<annotation>` มีลูก `<text>` ลูกเหล่านั้นคือเนื้อหาทั้งหมด ข้อความพี่น้องอื่นจะถูกละเลย ตัวตรวจสอบควรแจ้งเตือนเมื่อข้อความที่ถูกละเลยไม่ใช่ช่องว่างล้วน
 
 ## การแสดงผล
 

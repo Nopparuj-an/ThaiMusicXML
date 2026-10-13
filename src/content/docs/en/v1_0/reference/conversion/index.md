@@ -1,6 +1,7 @@
 ---
 title: Conversion
 description: How a ThaiMusicXML document maps to other notation and playback formats
+slug: en/v1_0/reference/conversion
 ---
 
 This page defines how a conforming converter turns a ThaiMusicXML document into another format. v1.0 covers two export targets, **MusicXML** and **MIDI**; import, in either direction, is not addressed here. Nothing on this page applies to a renderer, validator, or player that never produces another format's file, and none of it changes what a ThaiMusicXML document is or whether it is valid. See [Conformance](/en/v1_0/reference/conformance/) for that.

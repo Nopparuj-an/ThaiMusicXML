@@ -5,9 +5,10 @@ Although confirm English version with the user first before writing Thai.
 
 ## Development
 
-- Schema is `public/schema/thaimusicxml-1.0.rng` (RELAX NG); TreeView in `elements/index.mdx` mirrors the same hierarchy.
+- Schema is `public/schema/thaimusicxml-1.x.rng` (RELAX NG, rolling: always the latest v1.x; `thaimusicxml-1.0.rng` is frozen and never edited); TreeView in `elements/index.mdx` mirrors the same hierarchy.
 - Conformance rules are prose, in ## Conformance sections on the relevant element page. The grammar covers what it can; the rest live in `scripts/check-corpus.mjs`, run over `public/corpus/` by `npm run check:corpus`.
 - astro check is currently broken in this environment, use `npx astro build` instead.
+- Docs are versioned: the root is the latest, older versions are frozen archives under `<locale>/<version>/`. Never edit an archive to carry new work. Releasing and archiving: see `RELEASING.md` (`pnpm run archive:version`); `npm run check:versions` verifies the archives.
 - After editing docs, run `npm run check:links`. It resolves every internal link and `#anchor`, including the TreeView slugs, and exits non-zero on a break.
 - For schema/design changes, propose and get explicit sign-off before editing; once confirmed, apply it across every affected file in one pass rather than incrementally.
 

@@ -1,6 +1,8 @@
 ---
 title: <note>
-description: "One attack in a part. A pitched part writes a scale degree from ด ร ม ฟ ซ ล ท with an octave mark; an unpitched part writes a sound code."
+description: One attack in a part. A pitched part writes a scale degree from ด ร
+  ม ฟ ซ ล ท with an octave mark; an unpitched part writes a sound code.
+slug: en/v1_0/reference/elements/note
 ---
 
 The `<note>` element represents a musical note.
@@ -95,11 +97,11 @@ A note displays in the spelling the file is written in, and an unpitched note's 
 
 ## Conformance
 
-- `pitch` must be one of the seven base-note characters in any of the three spellings, optionally followed by one Thai octave modifier. Validators must reject any other value.
-- A romanized base note may be written in upper or lower case. Both are valid and mean the same note.
-- When `pitch` carries a Thai octave modifier (nikhahit `ํ` or pinthu `ฺ`), that modifier determines the octave. An `octave` attribute on the same `<note>` is ignored.
-- Validators should warn rather than reject when `octave` appears alongside a Thai octave modifier. The combination is redundant, not contradictory.
-- When `pitch` has no Thai octave modifier (numeric, romanized, or unmodified Thai), `octave` applies as normal, defaulting to `0` when absent.
-- `octave` is not limited to `-1`, `0`, or `1`. Values outside that range have no distinct Thai-script spelling, since there is only one nikhahit and one pinthu. The `octave` value stays authoritative for playback whatever a renderer chooses to display. See [Octaves beyond the Thai spellings](/en/v1_0/reference/rendering/#octaves-beyond-the-thai-spellings).
-- `octave` may appear on a `<note>` that uses `sound`. It has no effect there: `sound` codes are instrument-specific and not organized into octaves. Validators should warn, since the attribute is being discarded.
-- `id`, when present, must be unique among all `<note>` elements in the document.
+* `pitch` must be one of the seven base-note characters in any of the three spellings, optionally followed by one Thai octave modifier. Validators must reject any other value.
+* A romanized base note may be written in upper or lower case. Both are valid and mean the same note.
+* When `pitch` carries a Thai octave modifier (nikhahit `ํ` or pinthu `ฺ`), that modifier determines the octave. An `octave` attribute on the same `<note>` is ignored.
+* Validators should warn rather than reject when `octave` appears alongside a Thai octave modifier. The combination is redundant, not contradictory.
+* When `pitch` has no Thai octave modifier (numeric, romanized, or unmodified Thai), `octave` applies as normal, defaulting to `0` when absent.
+* `octave` is not limited to `-1`, `0`, or `1`. Values outside that range have no distinct Thai-script spelling, since there is only one nikhahit and one pinthu. The `octave` value stays authoritative for playback whatever a renderer chooses to display. See [Octaves beyond the Thai spellings](/en/v1_0/reference/rendering/#octaves-beyond-the-thai-spellings).
+* `octave` may appear on a `<note>` that uses `sound`. It has no effect there: `sound` codes are instrument-specific and not organized into octaves. Validators should warn, since the attribute is being discarded.
+* `id`, when present, must be unique among all `<note>` elements in the document.

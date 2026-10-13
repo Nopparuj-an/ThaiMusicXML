@@ -1,6 +1,8 @@
 ---
 title: <part>
-description: "Declares that an instrument exists in the ensemble, with its type, name, and whether it stacks with another row. It holds no notes."
+description: Declares that an instrument exists in the ensemble, with its type,
+  name, and whether it stacks with another row. It holds no notes.
+slug: en/v1_0/reference/elements/part
 ---
 
 The `<part>` element defines a single instrument in the ensemble.
@@ -22,8 +24,8 @@ The `<part>` element defines a single instrument in the ensemble.
 
 ## Children
 
-- [`<instrument-name>`](/en/v1_0/reference/elements/instrument-name/) - required
-- [`<instrument-short-name>`](/en/v1_0/reference/elements/instrument-short-name/) - optional
+* [`<instrument-name>`](/en/v1_0/reference/elements/instrument-name/) - required
+* [`<instrument-short-name>`](/en/v1_0/reference/elements/instrument-short-name/) - optional
 
 ## Example
 
@@ -82,18 +84,18 @@ Three rows is the most seen in practice. Nothing caps it.
 
 ## Notes
 
-- `type` describes the part, not any particular performance. It is declared once here and never repeated in `<part-data>`. A lyric part is the one value that is not an instrument at all, which is a stretch of the word `<ensemble>` worth knowing about: reusing `<part>` is what gives a lyric line the whole line and measure grid for free.
-- See [`<note>`](/en/v1_0/reference/elements/note/) for how `type` determines which attribute a note uses.
-- `stack` describes the instrument too. See [`<ensemble>`](/en/v1_0/reference/elements/ensemble/#rendering) for how it affects rendering, and [`<link>`](/en/v1_0/reference/elements/link/) for the cross-row curve it enables.
-- A stack's parts sit together in `<ensemble>`, in row order. Their `<part-data>` is unaffected and still references each part on its own by `id`.
+* `type` describes the part, not any particular performance. It is declared once here and never repeated in `<part-data>`. A lyric part is the one value that is not an instrument at all, which is a stretch of the word `<ensemble>` worth knowing about: reusing `<part>` is what gives a lyric line the whole line and measure grid for free.
+* See [`<note>`](/en/v1_0/reference/elements/note/) for how `type` determines which attribute a note uses.
+* `stack` describes the instrument too. See [`<ensemble>`](/en/v1_0/reference/elements/ensemble/#rendering) for how it affects rendering, and [`<link>`](/en/v1_0/reference/elements/link/) for the cross-row curve it enables.
+* A stack's parts sit together in `<ensemble>`, in row order. Their `<part-data>` is unaffected and still references each part on its own by `id`.
 
 ## Conformance
 
-- Every `<part>` must have exactly one matching [`<part-data>`](/en/v1_0/reference/elements/part-data/#conformance).
-- `type` must be `"pitched"`, `"unpitched"`, or `"lyric"`. Validators must reject any other value.
-- A `type="lyric"` part's measures must hold only [`<syllable>`](/en/v1_0/reference/elements/syllable/#conformance) and `<rest>` children, and are exempt from the beat-count agreement in [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
-- `stack` and `row` must appear together: a `<part>` with `stack` must also have `row`, and a `<part>` with `row` must also have `stack`.
-- A `stack` value must be shared by at least two `<part>` elements. One part alone is a single-row instrument and carries neither attribute.
-- A `type="lyric"` part must not carry `stack` or `row`. Every row of a stack is a notated part.
-- The `row` values within one stack must run from `1` upward with no gaps and no repeats.
-- A stack's `<part>` elements must be adjacent in [`<ensemble>`](/en/v1_0/reference/elements/ensemble/), in ascending `row` order. `row` must match position the way `number` does on [`<line>`](/en/v1_0/reference/elements/line/) and [`<measure>`](/en/v1_0/reference/elements/measure/).
+* Every `<part>` must have exactly one matching [`<part-data>`](/en/v1_0/reference/elements/part-data/#conformance).
+* `type` must be `"pitched"`, `"unpitched"`, or `"lyric"`. Validators must reject any other value.
+* A `type="lyric"` part's measures must hold only [`<syllable>`](/en/v1_0/reference/elements/syllable/#conformance) and `<rest>` children, and are exempt from the beat-count agreement in [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
+* `stack` and `row` must appear together: a `<part>` with `stack` must also have `row`, and a `<part>` with `row` must also have `stack`.
+* A `stack` value must be shared by at least two `<part>` elements. One part alone is a single-row instrument and carries neither attribute.
+* A `type="lyric"` part must not carry `stack` or `row`. Every row of a stack is a notated part.
+* The `row` values within one stack must run from `1` upward with no gaps and no repeats.
+* A stack's `<part>` elements must be adjacent in [`<ensemble>`](/en/v1_0/reference/elements/ensemble/), in ascending `row` order. `row` must match position the way `number` does on [`<line>`](/en/v1_0/reference/elements/line/) and [`<measure>`](/en/v1_0/reference/elements/measure/).

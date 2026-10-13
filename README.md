@@ -52,7 +52,7 @@ pnpm install
 pnpm dev
 ```
 
-The schema lives at `public/schema/thaimusicxml-1.0.rng` (RELAX NG). Corpus examples are in `public/corpus/` and can be validated with:
+The schema lives at `public/schema/thaimusicxml-1.x.rng` (RELAX NG, rolling: the latest v1.x; `thaimusicxml-1.0.rng` is the frozen v1.0 schema). Corpus examples are in `public/corpus/` and can be validated with:
 
 ```sh
 npm run check:corpus

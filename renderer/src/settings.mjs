@@ -170,7 +170,9 @@ export const defaults = {
 
   // Lyric rows. A syllable is several times wider than a pitch letter and
   // nothing widens the cell to help, so "Lyric rows" allows setting the row
-  // smaller to buy some of that room back. OPEN.
+  // smaller to buy some of that room back. A chord row is set from these same
+  // four settings: "Chord rows" gives it the lyric row's size as its default
+  // and nothing printed argues for a second scale. OPEN.
   lyricSize: 10,
 
   // Words that will not fit where their beats are. Two things give, in this

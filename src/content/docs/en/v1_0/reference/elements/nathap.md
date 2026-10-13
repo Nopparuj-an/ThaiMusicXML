@@ -1,6 +1,8 @@
 ---
 title: <nathap>
-description: "Names the หน้าทับ drum cycle the music is set against, which fixes the length of the cycle and the pattern of strokes inside it."
+description: Names the หน้าทับ drum cycle the music is set against, which fixes
+  the length of the cycle and the pattern of strokes inside it.
+slug: en/v1_0/reference/elements/nathap
 ---
 
 The `<nathap>` element names the หน้าทับ the music is set against.
@@ -51,9 +53,9 @@ Like [`<chan>`](/en/v1_0/reference/elements/chan/), it is metadata for files, ed
 
 ## Conformance
 
-- `value` is required and may be any non-empty string.
-- Validators should warn on a `value` outside the recommended list above, and must not reject it.
-- At most one `<nathap>` per [`<direction>`](/en/v1_0/reference/elements/direction/).
+* `value` is required and may be any non-empty string.
+* Validators should warn on a `value` outside the recommended list above, and must not reject it.
+* At most one `<nathap>` per [`<direction>`](/en/v1_0/reference/elements/direction/).
 
 ## Rendering
 

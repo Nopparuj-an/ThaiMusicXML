@@ -1,6 +1,7 @@
 ---
 title: Schema และชุดทดสอบ
 description: Schema RELAX NG สำหรับ ThaiMusicXML v1.0 และชุดข้อมูลทดสอบที่มาพร้อม
+slug: th/v1_0/reference/schema
 ---
 
 import CorpusTable from "@/components/CorpusTable.astro";
@@ -10,6 +11,7 @@ import CorpusTable from "@/components/CorpusTable.astro";
 <a href="/schema/thaimusicxml-1.0.rng">
   <code>/schema/thaimusicxml-1.0.rng</code>
 </a>
+
 คือ Schema เป็น RELAX NG ในรูปแบบ XML `xmllint` และเครื่องมืออื่นที่ใช้ libxml2
 อ่านได้โดยไม่ต้องแปลง:
 
@@ -20,6 +22,7 @@ xmllint --noout --relaxng thaimusicxml-1.0.rng score.txml
 <a href="/schema/thaimusicxml-1.0.xsd">
   <code>/schema/thaimusicxml-1.0.xsd</code>
 </a>
+
 คือ Schema เดียวกันที่แปลงเป็น W3C XML Schema สำหรับเครื่องมือที่อ่าน XSD แต่ไม่อ่าน RELAX NG
 สร้างจากไฟล์ `.rng` โดย [Trang](https://relaxng.org/jclark/trang.html) ทุกครั้งที่ push
 ไฟล์ RELAX NG เป็นไฟล์ที่แก้ไขโดยตรง ส่วน XSD ถือเป็นผลลัพธ์ที่มาทีหลัง

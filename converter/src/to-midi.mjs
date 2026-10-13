@@ -18,6 +18,7 @@
 import { resolvePitch, resolveTuning } from "./pitch.mjs";
 import { lcm, subtract, compare, ZERO } from "./fraction.mjs";
 import { groupParts } from "./ensemble-groups.mjs";
+import { isTextPart } from "../../renderer/src/parts.mjs";
 
 // General MIDI program numbers, 1-indexed as GM names them; the wire value
 // sent in a Program Change is one less. See reference/conversion's "MIDI:
@@ -265,11 +266,14 @@ export function toMidi(doc, options = {}) {
   const percussionMap = options.percussionMap ?? {};
 
   const groups = groupParts(
-    doc.parts.filter((p) => p.type !== "lyric"),
+    doc.parts.filter((p) => !isTextPart(p.type)),
     options.splitStacks,
   );
   if (doc.parts.some((p) => p.type === "lyric")) {
     warn("Standard MIDI has no lyric pairing in v1.0; lyric parts are not carried into this file");
+  }
+  for (const part of doc.parts.filter((p) => p.type === "chord")) {
+    warn(`Standard MIDI has no chord-symbol event; chord part "${part.id}" is not carried into this file`);
   }
 
   const unrolledByGroup = groups.map((g) => g.members.map((m) => doc.unroll(m.id)));

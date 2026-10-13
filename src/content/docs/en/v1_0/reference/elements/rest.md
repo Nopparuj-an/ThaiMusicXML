@@ -1,6 +1,9 @@
 ---
 title: <rest>
-description: "One beat on which the instrument plays nothing new. Thai instruments have no notated sustain, so a rest is no attack rather than silence."
+description: One beat on which the instrument plays nothing new. Thai
+  instruments have no notated sustain, so a rest is no attack rather than
+  silence.
+slug: en/v1_0/reference/elements/rest
 ---
 
 The `<rest>` element occupies one beat on which the instrument plays nothing new.
@@ -27,10 +30,10 @@ A `<measure>` in a [lyric part](/en/v1_0/reference/elements/part/#part-types) ta
 
 ## Conformance
 
-- `id`, when present, must be unique among all `<rest>` elements in the document.
+* `id`, when present, must be unique among all `<rest>` elements in the document.
 
 ## Notes
 
-- Self-closing element, with an optional `id`.
-- Each `<rest/>` occupies one beat, the same as a `<note>` in the same position. Inside a [`<group>`](/en/v1_0/reference/elements/group/) it takes an equal share of the group's single beat.
-- A rest prints as a hyphen, though some notation styles leave it blank in a part that is not carrying the melody. See [Inside a measure](/en/v1_0/reference/rendering/#inside-a-measure).
+* Self-closing element, with an optional `id`.
+* Each `<rest/>` occupies one beat, the same as a `<note>` in the same position. Inside a [`<group>`](/en/v1_0/reference/elements/group/) it takes an equal share of the group's single beat.
+* A rest prints as a hyphen, though some notation styles leave it blank in a part that is not carrying the melody. See [Inside a measure](/en/v1_0/reference/rendering/#inside-a-measure).

@@ -1,6 +1,8 @@
 ---
 title: <annotation>
-description: "A free-form comment ignored during playback. Its scope comes from where it sits: the whole score, one part's section, or a single line."
+description: "A free-form comment ignored during playback. Its scope comes from
+  where it sits: the whole score, one part's section, or a single line."
+slug: en/v1_0/reference/elements/annotation
 ---
 
 The `<annotation>` element contains a free-form comment that is ignored during playback. It holds either one text value or up to three aligned text values on the same line.
@@ -9,11 +11,11 @@ Its scope comes from where it sits. An annotation in `<structure>` applies to th
 
 ## Parents
 
-- [`<structure>`](/en/v1_0/reference/elements/structure/)
-- [`<repeat>`](/en/v1_0/reference/elements/repeat/)
-- [`<section-ref>`](/en/v1_0/reference/elements/section-ref/)
-- [`<line>`](/en/v1_0/reference/elements/line/)
-- [`<ending>`](/en/v1_0/reference/elements/ending/)
+* [`<structure>`](/en/v1_0/reference/elements/structure/)
+* [`<repeat>`](/en/v1_0/reference/elements/repeat/)
+* [`<section-ref>`](/en/v1_0/reference/elements/section-ref/)
+* [`<line>`](/en/v1_0/reference/elements/line/)
+* [`<ending>`](/en/v1_0/reference/elements/ending/)
 
 ## Content
 
@@ -58,8 +60,8 @@ Where an element has `<text>` children, they carry the whole content and any tex
 
 ## Conformance
 
-- At most one `<text>` child per `align` value.
-- Where an `<annotation>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
+* At most one `<text>` child per `align` value.
+* Where an `<annotation>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
 
 ## Rendering
 

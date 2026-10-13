@@ -447,6 +447,27 @@ test("a <group> in a stack's second row alone still sizes the piece's divisions"
   assert.equal(xml.getElementsByTagName("time-modification").length, 3);
 });
 
+test("a chord part contributes no part and no <harmony>, and says why", () => {
+  const doc = resolve(
+    score(
+      `<part-data part="P1"><section-ref section="s1">
+        <line number="1"><measure number="1"><note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/></measure></line>
+      </section-ref></part-data>
+      <part-data part="P2"><section-ref section="s1">
+        <line number="1"><measure number="1"><chord>Am</chord></measure></line>
+      </section-ref></part-data>`,
+      {
+        ensemble: `<part id="P1"><instrument-name>Melody</instrument-name></part><part id="P2" type="chord"><instrument-name>Chords</instrument-name></part>`,
+      },
+    ),
+  );
+  const warnings = [];
+  const xml = parseXml(toMusicXml(doc, unshifted({ warn: (w) => warnings.push(w) })));
+  assert.equal(xml.getElementsByTagName("part").length, 1);
+  assert.equal(xml.getElementsByTagName("harmony").length, 0);
+  assert.ok(warnings.some((w) => w.includes('chord part "P2"')));
+});
+
 test("a lyric part pairs to the first notated part by default and prints one syllable per matching beat", () => {
   const doc = resolve(
     score(

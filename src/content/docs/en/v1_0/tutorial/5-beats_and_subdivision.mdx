@@ -3,6 +3,7 @@ title: Beats and subdivision
 description: How groups split a beat into equal parts
 sidebar:
   order: 5
+slug: en/v1_0/tutorial/5-beats_and_subdivision
 ---
 
 [Notes, rests, and octaves](/en/v1_0/tutorial/4-notes_and_octaves/) showed every note and rest taking one beat. This page introduces the `<group>` element, which splits a single beat into equal parts. It is the concept most specific to ThaiMusicXML.
@@ -116,6 +117,7 @@ Where the containing `<part>` has a `stack` attribute (meaning the instrument is
 From แขกบรเทศ, ท่อน 2, measure 3, both rows of ฆ้องวงใหญ่:
 
 ฆ้องวงใหญ่ R:
+
 ```xml
 <link type="start"/>
 <group>
@@ -127,6 +129,7 @@ From แขกบรเทศ, ท่อน 2, measure 3, both rows of ฆ้อ
 ```
 
 ฆ้องวงใหญ่ L:
+
 ```xml
 <group>
   <note pitch="ฟ"/>
@@ -152,7 +155,7 @@ Different parts can subdivide the same beat in different ways. One instrument ma
 
 Both measures have four beats. Part A's ร is on beat 2. Part B's group splits beat 2 into three, with ซ landing on the beat and ร and ม spacing backwards from it. The beats line up even though the notes do not.
 
----
+***
 
 Next, see [Sections, repeats, and endings](/en/v1_0/tutorial/6-sections_repeats_endings/) for how a score is organized into sections that repeat and how endings substitute lines.
 

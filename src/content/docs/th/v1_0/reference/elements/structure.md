@@ -1,6 +1,8 @@
 ---
 title: <structure>
-description: กำหนดโครงสร้างของโน้ต ได้แก่ ท่อนใดถูกเล่น ลำดับใด บ่อยแค่ไหน และมีทิศทางใดระหว่างทาง
+description: กำหนดโครงสร้างของโน้ต ได้แก่ ท่อนใดถูกเล่น ลำดับใด บ่อยแค่ไหน
+  และมีทิศทางใดระหว่างทาง
+slug: th/v1_0/reference/elements/structure
 ---
 
 องค์ประกอบ `<structure>` กำหนดโครงสร้างโน้ต: ท่อนใดเล่น ลำดับใด บ่อยแค่ไหน และมีทิศทางใดระหว่างทาง
@@ -13,12 +15,12 @@ description: กำหนดโครงสร้างของโน้ต ไ
 
 ลำดับของ:
 
-- [`<annotation>`](/th/v1_0/reference/elements/annotation/)
-- [`<br>`](/th/v1_0/reference/elements/br/)
-- [`<direction>`](/th/v1_0/reference/elements/direction/)
-- [`<section>`](/th/v1_0/reference/elements/section/)
-- [`<play>`](/th/v1_0/reference/elements/play/)
-- [`<repeat>`](/th/v1_0/reference/elements/repeat/)
+* [`<annotation>`](/th/v1_0/reference/elements/annotation/)
+* [`<br>`](/th/v1_0/reference/elements/br/)
+* [`<direction>`](/th/v1_0/reference/elements/direction/)
+* [`<section>`](/th/v1_0/reference/elements/section/)
+* [`<play>`](/th/v1_0/reference/elements/play/)
+* [`<repeat>`](/th/v1_0/reference/elements/repeat/)
 
 ปรากฏลำดับใดก็ได้และซ้ำได้
 

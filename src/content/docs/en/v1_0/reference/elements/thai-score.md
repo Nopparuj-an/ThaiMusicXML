@@ -1,8 +1,10 @@
 ---
 title: <thai-score>
-description: "The root element of every ThaiMusicXML document, carrying the namespace and the schema version the file follows."
+description: The root element of every ThaiMusicXML document, carrying the
+  namespace and the schema version the file follows.
 sidebar:
   order: 2
+slug: en/v1_0/reference/elements/thai-score
 ---
 
 The root element of every ThaiMusicXML document.
@@ -82,13 +84,13 @@ Where that boundary falls follows semantic versioning. Through 0.x any release m
 
 ## Notes
 
-- Must be the single root element of the document.
-- The `version` attribute records which ThaiMusicXML release the document was written against. The namespace is what a processor dispatches on.
+* Must be the single root element of the document.
+* The `version` attribute records which ThaiMusicXML release the document was written against. The namespace is what a processor dispatches on.
 
 ## Conformance
 
-- `<thai-score>` must be the single root element, carrying both `version` and the ThaiMusicXML namespace.
-- A processor must reject a document whose root is in a namespace it does not implement.
-- Validators should warn when `version` does not match the namespace it appears in, and must not reject on that alone.
-- A foreign-namespace extension element after the last `<part-data>` must declare a real namespace, neither ThaiMusicXML's own nor no namespace at all.
-- A processor must preserve an extension element it does not recognize, unchanged, across a round trip, and must not let one affect how the document renders or plays.
+* `<thai-score>` must be the single root element, carrying both `version` and the ThaiMusicXML namespace.
+* A processor must reject a document whose root is in a namespace it does not implement.
+* Validators should warn when `version` does not match the namespace it appears in, and must not reject on that alone.
+* A foreign-namespace extension element after the last `<part-data>` must declare a real namespace, neither ThaiMusicXML's own nor no namespace at all.
+* A processor must preserve an extension element it does not recognize, unchanged, across a round trip, and must not let one affect how the document renders or plays.

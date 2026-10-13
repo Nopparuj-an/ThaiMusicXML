@@ -1,6 +1,8 @@
 ---
 title: <instrument-name>
-description: "Names an instrument, in English or Thai. On one row of a stacked instrument it names the hand too, as in ฆ้องวงใหญ่ มือขวา."
+description: Names an instrument, in English or Thai. On one row of a stacked
+  instrument it names the hand too, as in ฆ้องวงใหญ่ มือขวา.
+slug: en/v1_0/reference/elements/instrument-name
 ---
 
 The `<instrument-name>` element gives the name of an instrument.

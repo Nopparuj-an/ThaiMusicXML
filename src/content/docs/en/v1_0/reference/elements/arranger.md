@@ -1,6 +1,9 @@
 ---
 title: <arranger>
-description: "Names whoever produced this setting of the piece. Much of the repertoire is traditional, so a score often has no composer but a known arranger."
+description: Names whoever produced this setting of the piece. Much of the
+  repertoire is traditional, so a score often has no composer but a known
+  arranger.
+slug: en/v1_0/reference/elements/arranger
 ---
 
 The `<arranger>` element names whoever produced this particular setting of the piece.
@@ -38,11 +41,11 @@ The text prints exactly as written. Nothing is prefixed or appended, so a score 
 
 ## Notes
 
-- Optional. Omit it when the arranger is unknown or the question does not apply.
-- Use one `<arranger>` element per person when several worked on the setting.
-- Renders in the title band. See [The title band](/en/v1_0/reference/rendering/#the-title-band).
+* Optional. Omit it when the arranger is unknown or the question does not apply.
+* Use one `<arranger>` element per person when several worked on the setting.
+* Renders in the title band. See [The title band](/en/v1_0/reference/rendering/#the-title-band).
 
 ## Conformance
 
-- Where an `<arranger>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
-- At most one `<text>` child per `align` value.
+* Where an `<arranger>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
+* At most one `<text>` child per `align` value.

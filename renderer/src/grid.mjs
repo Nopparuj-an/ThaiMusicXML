@@ -14,7 +14,8 @@
 // span can reach across lines a single renderGridLine() call never sees at
 // once.
 
-import { shares, arrivals, columnX, nudge, lyricFitSize, glyph } from "./geometry.mjs";
+import { shares, arrivals, columnX, nudge, textFitSize, glyph } from "./geometry.mjs";
+import { isTextPart } from "./parts.mjs";
 import { textWidth } from "./text.mjs";
 import { posKey } from "./pos.mjs";
 
@@ -218,20 +219,21 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
 
     if (rowGeom)
       for (const r of rows) {
-        if (r.part.type === "lyric") continue;
+        if (isTextPart(r.part.type)) continue;
         rowGeom.set(`${r.part.id}:${lineIndex}`, { top: r.top, left, right: gridRight, page: pager.page });
       }
 
     // Symbols. The share count is worked out for the measure as a whole so
     // that beat positions line up vertically across every part playing it.
-    // A lyric row takes no part in it - "Lyric rows take no part in the
-    // subdivision count" - so it is excluded here and placed afterward
-    // against the columns the notated rows already settled on.
+    // A lyric or chord row takes no part in it - "Lyric rows take no part in
+    // the subdivision count", and "Chord rows" says the same - so both are
+    // excluded here and placed afterward against the columns the notated rows
+    // already settled on.
     for (let m = 0; m < measureCount; m++) {
       const cellLeft = left + m * cellWidth;
 
       const perPart = rows
-        .filter((r) => r.part.type !== "lyric")
+        .filter((r) => !isTextPart(r.part.type))
         .map((r) => (r.line.measures[m]?.beats ?? []).map((b) => b.slots.length));
       const shareList = shares(perPart);
       const total = shareList.reduce((a, b) => a + b, 0);
@@ -247,7 +249,8 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
       const x = (column) => columnX(column, total, cellLeft, cellWidth, s.spread);
 
       // One arrival column per beat: where a lyric measure's item count
-      // matches, syllable i sits exactly where a plain note on beat i would.
+      // matches, syllable i sits exactly where a plain note on beat i would,
+      // and a chord row's symbols read off the same columns from the right.
       const beatArrivals = arrivals(shareList, shareList.map(() => 1)).map((c) => c[0]);
 
       // Work out every row's placement, then draw. Nothing here now reaches
@@ -256,19 +259,27 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
       const placed = rows.map((r) => {
         const measure = r.line.measures[m];
         if (!measure) return null;
-        if (r.part.type === "lyric") {
-          // The words come first here: a cell packed with long syllables sets
+        if (isTextPart(r.part.type)) {
+          // The text comes first here: a cell packed with long syllables sets
           // smaller than the cell beside it rather than dragging the whole row
           // down with it. The step between two neighbouring cells is visible,
           // and it is the cheaper of the two - one crowded measure should not
-          // cost the rest of the line its type size.
-          const fit = lyricFitSize(
-            measure.items.filter((item) => item.kind === "syllable").map((item) => item.text),
+          // cost the rest of the line its type size. A chord row is set the
+          // same way and from the same settings, per "Chord rows".
+          const fit = textFitSize(
+            measure.items.filter((item) => item.kind !== "rest").map((item) => item.text),
             cellWidth,
             s,
           );
           const size = Math.max(s.lyricMinSize, Math.min(s.lyricSize, fit));
-          return { part: r.part, measure, lyric: true, size, baseline: r.top + s.rowHeight / 2 + size / 3 };
+          return {
+            part: r.part,
+            measure,
+            text: true,
+            chord: r.part.type === "chord",
+            size,
+            baseline: r.top + s.rowHeight / 2 + size / 3,
+          };
         }
         return {
           part: r.part,
@@ -285,35 +296,46 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
       for (const row of placed) {
         if (!row) continue;
 
-        if (row.lyric) {
-          // "A lyric measure holding exactly as many items as the measure
-          // has beats renders one item per beat... Any other number renders
-          // as a single group centered in the cell." A <rest> is เอื้อน and
-          // prints as blank space, never the notated rows' hyphen.
+        if (row.text) {
+          // Lyrics: "A lyric measure holding exactly as many items as the
+          // measure has beats renders one item per beat... Any other number
+          // renders as a single group centered in the cell."
+          //
+          // Chords: "A measure's items take the last beats of the measure,
+          // one each" - flush right, with no centered form to fall back to.
+          //
+          // A <rest> prints as blank space in either row, never the notated
+          // rows' hyphen.
           const items = row.measure.items;
           const n = items.length;
           if (n === 0) continue;
-          const aligned = n === beatArrivals.length;
-          const at = (i) =>
-            aligned ? x(beatArrivals[i]) : columnX(i + 1, n, cellLeft, cellWidth, s.spread);
+          const beatCount = beatArrivals.length;
+          // A document with more chord items than beats is invalid, and is
+          // clamped here rather than read off the end of the arrivals.
+          const column = (i) => beatArrivals[Math.min(beatCount - 1, Math.max(0, i))];
+          const at = row.chord
+            ? (i) => x(column(beatCount - n + i))
+            : n === beatCount
+              ? (i) => x(beatArrivals[i])
+              : (i) => columnX(i + 1, n, cellLeft, cellWidth, s.spread);
 
-          // Where the words are too wide for the beats they belong to, the
-          // beats give: a syllable moves off its arrival into whatever room
-          // the cell has left rather than printing on top of its neighbour.
-          // Only the syllables take part - a <rest> is blank space, so it
-          // neither needs room nor stops a word using its own.
-          const sung = items.map((item, i) => ({ item, i })).filter(({ item }) => item.kind === "syllable");
+          // Where the text is too wide for the beats it belongs to, the beats
+          // give: an item moves off its arrival into whatever room the cell
+          // has left rather than printing on top of its neighbour. Only the
+          // printing items take part - a <rest> is blank space, so it neither
+          // needs room nor stops a word using its own.
+          const printed = items.map((item, i) => ({ item, i })).filter(({ item }) => item.kind !== "rest");
           const size = row.size;
           const pad = s.lyricPad * size;
           const xs = nudge(
-            sung.map(({ i }) => at(i)),
-            sung.map(({ item }) => textWidth(item.text, size)),
+            printed.map(({ i }) => at(i)),
+            printed.map(({ item }) => textWidth(item.text, size)),
             s.lyricGap * size,
             cellLeft + pad,
             cellLeft + cellWidth - pad,
           );
 
-          sung.forEach(({ item }, k) => {
+          printed.forEach(({ item }, k) => {
             pager.push({
               kind: "text",
               x: xs[k],
@@ -321,7 +343,7 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
               text: item.text,
               size,
               anchor: "middle",
-              role: "lyric",
+              role: row.chord ? "chord" : "lyric",
             });
           });
           continue;

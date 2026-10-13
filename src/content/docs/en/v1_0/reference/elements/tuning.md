@@ -1,6 +1,8 @@
 ---
 title: <tuning>
-description: "States what absolute pitch the scale degrees stand for. Without it a score says what to play relative to the ensemble, but not at what pitch."
+description: States what absolute pitch the scale degrees stand for. Without it
+  a score says what to play relative to the ensemble, but not at what pitch.
+slug: en/v1_0/reference/elements/tuning
 ---
 
 The `<tuning>` element states what absolute pitch the scale degrees in this score stand for.
@@ -41,14 +43,14 @@ Tuning practice is wider than four values, and pinning the set now would reject 
 
 ## Notes
 
-- Thai tuning divides the octave into seven near-equal steps, so no Western key matches it exactly. The `c-major` and `bb-major` values name the closest practical mapping, not an identity.
-- `<tuning>` is optional. A score meant only for reading, or one whose tuning is not known, can leave it out.
+* Thai tuning divides the octave into seven near-equal steps, so no Western key matches it exactly. The `c-major` and `bb-major` values name the closest practical mapping, not an identity.
+* `<tuning>` is optional. A score meant only for reading, or one whose tuning is not known, can leave it out.
 
 ## Conformance
 
-- `reference` is required and may be any non-empty string.
-- Validators should warn on a `reference` outside the recommended list above, and must not reject it.
-- At most one `<tuning>` per [`<header>`](/en/v1_0/reference/elements/header/).
+* `reference` is required and may be any non-empty string.
+* Validators should warn on a `reference` outside the recommended list above, and must not reject it.
+* At most one `<tuning>` per [`<header>`](/en/v1_0/reference/elements/header/).
 
 ## Rendering
 

@@ -11,12 +11,12 @@ const site = "https://thaimusicxml.anan.ovh";
 
 // Sidebar order, so llms.txt reads in the same order as the site navigation.
 const groups = [
-  { heading: "Getting started", match: (p) => p === "index" || p === "v1_0" },
-  { heading: "Tutorial", match: (p) => p.startsWith("v1_0/tutorial") },
-  { heading: "Elements", match: (p) => p.startsWith("v1_0/reference/elements") },
-  { heading: "Examples", match: (p) => p.startsWith("v1_0/reference/examples") },
-  { heading: "Reference", match: (p) => p.startsWith("v1_0/reference") },
-  { heading: "Updates", match: (p) => p.startsWith("v1_0/updates") },
+  { heading: "Getting started", match: (p) => p === "index" || p === "introduction" },
+  { heading: "Tutorial", match: (p) => p.startsWith("tutorial") },
+  { heading: "Elements", match: (p) => p.startsWith("reference/elements") },
+  { heading: "Examples", match: (p) => p.startsWith("reference/examples") },
+  { heading: "Reference", match: (p) => p.startsWith("reference") },
+  { heading: "Updates", match: (p) => p.startsWith("updates") },
   { heading: "Project", match: (p) => p.startsWith("about") },
 ];
 
@@ -31,6 +31,9 @@ async function walk(dir) {
   const out = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
+    // Archived versions (v1_0, ...) live beside the current docs; llms.txt
+    // describes the current docs only.
+    if (entry.isDirectory() && dir === docsDir && /^v\d+_\d+$/.test(entry.name)) continue;
     if (entry.isDirectory()) out.push(...(await walk(full)));
     else if (/\.mdx?$/.test(entry.name)) out.push(full);
   }
@@ -49,7 +52,7 @@ function frontmatter(raw) {
   return { data, body: raw.slice(match[0].length) };
 }
 
-// src/content/docs/en/v1_0/reference/elements/note.md -> v1_0/reference/elements/note
+// src/content/docs/en/reference/elements/note.md -> reference/elements/note
 function toSlug(file) {
   return relative(docsDir, file)
     .split(sep)
@@ -151,7 +154,7 @@ lines.push(`## Optional
 - [Thai documentation](${site}/th/): the same specification in Thai
 - [Sitemap](${site}/sitemap-index.xml): every URL in both languages
 - [GitHub repository](https://github.com/Nopparuj-an/ThaiMusicXML): schema, source, issues, and edit history
-- [RELAX NG schema](${site}/schema/thaimusicxml-1.0.rng): the normative grammar for v1.0
+- [RELAX NG schema](${site}/schema/thaimusicxml-1.x.rng): the normative grammar for v1.x
 `);
 
 await writeFile(join(root, "public", "llms.txt"), lines.join("\n"), "utf8");

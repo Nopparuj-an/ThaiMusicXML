@@ -1,6 +1,8 @@
 ---
 title: <link>
-description: "Marks a span of notes as one connected gesture, สะบัด, and asks for a curve drawn above the notation saying so."
+description: Marks a span of notes as one connected gesture, สะบัด, and asks for
+  a curve drawn above the notation saying so.
+slug: en/v1_0/reference/elements/link
 ---
 
 The `<link>` element marks a span of notes as one connected gesture, and asks for a curve saying so.
@@ -13,7 +15,7 @@ The `<link>` element marks a span of notes as one connected gesture, and asks fo
 
 | Attribute | Required | Type                  | Description                                 |
 | --------- | -------- | --------------------- | ------------------------------------------- |
-| `type`    | Yes      | `"start"` \| `"stop"` | Whether this marker opens or closes a span. |
+| `type`    | Yes      | `"start"` | `"stop"` | Whether this marker opens or closes a span. |
 
 Nothing else. A [`<bow>`](/en/v1_0/reference/elements/bow/) carries a `direction` and a [`<parenthesis>`](/en/v1_0/reference/elements/parenthesis/) carries `dim` and `mute`, because those are choices the arranger makes. A link's curve is not chosen: it follows from where the notes it spans fell.
 
@@ -81,20 +83,20 @@ Both markers always sit in the same part, the same as a `<bow>`. It is the curve
 
 ## Conformance
 
-- On every resolved pass of a section, a `type="start"` must be closed by a matching `type="stop"` before another `type="start"` appears. Link spans cannot nest or overlap.
-- On every resolved pass, each `type="start"` must have a matching `type="stop"` within the same `<section-ref>`. A span left open at the end of a pass is invalid, even if another pass closes it.
-- Link spans cannot cross `<section>` boundaries.
-- A `<link>` marker inside a [`<group>`](/en/v1_0/reference/elements/group/) has zero duration and does not count toward the equal division of that group's beat.
-- Where the containing `<part>` has a `stack`, the curve reaches that instrument's other rows. Every row of a stack is a notated part, since a [lyric part](/en/v1_0/reference/elements/part/#part-types) cannot carry `stack`, so there is always a row there for it to reach.
-- Where the `<part>` has no `stack`, the curve marks the span's own notes and there is nothing further to satisfy.
-- Both markers of a span must be in the same part. A `type="start"` in one row of a stack cannot be closed by a `type="stop"` in another; that leaves the first span open at the end of the pass and the second marker closing nothing, and both are already invalid under the rules above.
-- Across rows a link describes a connection, so declare it on one side only. Marking the span in the upper row is the convention; there is no need to mark what it reaches as well.
-- A span that sounds fewer than two notes has no run to mark and draws nothing. It is not an error.
+* On every resolved pass of a section, a `type="start"` must be closed by a matching `type="stop"` before another `type="start"` appears. Link spans cannot nest or overlap.
+* On every resolved pass, each `type="start"` must have a matching `type="stop"` within the same `<section-ref>`. A span left open at the end of a pass is invalid, even if another pass closes it.
+* Link spans cannot cross `<section>` boundaries.
+* A `<link>` marker inside a [`<group>`](/en/v1_0/reference/elements/group/) has zero duration and does not count toward the equal division of that group's beat.
+* Where the containing `<part>` has a `stack`, the curve reaches that instrument's other rows. Every row of a stack is a notated part, since a [lyric part](/en/v1_0/reference/elements/part/#part-types) cannot carry `stack`, so there is always a row there for it to reach.
+* Where the `<part>` has no `stack`, the curve marks the span's own notes and there is nothing further to satisfy.
+* Both markers of a span must be in the same part. A `type="start"` in one row of a stack cannot be closed by a `type="stop"` in another; that leaves the first span open at the end of the pass and the second marker closing nothing, and both are already invalid under the rules above.
+* Across rows a link describes a connection, so declare it on one side only. Marking the span in the upper row is the convention; there is no need to mark what it reaches as well.
+* A span that sounds fewer than two notes has no run to mark and draws nothing. It is not an error.
 
 ## Notes
 
-- A link and a [`<bow>`](/en/v1_0/reference/elements/bow/) are matched independently, so one may open inside the other. A gesture that is also bowed is an ordinary thing to write.
-- On a stack of three rows the curve reaches all of them. A gesture that needs to reach one specific row and not another cannot say so in v1.0, and neither can one that covers different beats in different rows: the span has one extent, and every row is read over it.
+* A link and a [`<bow>`](/en/v1_0/reference/elements/bow/) are matched independently, so one may open inside the other. A gesture that is also bowed is an ordinary thing to write.
+* On a stack of three rows the curve reaches all of them. A gesture that needs to reach one specific row and not another cannot say so in v1.0, and neither can one that covers different beats in different rows: the span has one extent, and every row is read over it.
 
 ## Rendering
 

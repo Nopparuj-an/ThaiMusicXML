@@ -1,6 +1,9 @@
 ---
 title: <chan>
-description: "Sets the ชั้น (chan) rhythmic layer, which determines rhythmic density. One of five levels, from ครึ่งชั้น through ชั้นเดียว, สองชั้น, สามชั้น, to สี่ชั้น."
+description: Sets the ชั้น (chan) rhythmic layer, which determines rhythmic
+  density. One of five levels, from ครึ่งชั้น through ชั้นเดียว, สองชั้น,
+  สามชั้น, to สี่ชั้น.
+slug: en/v1_0/reference/elements/chan
 ---
 
 The `<chan>` element sets the ชั้น (chan) rhythmic layer level.
@@ -43,9 +46,9 @@ So it is metadata: for an editor to show, for a library to index on, for a playb
 
 ## Notes
 
-- ชั้น does not set the tempo. At a fixed [`<bpm>`](/en/v1_0/reference/elements/bpm/) the notes keep their rate through a change of ชั้น; what changes is how many measures the melody is spread over, and so how often the ฉิ่ง falls.
-- [`<nathap>`](/en/v1_0/reference/elements/nathap/) sits beside it in `<direction>` and is metadata on the same terms.
+* ชั้น does not set the tempo. At a fixed [`<bpm>`](/en/v1_0/reference/elements/bpm/) the notes keep their rate through a change of ชั้น; what changes is how many measures the melody is spread over, and so how often the ฉิ่ง falls.
+* [`<nathap>`](/en/v1_0/reference/elements/nathap/) sits beside it in `<direction>` and is metadata on the same terms.
 
 ## Conformance
 
-- `value` must be one of the five values listed above, matched exactly as written. Validators must reject any other value, `0.50` and `.5` among them.
+* `value` must be one of the five values listed above, matched exactly as written. Validators must reject any other value, `0.50` and `.5` among them.

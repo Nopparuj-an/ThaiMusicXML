@@ -3,13 +3,14 @@ title: Marking the score
 description: Spans, annotations, credits, and metadata
 sidebar:
   order: 9
+slug: en/v1_0/tutorial/9-marking_the_score
 ---
 
 import { Image } from "astro:assets";
-import bowSpans from "@/assets/docs/v1_0/tutorial/9-marking_the_score/bow_spans.png";
-import parenthesis from "@/assets/docs/v1_0/tutorial/9-marking_the_score/parenthesis.png";
-import annotations from "@/assets/docs/v1_0/tutorial/9-marking_the_score/annotations.png";
-import credits from "@/assets/docs/v1_0/tutorial/9-marking_the_score/credits.png";
+import bowSpans from "@/assets/docs/tutorial/9-marking_the_score/bow_spans.png";
+import parenthesis from "@/assets/docs/tutorial/9-marking_the_score/parenthesis.png";
+import annotations from "@/assets/docs/tutorial/9-marking_the_score/annotations.png";
+import credits from "@/assets/docs/tutorial/9-marking_the_score/credits.png";
 
 [Ensembles and stacked instruments](/en/v1_0/tutorial/7-ensembles_stacked/) added several parts to the score. This page covers the elements that turn a bare grid into a printed sheet: bow spans, cued passages, annotations, and metadata.
 
@@ -73,11 +74,7 @@ The master score uses `<br>` to space a description annotation away from the dir
 
 ## Annotations with alignment
 
-<Image
-  src={annotations}
-  width={600}
-  alt="Annotations with alignment and vertical spacing"
-/>
+<Image src={annotations} width={600} alt="Annotations with alignment and vertical spacing" />
 
 `<annotation>` with `<text align>` controls where text sits in the cell:
 
@@ -110,10 +107,10 @@ The `<header>` can carry several metadata elements:
 </header>
 ```
 
-- `<lyricist>` names the lyric writer.
-- `<arranger>` names who adapted or transcribed the piece.
-- `<tuning>` records the tuning system. The `reference` attribute names a standard tuning.
-- `<license>` states the copyright terms.
+* `<lyricist>` names the lyric writer.
+* `<arranger>` names who adapted or transcribed the piece.
+* `<tuning>` records the tuning system. The `reference` attribute names a standard tuning.
+* `<license>` states the copyright terms.
 
 These are metadata for the file and the tools that read it. Whether they print on the page is a rendering decision.
 
@@ -127,7 +124,7 @@ These are metadata for the file and the tools that read it. Whether they print o
 
 It carries the information to editors and playback engines. It does not generate a printed label.
 
----
+***
 
 Next, see [Validating and going further](/en/v1_0/tutorial/10-validating/) for schema validation, the Playground, and where to go from here.
 

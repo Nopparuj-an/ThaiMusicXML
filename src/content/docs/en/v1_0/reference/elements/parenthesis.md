@@ -1,6 +1,8 @@
 ---
 title: <parenthesis>
-description: "Marks a span of notes and rests as cued rather than played, where the part waits for another instrument to carry the passage."
+description: Marks a span of notes and rests as cued rather than played, where
+  the part waits for another instrument to carry the passage.
+slug: en/v1_0/reference/elements/parenthesis
 ---
 
 The `<parenthesis>` element marks a span of sibling [`<note>`](/en/v1_0/reference/elements/note/) and [`<rest>`](/en/v1_0/reference/elements/rest/) elements as cued, not played: the part waits for another instrument in a leader/follower relationship to carry that passage.
@@ -13,7 +15,7 @@ The `<parenthesis>` element marks a span of sibling [`<note>`](/en/v1_0/referenc
 
 | Attribute | Required | Type                  | Description                                                                                                    |
 | --------- | -------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `type`    | Yes      | `"start"` \| `"stop"` | Whether this marker opens or closes a span.                                                                    |
+| `type`    | Yes      | `"start"` | `"stop"` | Whether this marker opens or closes a span.                                                                    |
 | `dim`     | No       | boolean               | Overrides the renderer's default for showing this span in a less distinct color. Only valid on `type="start"`. |
 | `mute`    | No       | boolean               | Overrides the renderer's default for muting this span during playback. Only valid on `type="start"`.           |
 
@@ -64,7 +66,7 @@ The markup only identifies the span. Whether it renders in a less distinct color
 
 ## Conformance
 
-- On every resolved pass of a section, a `type="start"` must be closed by a matching `type="stop"` before another `type="start"` appears. Parenthesis spans cannot nest or overlap.
-- On every resolved pass, each `type="start"` must have a matching `type="stop"` within the same `<section-ref>`. A span left open at the end of a pass is invalid, even if another pass closes it.
-- `dim` and `mute` are only valid on a `type="start"` marker.
-- Parenthesis spans are independent per part. Marking a span in one part's notes has no effect on any other part.
+* On every resolved pass of a section, a `type="start"` must be closed by a matching `type="stop"` before another `type="start"` appears. Parenthesis spans cannot nest or overlap.
+* On every resolved pass, each `type="start"` must have a matching `type="stop"` within the same `<section-ref>`. A span left open at the end of a pass is invalid, even if another pass closes it.
+* `dim` and `mute` are only valid on a `type="start"` marker.
+* Parenthesis spans are independent per part. Marking a span in one part's notes has no effect on any other part.

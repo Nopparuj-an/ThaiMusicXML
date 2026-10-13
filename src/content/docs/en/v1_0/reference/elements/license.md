@@ -1,6 +1,8 @@
 ---
 title: <license>
-description: "States the terms the score is published under. The terms cover the transcription as a document, not the traditional music it records."
+description: States the terms the score is published under. The terms cover the
+  transcription as a document, not the traditional music it records.
+slug: en/v1_0/reference/elements/license
 ---
 
 The `<license>` element states the terms this score is published under.
@@ -27,8 +29,8 @@ Text. A URL or a standard identifier is easier for tools to act on than a prose 
 
 ## Notes
 
-- Optional, and at most one per score.
-- Leaving it out says nothing about the terms. It does not imply the score is in the public domain.
+* Optional, and at most one per score.
+* Leaving it out says nothing about the terms. It does not imply the score is in the public domain.
 
 ## Rendering
 

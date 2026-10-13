@@ -3,13 +3,14 @@ title: การทำเครื่องหมายในโน้ต
 description: ข้อความ วงเล็บ เครื่องหมายคันชัก และข้อมูลเมตา
 sidebar:
   order: 9
+slug: th/v1_0/tutorial/9-marking_the_score
 ---
 
 import { Image } from "astro:assets";
-import bowSpans from "@/assets/docs/v1_0/tutorial/9-marking_the_score/bow_spans.png";
-import parenthesis from "@/assets/docs/v1_0/tutorial/9-marking_the_score/parenthesis.png";
-import annotations from "@/assets/docs/v1_0/tutorial/9-marking_the_score/annotations.png";
-import credits from "@/assets/docs/v1_0/tutorial/9-marking_the_score/credits.png";
+import bowSpans from "@/assets/docs/tutorial/9-marking_the_score/bow_spans.png";
+import parenthesis from "@/assets/docs/tutorial/9-marking_the_score/parenthesis.png";
+import annotations from "@/assets/docs/tutorial/9-marking_the_score/annotations.png";
+import credits from "@/assets/docs/tutorial/9-marking_the_score/credits.png";
 
 [เครื่องดนตรีหลายตัวและโน้ตซ้อน](/th/v1_0/tutorial/7-ensembles_stacked/) เพิ่มหลายพาร์ตเข้ามาในโน้ต หน้านี้ครอบคลุมองค์ประกอบที่เปลี่ยนตารางเปล่าให้เป็นแผ่นโน้ตที่พิมพ์ได้จริง ได้แก่ เครื่องหมายคันชัก ข้อความที่ย่อไว้ หมายเหตุประกอบ และข้อมูลเมตา
 
@@ -106,10 +107,10 @@ import credits from "@/assets/docs/v1_0/tutorial/9-marking_the_score/credits.png
 </header>
 ```
 
-- `<lyricist>` ระบุผู้แต่งเนื้อร้อง
-- `<arranger>` ระบุผู้ดัดแปลงหรือผู้ถอดโน้ต
-- `<tuning>` บันทึกระบบเสียง แอตทริบิวต์ `reference` ตั้งชื่อมาตรฐานการปรับเสียง
-- `<license>` ระบุลิขสิทธิ์
+* `<lyricist>` ระบุผู้แต่งเนื้อร้อง
+* `<arranger>` ระบุผู้ดัดแปลงหรือผู้ถอดโน้ต
+* `<tuning>` บันทึกระบบเสียง แอตทริบิวต์ `reference` ตั้งชื่อมาตรฐานการปรับเสียง
+* `<license>` ระบุลิขสิทธิ์
 
 องค์ประกอบเหล่านี้เป็นข้อมูลเมตาสำหรับไฟล์และเครื่องมือที่อ่านไฟล์ จะพิมพ์บนหน้ากระดาษหรือไม่ขึ้นอยู่กับการเรนเดอร์
 
@@ -123,7 +124,7 @@ import credits from "@/assets/docs/v1_0/tutorial/9-marking_the_score/credits.png
 
 ข้อมูลนี้ส่งถึงเครื่องมือแก้ไขและเอนจินเล่นเสียง ไม่ได้สร้างป้ายพิมพ์ออกมา
 
----
+***
 
 ขั้นต่อไป ดู [การตรวจสอบและขั้นต่อไป](/th/v1_0/tutorial/10-validating/) สำหรับการตรวจสอบ Schema Playground และแหล่งเรียนรู้เพิ่มเติม
 

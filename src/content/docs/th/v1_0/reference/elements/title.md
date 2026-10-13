@@ -1,6 +1,7 @@
 ---
 title: <title>
 description: ชื่อของเพลง จำเป็นต้องมีหนึ่งค่าพอดีในทุก header ของโน้ต
+slug: th/v1_0/reference/elements/title
 ---
 
 องค์ประกอบ `<title>` บรรจุชื่อเพลง

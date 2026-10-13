@@ -14,6 +14,7 @@ import { resolveTuning, resolvePitch } from "./pitch.mjs";
 import { ticksPerSlot, encodeDuration } from "./musicxml-durations.mjs";
 import { compare, add, subtract, frac, isZero, ZERO } from "./fraction.mjs";
 import { groupParts } from "./ensemble-groups.mjs";
+import { isTextPart } from "../../renderer/src/parts.mjs";
 
 /** The output's own beat: 2/4 time, so a quarter note - two note slots. */
 const BEAT_SLOTS = 2;
@@ -661,8 +662,12 @@ export function toMusicXml(doc, options = {}) {
   const lyricsEnabled = options.lyrics ?? true;
   const shift = (options.downbeatShift ?? true) ? SHIFT : ZERO;
 
+  for (const part of doc.parts.filter((p) => p.type === "chord")) {
+    warn(`<chord> holds text rather than a root and kind, so chord part "${part.id}" is not exported as <harmony>`);
+  }
+
   const groups = groupParts(
-    doc.parts.filter((p) => p.type !== "lyric"),
+    doc.parts.filter((p) => !isTextPart(p.type)),
     options.splitStacks,
   );
 

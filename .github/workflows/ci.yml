@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v6
         with:
@@ -32,6 +32,9 @@ jobs:
 
       - name: Check documentation links
         run: pnpm run check:links
+
+      - name: Check archived versions
+        run: pnpm run check:versions
 
       - name: Check conformance corpus
         run: pnpm run check:corpus
@@ -50,15 +53,15 @@ jobs:
       # import into public/, so the playground needs its own copy to import.
       - name: Generate XSD from RELAX NG schema
         run: |
-          trang -O xsd public/schema/thaimusicxml-1.0.rng public/schema/thaimusicxml-1.0.xsd
-          cp public/schema/thaimusicxml-1.0.xsd src/playground/thaimusicxml-1.0.xsd
+          trang -O xsd public/schema/thaimusicxml-1.x.rng public/schema/thaimusicxml-1.x.xsd
+          cp public/schema/thaimusicxml-1.x.xsd src/playground/thaimusicxml-1.x.xsd
 
       - name: Commit regenerated XSD
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: regenerate XSD from RNG schema [skip ci]"
-          file_pattern: public/schema/thaimusicxml-1.0.xsd src/playground/thaimusicxml-1.0.xsd
+          file_pattern: public/schema/thaimusicxml-1.x.xsd src/playground/thaimusicxml-1.x.xsd
 
       # - name: Build
       #   run: pnpm run build

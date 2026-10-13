@@ -1,6 +1,8 @@
 ---
 title: <measure>
-description: "A single measure (ห้อง) holding one part's notes and rests. Every part agrees on how many beats a given measure has."
+description: A single measure (ห้อง) holding one part's notes and rests. Every
+  part agrees on how many beats a given measure has.
+slug: en/v1_0/reference/elements/measure
 ---
 
 The `<measure>` element contains the notes and rests in a single measure (ห้อง).
@@ -52,8 +54,8 @@ Measure numbers are local to the containing `<line>`. They start at `1` for each
 
 ## Conformance
 
-- `number` must match the measure's position in its `<line>`, counting from `1`. Measures must appear in ascending order.
-- Corresponding measures across all parts referencing the same section must have the same beat count. Lyric parts are excluded from this. See [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
-- A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part.
-- A measure in a pitched or unpitched part must hold at least one `<note>`, `<rest>`, or `<group>`. An empty one would be a measure of no beats, and the agreement above would force every other part's corresponding measure to no beats with it. A lyric measure may be empty, meaning nothing is sung there.
-- `id`, when present, must be unique among all `<measure>` elements in the document.
+* `number` must match the measure's position in its `<line>`, counting from `1`. Measures must appear in ascending order.
+* Corresponding measures across all parts referencing the same section must have the same beat count. Lyric parts are excluded from this. See [`<section-ref>`](/en/v1_0/reference/elements/section-ref/#conformance).
+* A measure's children must match its part's `type`: `<note>`, `<rest>`, and `<group>` in a pitched or unpitched part, `<syllable>` and `<rest>` in a lyric part.
+* A measure in a pitched or unpitched part must hold at least one `<note>`, `<rest>`, or `<group>`. An empty one would be a measure of no beats, and the agreement above would force every other part's corresponding measure to no beats with it. A lyric measure may be empty, meaning nothing is sung there.
+* `id`, when present, must be unique among all `<measure>` elements in the document.

@@ -1,6 +1,8 @@
 ---
 title: <section-ref>
-description: บรรจุโน้ตของพาร์ตหนึ่งสำหรับท่อนที่โครงสร้างของโน้ตประกาศไว้ เป็นบรรทัดของห้อง พร้อมการออกเพลงต่างเที่ยวถ้ามี
+description: บรรจุโน้ตของพาร์ตหนึ่งสำหรับท่อนที่โครงสร้างของโน้ตประกาศไว้
+  เป็นบรรทัดของห้อง พร้อมการออกเพลงต่างเที่ยวถ้ามี
+slug: th/v1_0/reference/elements/section-ref
 ---
 
 องค์ประกอบ `<section-ref>` อ้างท่อนและบรรจุข้อมูลดนตรี
@@ -21,9 +23,9 @@ description: บรรจุโน้ตของพาร์ตหนึ่ง�
 
 ตามลำดับ:
 
-- [`<annotation>`](/th/v1_0/reference/elements/annotation/) - ศูนย์หรือมากกว่า ก่อนบรรทัด
-- [`<line>`](/th/v1_0/reference/elements/line/) - หนึ่งหรือมากกว่า
-- [`<ending>`](/th/v1_0/reference/elements/ending/) - ศูนย์หรือมากกว่า ความแปรผันต่อรอบสำหรับท่อนที่ซ้ำ
+* [`<annotation>`](/th/v1_0/reference/elements/annotation/) - ศูนย์หรือมากกว่า ก่อนบรรทัด
+* [`<line>`](/th/v1_0/reference/elements/line/) - หนึ่งหรือมากกว่า
+* [`<ending>`](/th/v1_0/reference/elements/ending/) - ศูนย์หรือมากกว่า ความแปรผันต่อรอบสำหรับท่อนที่ซ้ำ
 
 ## การนับหมายเลข
 

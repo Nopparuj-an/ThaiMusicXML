@@ -1,6 +1,8 @@
 ---
 title: <play>
-description: "Plays a section again later in the score, taking another place in the play order without a second copy of its music."
+description: Plays a section again later in the score, taking another place in
+  the play order without a second copy of its music.
+slug: en/v1_0/reference/elements/play
 ---
 
 The `<play>` element plays a section again at a later point in the score.
@@ -9,8 +11,8 @@ The `<play>` element plays a section again at a later point in the score.
 
 ## Parents
 
-- [`<structure>`](/en/v1_0/reference/elements/structure/)
-- [`<repeat>`](/en/v1_0/reference/elements/repeat/)
+* [`<structure>`](/en/v1_0/reference/elements/structure/)
+* [`<repeat>`](/en/v1_0/reference/elements/repeat/)
 
 ## Attributes
 
@@ -47,15 +49,15 @@ Plays inside a `<repeat>` count the same way. `<play>` inside a `times="2"` repe
 
 ## Notes
 
-- `<play>` does not declare a section, so a section still has exactly one `<section>` element and exactly one place its `name` and [`<line-repeat>`](/en/v1_0/reference/elements/line-repeat/) children are written.
-- A `<repeat>` whose only content is `<play>` elements is fine. It has something to play.
-- Nothing stops a `<play>` naming a section that has not been declared yet in document order, but the two orders will not match, and reading the score becomes harder than it needs to be.
+* `<play>` does not declare a section, so a section still has exactly one `<section>` element and exactly one place its `name` and [`<line-repeat>`](/en/v1_0/reference/elements/line-repeat/) children are written.
+* A `<repeat>` whose only content is `<play>` elements is fine. It has something to play.
+* Nothing stops a `<play>` naming a section that has not been declared yet in document order, but the two orders will not match, and reading the score becomes harder than it needs to be.
 
 ## Conformance
 
-- `section` is required and must reference a `<section>` declared in `<structure>`.
-- `<play>` has no children.
-- Each `<play>` adds one play of its section to the total pass count, multiplied by the `times` of every `<repeat>` enclosing it. See [`<repeat>`](/en/v1_0/reference/elements/repeat/#total-pass-count).
+* `section` is required and must reference a `<section>` declared in `<structure>`.
+* `<play>` has no children.
+* Each `<play>` adds one play of its section to the total pass count, multiplied by the `times` of every `<repeat>` enclosing it. See [`<repeat>`](/en/v1_0/reference/elements/repeat/#total-pass-count).
 
 ## Rendering
 

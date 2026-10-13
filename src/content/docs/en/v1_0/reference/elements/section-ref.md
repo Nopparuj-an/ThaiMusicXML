@@ -1,6 +1,8 @@
 ---
 title: <section-ref>
-description: "Holds one part's music for a section the score's structure declared, as lines of measures, plus any variant endings."
+description: Holds one part's music for a section the score's structure
+  declared, as lines of measures, plus any variant endings.
+slug: en/v1_0/reference/elements/section-ref
 ---
 
 The `<section-ref>` element references a section and contains its music data.
@@ -21,9 +23,9 @@ The `<section-ref>` element references a section and contains its music data.
 
 In order:
 
-- [`<annotation>`](/en/v1_0/reference/elements/annotation/) - zero or more, before the lines
-- [`<line>`](/en/v1_0/reference/elements/line/) - one or more
-- [`<ending>`](/en/v1_0/reference/elements/ending/) - zero or more, per-pass variations for a repeated section
+* [`<annotation>`](/en/v1_0/reference/elements/annotation/) - zero or more, before the lines
+* [`<line>`](/en/v1_0/reference/elements/line/) - one or more
+* [`<ending>`](/en/v1_0/reference/elements/ending/) - zero or more, per-pass variations for a repeated section
 
 ## Numbering
 

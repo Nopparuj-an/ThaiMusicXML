@@ -1,6 +1,8 @@
 ---
 title: <instrument-short-name>
-description: "A shortened form of the instrument name, for wherever the full name does not fit. Optional, and parts without one fall back to the full name."
+description: A shortened form of the instrument name, for wherever the full name
+  does not fit. Optional, and parts without one fall back to the full name.
+slug: en/v1_0/reference/elements/instrument-short-name
 ---
 
 The `<instrument-short-name>` element gives a shortened form of [`<instrument-name>`](/en/v1_0/reference/elements/instrument-name/), for use wherever the full name does not fit.

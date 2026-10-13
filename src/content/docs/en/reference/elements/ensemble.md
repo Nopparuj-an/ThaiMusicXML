@@ -1,0 +1,31 @@
+---
+title: <ensemble>
+description: "Lists the instruments in the score. Parts render in the order given here, with the rows of a stacked instrument kept together."
+---
+
+The `<ensemble>` element lists the instruments in the score.
+
+## Parent
+
+[`<thai-score>`](/en/reference/elements/thai-score/)
+
+## Children
+
+One or more [`<part>`](/en/reference/elements/part/) elements. Parts render in the order they appear here, and the parts of one [stacked instrument](/en/reference/elements/part/#stacked-instruments) sit together in row order.
+
+## Example
+
+```xml
+<ensemble>
+  <part id="P1">
+    <instrument-name>Ranat Ek</instrument-name>
+  </part>
+  <part id="P2">
+    <instrument-name>Ching</instrument-name>
+  </part>
+</ensemble>
+```
+
+## Rendering
+
+A full score stacks one row per part, and how much space separates those rows depends on whether the ensemble contains instruments notated on more than one row. See [Score layout](/en/reference/rendering/#score-layout) in the rendering reference.

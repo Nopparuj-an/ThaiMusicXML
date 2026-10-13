@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A chord part beside an instrumental one. Chord symbols flush right against
+     the end of the measure: measure 1 holds one symbol and so lands on beat 4,
+     measure 2 holds four items and claims every beat, measure 3 holds two and
+     lands on beats 3 and 4, and measure 4 is empty, meaning the chord already
+     sounding carries on. A chord part shares the line and measure grid but is
+     exempt from agreeing on beat count, subject only to the ceiling: never
+     more items than the measure has beats. -->
+<thai-score xmlns="https://thaimusicxml.anan.ovh/ns/1" version="1.0">
+  <header>
+    <title>ลาวดวงเดือน</title>
+    <arranger>Example Arranger</arranger>
+  </header>
+  <structure>
+    <section id="s1" name="ท่อน 1"/>
+  </structure>
+  <ensemble>
+    <part id="P1" type="chord">
+      <instrument-name>คอร์ด</instrument-name>
+    </part>
+    <part id="P2">
+      <instrument-name>ระนาดเอก</instrument-name>
+    </part>
+  </ensemble>
+  <part-data part="P1">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <chord>Am</chord>
+        </measure>
+        <measure number="2">
+          <rest/><chord>Dm</chord><rest/><chord>E7</chord>
+        </measure>
+        <measure number="3">
+          <chord>Am</chord><rest/>
+        </measure>
+        <measure number="4"/>
+      </line>
+    </section-ref>
+  </part-data>
+  <part-data part="P2">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1">
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ซ"/>
+        </measure>
+        <measure number="2">
+          <note pitch="ล"/><note pitch="ซ"/><note pitch="ม"/><note pitch="ร"/>
+        </measure>
+        <measure number="3">
+          <note pitch="ด"/><note pitch="ร"/><note pitch="ม"/><note pitch="ร"/>
+        </measure>
+        <measure number="4">
+          <note pitch="ด"/><rest/><note pitch="ล"/><note pitch="ด"/>
+        </measure>
+      </line>
+    </section-ref>
+  </part-data>
+</thai-score>

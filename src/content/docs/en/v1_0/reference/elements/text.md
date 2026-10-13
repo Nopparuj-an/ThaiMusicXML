@@ -1,6 +1,8 @@
 ---
 title: <text>
-description: "One aligned run of text inside an annotation or a credit, claiming the left, center, or right of its parent's single line."
+description: One aligned run of text inside an annotation or a credit, claiming
+  the left, center, or right of its parent's single line.
+slug: en/v1_0/reference/elements/text
 ---
 
 The `<text>` element holds one aligned run of text inside an [`<annotation>`](/en/v1_0/reference/elements/annotation/) or a credit.
@@ -9,10 +11,10 @@ Its parent renders as a single line carrying up to three positions, left, center
 
 ## Parents
 
-- [`<annotation>`](/en/v1_0/reference/elements/annotation/)
-- [`<composer>`](/en/v1_0/reference/elements/composer/)
-- [`<lyricist>`](/en/v1_0/reference/elements/lyricist/)
-- [`<arranger>`](/en/v1_0/reference/elements/arranger/)
+* [`<annotation>`](/en/v1_0/reference/elements/annotation/)
+* [`<composer>`](/en/v1_0/reference/elements/composer/)
+* [`<lyricist>`](/en/v1_0/reference/elements/lyricist/)
+* [`<arranger>`](/en/v1_0/reference/elements/arranger/)
 
 ## Attributes
 
@@ -56,10 +58,10 @@ A tool pulling a credit out of a file as a plain string concatenates the `<text>
 
 ## Conformance
 
-- `align` is required, and must be `"left"`, `"center"`, or `"right"`. Validators must reject any other value.
-- A parent may hold at most one `<text>` per `align` value.
-- `<text>` must contain text only. Child elements are invalid.
-- Where a parent has `<text>` children, they are its content and any text beside them is ignored. Validators should warn when the ignored text is not merely whitespace. See [`<annotation>`](/en/v1_0/reference/elements/annotation/#conformance).
+* `align` is required, and must be `"left"`, `"center"`, or `"right"`. Validators must reject any other value.
+* A parent may hold at most one `<text>` per `align` value.
+* `<text>` must contain text only. Child elements are invalid.
+* Where a parent has `<text>` children, they are its content and any text beside them is ignored. Validators should warn when the ignored text is not merely whitespace. See [`<annotation>`](/en/v1_0/reference/elements/annotation/#conformance).
 
 ## Rendering
 

@@ -16,7 +16,7 @@
 // drawing in spans.mjs - so this file stays a statement about what a score
 // contains and in what order, not about how a page fills up or how a cell
 // subdivides. The pure column and glyph math (shares, arrivals, columnX,
-// linkSpan, nudge, lyricFitSize, glyph) lives in geometry.mjs and is
+// linkSpan, nudge, textFitSize, glyph) lives in geometry.mjs and is
 // re-exported below unchanged, so nothing importing them from here has to
 // change.
 //
@@ -29,8 +29,9 @@ import { createPager } from "./pager.mjs";
 import { createGridRenderer } from "./grid.mjs";
 import { createSpanRenderer } from "./spans.mjs";
 import { comparePos } from "./pos.mjs";
+import { isTextPart } from "./parts.mjs";
 
-export { shares, arrivals, columnX, linkSpan, nudge, lyricFitSize, glyph } from "./geometry.mjs";
+export { shares, arrivals, columnX, linkSpan, nudge, textFitSize, glyph } from "./geometry.mjs";
 
 /**
  * Lay a parsed score out on a page.
@@ -300,10 +301,10 @@ export function layout(score, options = {}) {
 
   // The rows a link span written by `part` reaches. A stack is one physical
   // instrument, so the gesture belongs to all of its notated rows at once - a
-  // lyric row has no beats and takes no part in it. Without a stack there is
+  // text row has no beats and takes no part in it. Without a stack there is
   // no other row and the span marks the part's own notes.
   const stackMates = (part, parts) =>
-    part.stack ? parts.filter((p) => p.stack === part.stack && p.type !== "lyric") : [part];
+    part.stack ? parts.filter((p) => p.stack === part.stack && !isTextPart(p.type)) : [part];
 
   for (let index = 0; index < body.length; index++) {
     const item = body[index];

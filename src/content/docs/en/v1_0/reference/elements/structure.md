@@ -1,6 +1,8 @@
 ---
 title: <structure>
-description: "Defines the score layout: which sections are played, in what order, how often, and with what directions along the way."
+description: "Defines the score layout: which sections are played, in what
+  order, how often, and with what directions along the way."
+slug: en/v1_0/reference/elements/structure
 ---
 
 The `<structure>` element defines the score layout: which sections are played, in what order, how often, and with what directions along the way.
@@ -13,12 +15,12 @@ The `<structure>` element defines the score layout: which sections are played, i
 
 A sequence of:
 
-- [`<annotation>`](/en/v1_0/reference/elements/annotation/)
-- [`<br>`](/en/v1_0/reference/elements/br/)
-- [`<direction>`](/en/v1_0/reference/elements/direction/)
-- [`<section>`](/en/v1_0/reference/elements/section/)
-- [`<play>`](/en/v1_0/reference/elements/play/)
-- [`<repeat>`](/en/v1_0/reference/elements/repeat/)
+* [`<annotation>`](/en/v1_0/reference/elements/annotation/)
+* [`<br>`](/en/v1_0/reference/elements/br/)
+* [`<direction>`](/en/v1_0/reference/elements/direction/)
+* [`<section>`](/en/v1_0/reference/elements/section/)
+* [`<play>`](/en/v1_0/reference/elements/play/)
+* [`<repeat>`](/en/v1_0/reference/elements/repeat/)
 
 These can appear in any order and be repeated.
 

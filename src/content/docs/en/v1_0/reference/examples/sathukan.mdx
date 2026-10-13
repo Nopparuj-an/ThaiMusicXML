@@ -1,6 +1,7 @@
 ---
 title: Sathukan
 description: A two-row ฆ้องวงใหญ่ transcription of the หน้าพาทย์ piece สาธุการ
+slug: en/v1_0/reference/examples/sathukan
 ---
 
 import ExampleXml from "@/components/ExampleXml.astro";
@@ -9,7 +10,7 @@ import ExampleXml from "@/components/ExampleXml.astro";
 
 Page 1 of 3. The full score continues past the intro shown here.
 
-![Rendered Song](../../../../../../assets/docs/v1_0/reference/examples/sathukan/image.png)
+![Rendered Song](../../../../../../assets/docs/reference/examples/sathukan/v1_0/image.png)
 
 ## XML
 
@@ -33,14 +34,14 @@ A reader gets the same instruction a performer reading the source would.
 
 Covers:
 
-- Four [`<section>`](/en/v1_0/reference/elements/section/)s split exactly at
+* Four [`<section>`](/en/v1_0/reference/elements/section/)s split exactly at
   the source's cue points, with `<annotation>` carrying the cues themselves
   rather than an encoded repeat
-- `<part>`'s `stack` and `row` attributes joining ฆ้องวงใหญ่ R and L as the
+* `<part>`'s `stack` and `row` attributes joining ฆ้องวงใหญ่ R and L as the
   two rows of one instrument, the same pattern as
   [Khaek Borathes](/en/v1_0/reference/examples/khaek-borathes/)
-- A long score with no Thai octave modifiers at all: every
+* A long score with no Thai octave modifiers at all: every
   [`<note>`](/en/v1_0/reference/elements/note/) sits in one register, which
   the source notation does too
-- [`<rest>`](/en/v1_0/reference/elements/rest/) throughout, with no `<chan>`
+* [`<rest>`](/en/v1_0/reference/elements/rest/) throughout, with no `<chan>`
   or `<bpm>` set: the source gives no fixed tempo or ชั้น to record

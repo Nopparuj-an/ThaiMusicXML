@@ -1,6 +1,8 @@
 ---
 title: <instrument-short-name>
-description: ชื่อย่อของชื่อเครื่องดนตรี สำหรับที่ที่ชื่อเต็มไม่พอดี เป็นทางเลือก พาร์ตที่ไม่มีชื่อย่อจะใช้ชื่อเต็มแทน
+description: ชื่อย่อของชื่อเครื่องดนตรี สำหรับที่ที่ชื่อเต็มไม่พอดี เป็นทางเลือก
+  พาร์ตที่ไม่มีชื่อย่อจะใช้ชื่อเต็มแทน
+slug: th/v1_0/reference/elements/instrument-short-name
 ---
 
 องค์ประกอบ `<instrument-short-name>` ให้ชื่อย่อของ [`<instrument-name>`](/th/v1_0/reference/elements/instrument-name/) สำหรับกรณีที่ชื่อเต็มไม่พอดี

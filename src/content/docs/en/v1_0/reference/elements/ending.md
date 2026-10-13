@@ -1,6 +1,8 @@
 ---
 title: <ending>
-description: "Replaces specific lines on specific passes of a repeated section, so one part can play a variation without restructuring its section."
+description: Replaces specific lines on specific passes of a repeated section,
+  so one part can play a variation without restructuring its section.
+slug: en/v1_0/reference/elements/ending
 ---
 
 The `<ending>` element replaces specific `<line>` elements on specific passes of a repeated section, so a part can play something different on a given pass without restructuring its `<section-ref>`.
@@ -129,14 +131,14 @@ An ending prints below its section, detached from the line it stands in for. An 
 
 ## Conformance
 
-- `<ending>` is only valid inside a `<section-ref>` whose section has a total pass count greater than `1`. See [`<repeat>`](/en/v1_0/reference/elements/repeat/#total-pass-count).
-- Every value in `pass` must be an integer from `1` to the section's total pass count, listed in ascending order with no repeats.
-- Each `<line number="N">` in an `<ending>` must match the `number` of a line already present in the enclosing `<section-ref>`.
-- An `<ending>`'s lines must form a consecutive run ending on the section's last line, in ascending order. An ending over the middle of a section is invalid.
-- An `<ending>` line must have the same number of `<measure>` elements as the line it replaces. In a notated part, corresponding measures must also have the same beat count - except that a completely empty measure in a notated part is always allowed regardless of the beat count it stands in for, meaning "unchanged"; see [Unchanged measures](#unchanged-measures). This preserves the [cross-part synchronization rule](/en/v1_0/reference/elements/section-ref/#conformance): on any given pass, once every part's endings are resolved, all parts referencing the section still agree on line count, measure count, and beat count. Only the notes inside a measure may vary, or the whole measure may be left unchanged.
-- A [lyric part](/en/v1_0/reference/elements/part/#part-types) matches on measure count alone. Its measures hold as many items as the words need, in an ending as anywhere else, so there is no beat count to compare. See [Varying the words](#varying-the-words).
-- Two `<ending>` elements in the same `<section-ref>` must not cover the same line number for the same pass.
-- An `<ending>` must carry at least one `<annotation>`. An ending prints away from the line it replaces, so it needs a caption saying which part it belongs to and when it applies.
+* `<ending>` is only valid inside a `<section-ref>` whose section has a total pass count greater than `1`. See [`<repeat>`](/en/v1_0/reference/elements/repeat/#total-pass-count).
+* Every value in `pass` must be an integer from `1` to the section's total pass count, listed in ascending order with no repeats.
+* Each `<line number="N">` in an `<ending>` must match the `number` of a line already present in the enclosing `<section-ref>`.
+* An `<ending>`'s lines must form a consecutive run ending on the section's last line, in ascending order. An ending over the middle of a section is invalid.
+* An `<ending>` line must have the same number of `<measure>` elements as the line it replaces. In a notated part, corresponding measures must also have the same beat count - except that a completely empty measure in a notated part is always allowed regardless of the beat count it stands in for, meaning "unchanged"; see [Unchanged measures](#unchanged-measures). This preserves the [cross-part synchronization rule](/en/v1_0/reference/elements/section-ref/#conformance): on any given pass, once every part's endings are resolved, all parts referencing the section still agree on line count, measure count, and beat count. Only the notes inside a measure may vary, or the whole measure may be left unchanged.
+* A [lyric part](/en/v1_0/reference/elements/part/#part-types) matches on measure count alone. Its measures hold as many items as the words need, in an ending as anywhere else, so there is no beat count to compare. See [Varying the words](#varying-the-words).
+* Two `<ending>` elements in the same `<section-ref>` must not cover the same line number for the same pass.
+* An `<ending>` must carry at least one `<annotation>`. An ending prints away from the line it replaces, so it needs a caption saying which part it belongs to and when it applies.
 
 ## Example
 

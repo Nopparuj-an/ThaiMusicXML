@@ -1,14 +1,16 @@
 ---
 title: <repeat>
-description: "Wraps a run of the score's structure and plays it more than once. Repeats nest, so a piece can be built from layers of them."
+description: Wraps a run of the score's structure and plays it more than once.
+  Repeats nest, so a piece can be built from layers of them.
+slug: en/v1_0/reference/elements/repeat
 ---
 
 The `<repeat>` element wraps a run of `<structure>` content and plays it more than once. Repeats nest, so a piece can be built from layers of them.
 
 ## Parents
 
-- [`<structure>`](/en/v1_0/reference/elements/structure/)
-- [`<repeat>`](/en/v1_0/reference/elements/repeat/) - a repeat may wrap another repeat
+* [`<structure>`](/en/v1_0/reference/elements/structure/)
+* [`<repeat>`](/en/v1_0/reference/elements/repeat/) - a repeat may wrap another repeat
 
 ## Attributes
 
@@ -20,12 +22,12 @@ The `<repeat>` element wraps a run of `<structure>` content and plays it more th
 
 The same children `<structure>` takes, in any order and repeated freely:
 
-- [`<annotation>`](/en/v1_0/reference/elements/annotation/)
-- [`<br>`](/en/v1_0/reference/elements/br/)
-- [`<direction>`](/en/v1_0/reference/elements/direction/)
-- [`<section>`](/en/v1_0/reference/elements/section/)
-- [`<play>`](/en/v1_0/reference/elements/play/)
-- [`<repeat>`](/en/v1_0/reference/elements/repeat/)
+* [`<annotation>`](/en/v1_0/reference/elements/annotation/)
+* [`<br>`](/en/v1_0/reference/elements/br/)
+* [`<direction>`](/en/v1_0/reference/elements/direction/)
+* [`<section>`](/en/v1_0/reference/elements/section/)
+* [`<play>`](/en/v1_0/reference/elements/play/)
+* [`<repeat>`](/en/v1_0/reference/elements/repeat/)
 
 ## Semantics
 
@@ -58,7 +60,7 @@ Passes are counted absolutely, straight through from the first play to the last,
 
 ## Conformance
 
-- `times` must be an integer of `2` or greater, and defaults to `2` when absent. A `<repeat>` playing its content once is not a repeat; a score that plays a section once writes no `<repeat>` around it.
-- A `<repeat>` must contain at least one `<section>` or [`<play>`](/en/v1_0/reference/elements/play/), directly or inside a nested `<repeat>`. A repeat wrapping only annotations and directions has nothing to play.
-- Repeats nest to any depth.
-- To repeat a range of lines within one section rather than the section as a whole, use [`<line-repeat>`](/en/v1_0/reference/elements/line-repeat/).
+* `times` must be an integer of `2` or greater, and defaults to `2` when absent. A `<repeat>` playing its content once is not a repeat; a score that plays a section once writes no `<repeat>` around it.
+* A `<repeat>` must contain at least one `<section>` or [`<play>`](/en/v1_0/reference/elements/play/), directly or inside a nested `<repeat>`. A repeat wrapping only annotations and directions has nothing to play.
+* Repeats nest to any depth.
+* To repeat a range of lines within one section rather than the section as a whole, use [`<line-repeat>`](/en/v1_0/reference/elements/line-repeat/).

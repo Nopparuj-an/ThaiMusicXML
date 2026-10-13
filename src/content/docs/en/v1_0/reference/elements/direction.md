@@ -1,20 +1,22 @@
 ---
 title: <direction>
-description: "Carries performance directions for the score: the หน้าทับ cycle, the ชั้น layer, and the tempo in beats per minute."
+description: "Carries performance directions for the score: the หน้าทับ cycle,
+  the ชั้น layer, and the tempo in beats per minute."
+slug: en/v1_0/reference/elements/direction
 ---
 
 The `<direction>` element contains performance directions for the score.
 
 ## Parents
 
-- [`<structure>`](/en/v1_0/reference/elements/structure/)
-- [`<repeat>`](/en/v1_0/reference/elements/repeat/)
+* [`<structure>`](/en/v1_0/reference/elements/structure/)
+* [`<repeat>`](/en/v1_0/reference/elements/repeat/)
 
 ## Children
 
-- [`<nathap>`](/en/v1_0/reference/elements/nathap/) - หน้าทับ (rhythmic cycle)
-- [`<chan>`](/en/v1_0/reference/elements/chan/) - ชั้น (rhythmic layer)
-- [`<bpm>`](/en/v1_0/reference/elements/bpm/) - tempo
+* [`<nathap>`](/en/v1_0/reference/elements/nathap/) - หน้าทับ (rhythmic cycle)
+* [`<chan>`](/en/v1_0/reference/elements/chan/) - ชั้น (rhythmic layer)
+* [`<bpm>`](/en/v1_0/reference/elements/bpm/) - tempo
 
 ## Example
 
@@ -28,4 +30,4 @@ The `<direction>` element contains performance directions for the score.
 
 ## Conformance
 
-- `<nathap>`, `<chan>`, and `<bpm>` are each optional and may appear at most once, in any order. A `<direction>` can set any of them, all of them, or none.
+* `<nathap>`, `<chan>`, and `<bpm>` are each optional and may appear at most once, in any order. A `<direction>` can set any of them, all of them, or none.

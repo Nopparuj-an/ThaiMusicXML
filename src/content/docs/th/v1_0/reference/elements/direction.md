@@ -1,20 +1,21 @@
 ---
 title: <direction>
 description: บรรข้อมูลเกี่ยวกับจังหวะ ได้แก่ หน้าทับ ระดับชั้น และจังหวะเป็นจังหวะต่อนาที
+slug: th/v1_0/reference/elements/direction
 ---
 
 องค์ประกอบ `<direction>` บรรข้อมูลเกี่ยวกับจังหวะสำหรับโน้ต
 
 ## องค์ประกอบแม่
 
-- [`<structure>`](/th/v1_0/reference/elements/structure/)
-- [`<repeat>`](/th/v1_0/reference/elements/repeat/)
+* [`<structure>`](/th/v1_0/reference/elements/structure/)
+* [`<repeat>`](/th/v1_0/reference/elements/repeat/)
 
 ## ลูก
 
-- [`<nathap>`](/th/v1_0/reference/elements/nathap/) - หน้าทับ (รอบจังหวะกลอง)
-- [`<chan>`](/th/v1_0/reference/elements/chan/) - ชั้น (ระดับชั้นจังหวะ)
-- [`<bpm>`](/th/v1_0/reference/elements/bpm/) - จังหวะ
+* [`<nathap>`](/th/v1_0/reference/elements/nathap/) - หน้าทับ (รอบจังหวะกลอง)
+* [`<chan>`](/th/v1_0/reference/elements/chan/) - ชั้น (ระดับชั้นจังหวะ)
+* [`<bpm>`](/th/v1_0/reference/elements/bpm/) - จังหวะ
 
 ## ตัวอย่าง
 
@@ -28,4 +29,4 @@ description: บรรข้อมูลเกี่ยวกับจังห�
 
 ## การสอดคล้องมาตรฐาน
 
-- `<nathap>`, `<chan>`, และ `<bpm>` เป็นทางเลือกแต่ละตัว ปรากฏได้ไม่เกินหนึ่ง ลำดับใดก็ได้ `<direction>` อาจตั้งค่าใดก็ได้ ทั้งหมด หรือไม่มี
+* `<nathap>`, `<chan>`, และ `<bpm>` เป็นทางเลือกแต่ละตัว ปรากฏได้ไม่เกินหนึ่ง ลำดับใดก็ได้ `<direction>` อาจตั้งค่าใดก็ได้ ทั้งหมด หรือไม่มี

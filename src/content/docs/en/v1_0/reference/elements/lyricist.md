@@ -1,6 +1,8 @@
 ---
 title: <lyricist>
-description: "Names whoever wrote the words to the piece. The text prints exactly as typed, centered, or split into up to three aligned runs."
+description: Names whoever wrote the words to the piece. The text prints exactly
+  as typed, centered, or split into up to three aligned runs.
+slug: en/v1_0/reference/elements/lyricist
 ---
 
 The `<lyricist>` element names whoever wrote the words to the piece.
@@ -36,12 +38,12 @@ The text prints exactly as written. Nothing is prefixed or appended, so a score 
 
 ## Notes
 
-- Optional. Omit it for instrumental pieces, or when the lyricist is unknown, rather than filling it with a placeholder.
-- Use one `<lyricist>` element per person when a piece has several.
-- This names the writer only. The words themselves go in a [lyric part](/en/v1_0/reference/elements/part/#part-types), as [`<syllable>`](/en/v1_0/reference/elements/syllable/) elements on the grid.
-- Renders in the title band. See [The title band](/en/v1_0/reference/rendering/#the-title-band).
+* Optional. Omit it for instrumental pieces, or when the lyricist is unknown, rather than filling it with a placeholder.
+* Use one `<lyricist>` element per person when a piece has several.
+* This names the writer only. The words themselves go in a [lyric part](/en/v1_0/reference/elements/part/#part-types), as [`<syllable>`](/en/v1_0/reference/elements/syllable/) elements on the grid.
+* Renders in the title band. See [The title band](/en/v1_0/reference/rendering/#the-title-band).
 
 ## Conformance
 
-- Where a `<lyricist>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
-- At most one `<text>` child per `align` value.
+* Where a `<lyricist>` has `<text>` children, they are its content and any sibling text is ignored. Validators should warn when the ignored text is not merely whitespace.
+* At most one `<text>` child per `align` value.

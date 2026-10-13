@@ -1,14 +1,16 @@
 ---
 title: <repeat>
-description: ครอบช่วงหนึ่งของโครงสร้างโน้ตและเล่นมากกว่าหนึ่งครั้ง repeat ซ้อนกันได้ เพลงจึงประกอบขึ้นจากหลายชั้นของการซ้ำ
+description: ครอบช่วงหนึ่งของโครงสร้างโน้ตและเล่นมากกว่าหนึ่งครั้ง repeat
+  ซ้อนกันได้ เพลงจึงประกอบขึ้นจากหลายชั้นของการซ้ำ
+slug: th/v1_0/reference/elements/repeat
 ---
 
 องค์ประกอบ `<repeat>` ครอบเนื้อหา `<structure>` และเล่นมากกว่าหนึ่งครั้ง การซ้ำอาจซ้อนกันได้ เพลงจึงประกอบขึ้นจากหลายชั้นของการซ้ำ
 
 ## องค์ประกอบแม่
 
-- [`<structure>`](/th/v1_0/reference/elements/structure/)
-- [`<repeat>`](/th/v1_0/reference/elements/repeat/) - repeat อาจครอบ repeat อื่น
+* [`<structure>`](/th/v1_0/reference/elements/structure/)
+* [`<repeat>`](/th/v1_0/reference/elements/repeat/) - repeat อาจครอบ repeat อื่น
 
 ## แอตทริบิวต์
 
@@ -20,12 +22,12 @@ description: ครอบช่วงหนึ่งของโครงสร�
 
 ลูกเดียวกับที่ `<structure>` รับ ลำดับใดก็ได้และซ้ำได้อิสระ:
 
-- [`<annotation>`](/th/v1_0/reference/elements/annotation/)
-- [`<br>`](/th/v1_0/reference/elements/br/)
-- [`<direction>`](/th/v1_0/reference/elements/direction/)
-- [`<section>`](/th/v1_0/reference/elements/section/)
-- [`<play>`](/th/v1_0/reference/elements/play/)
-- [`<repeat>`](/th/v1_0/reference/elements/repeat/)
+* [`<annotation>`](/th/v1_0/reference/elements/annotation/)
+* [`<br>`](/th/v1_0/reference/elements/br/)
+* [`<direction>`](/th/v1_0/reference/elements/direction/)
+* [`<section>`](/th/v1_0/reference/elements/section/)
+* [`<play>`](/th/v1_0/reference/elements/play/)
+* [`<repeat>`](/th/v1_0/reference/elements/repeat/)
 
 ## ความหมาย
 
@@ -58,7 +60,7 @@ description: ครอบช่วงหนึ่งของโครงสร�
 
 ## การสอดคล้องมาตรฐาน
 
-- `times` ต้องเป็นจำนวนเต็ม `2` ขึ้นไป และเป็น `2` เมื่อไม่ระบุ `<repeat>` ที่เล่นเนื้อหาครั้งเดียวไม่ใช่การซ้ำ โน้ตที่เล่นท่อนครั้งเดียวจึงไม่ต้องมี `<repeat>` ครอบ
-- `<repeat>` ต้องมี `<section>` หรือ [`<play>`](/th/v1_0/reference/elements/play/) อย่างน้อยหนึ่งตัว ไม่ว่าโดยตรงหรืออยู่ใน `<repeat>` ที่ซ้อนอยู่ข้างใน repeat ที่ครอบเฉพาะ annotation และ direction ไม่มีอะไรให้เล่นเลย
-- การซ้ำซ้อนลึกเท่าใดก็ได้
-- หากต้องการซ้ำช่วงบรรทัดภายในท่อนเดียวแทนท่อนทั้งหมด ใช้ [`<line-repeat>`](/th/v1_0/reference/elements/line-repeat/)
+* `times` ต้องเป็นจำนวนเต็ม `2` ขึ้นไป และเป็น `2` เมื่อไม่ระบุ `<repeat>` ที่เล่นเนื้อหาครั้งเดียวไม่ใช่การซ้ำ โน้ตที่เล่นท่อนครั้งเดียวจึงไม่ต้องมี `<repeat>` ครอบ
+* `<repeat>` ต้องมี `<section>` หรือ [`<play>`](/th/v1_0/reference/elements/play/) อย่างน้อยหนึ่งตัว ไม่ว่าโดยตรงหรืออยู่ใน `<repeat>` ที่ซ้อนอยู่ข้างใน repeat ที่ครอบเฉพาะ annotation และ direction ไม่มีอะไรให้เล่นเลย
+* การซ้ำซ้อนลึกเท่าใดก็ได้
+* หากต้องการซ้ำช่วงบรรทัดภายในท่อนเดียวแทนท่อนทั้งหมด ใช้ [`<line-repeat>`](/th/v1_0/reference/elements/line-repeat/)

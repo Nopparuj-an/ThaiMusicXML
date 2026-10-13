@@ -1,6 +1,7 @@
 ---
 title: Rendering
 description: Non-normative guidance for laying out and displaying a ThaiMusicXML score
+slug: en/v1_0/reference/rendering
 ---
 
 Everything on this page is **non-normative**. It describes how a score is conventionally laid out and displayed, so that renderers agree with each other and with printed Thai scores. None of it affects whether a document is valid, and a processor that only reads or converts data can ignore all of it.
@@ -67,7 +68,7 @@ A four-beat measure where one beat carries a group of two is divided into five. 
 
 A beat arrives on its last slot rather than its first, so the shares a beat is given are the run-up to it and every part's note for that beat lands together at the far end of them. See [`<group>`](/en/v1_0/reference/elements/group/#where-the-children-fall), which is where that rule is stated.
 
-A part playing one note where another plays a group of two puts that note level with the group's _second_ symbol, not its first. The measure's last note sits at the cell's right-hand edge, and the measure reads backwards from there toward the ลูกตก it arrives on.
+A part playing one note where another plays a group of two puts that note level with the group's *second* symbol, not its first. The measure's last note sits at the cell's right-hand edge, and the measure reads backwards from there toward the ลูกตก it arrives on.
 
 This is the deepest difference between laying out a Thai score and laying out a Western one. An engraver who anchors beats to their onset will produce a grid that looks nearly right and lines the wrong notes up.
 

@@ -25,5 +25,12 @@
   "aside.caution": "ข้อควรระวัง",
   "aside.danger": "อันตราย",
   "fileTree.directory": "ไดเรกทอรี",
-  "builtWithStarlight.label": "สร้างด้วย Starlight"
+  "builtWithStarlight.label": "สร้างด้วย Starlight",
+  "starlightVersions.link.latest": "ไปที่<a href={{link}}>เวอร์ชันล่าสุด</a>เพื่อดูเอกสารที่เป็นปัจจุบัน",
+  "starlightVersions.outdated.label": "เนื้อหานี้เป็นของ {{label}}",
+  "starlightVersions.outdated.slug": "เนื้อหานี้เป็นของเวอร์ชัน {{slug}}",
+  "starlightVersions.search.link.latest": "ไปที่<a href={{link}}>เวอร์ชันล่าสุด</a>เพื่อดูผลการค้นหาที่เป็นปัจจุบัน",
+  "starlightVersions.search.outdated.label": "การค้นหาจำกัดเฉพาะ {{label}}",
+  "starlightVersions.search.outdated.slug": "การค้นหาจำกัดเฉพาะเวอร์ชัน {{slug}}",
+  "starlightVersions.select.accessibleLabel": "เลือกเวอร์ชัน"
 }

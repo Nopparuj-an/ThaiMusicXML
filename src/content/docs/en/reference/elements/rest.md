@@ -1,0 +1,38 @@
+---
+title: <rest>
+description: "One beat on which the instrument plays nothing new. Thai instruments have no notated sustain, so a rest is no attack rather than silence."
+---
+
+The `<rest>` element occupies one beat on which the instrument plays nothing new.
+
+Thai instruments have no notated sustain. A `<rest>` means only that no note is struck, plucked, or bowed on that beat. Whatever the instrument was already sounding carries on according to its own physical decay: a ฆ้อง keeps ringing, a ระนาด damps quickly. The notation does not distinguish the two, and neither does this element.
+
+## Parent
+
+[`<measure>`](/en/reference/elements/measure/) or [`<group>`](/en/reference/elements/group/)
+
+A `<measure>` in a [lyric part](/en/reference/elements/part/#part-types) takes `<rest>` too, where it means no new syllable begins. The vowel already being sung carries on, which is เอื้อน, and it is the same reading as above: no new attack, not silence. See [`<syllable>`](/en/reference/elements/syllable/#เอื้อน-and-gaps).
+
+A `<measure>` in a chord part takes `<rest>` as well, and there it is the one place the element is only spacing. It holds a beat so that the symbols beside it land where the arranger wants them, and prints nothing. See [`<chord>`](/en/reference/elements/chord/#counting).
+
+## Attributes
+
+| Attribute | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | No | token | Optional identifier, unique among all `<rest>` elements in the document. Exists for a [foreign-namespace extension](/en/reference/elements/thai-score/#extensions) to reference; ThaiMusicXML itself does not use it. |
+
+## Example
+
+```xml
+<rest/>
+```
+
+## Conformance
+
+- `id`, when present, must be unique among all `<rest>` elements in the document.
+
+## Notes
+
+- Self-closing element, with an optional `id`.
+- Each `<rest/>` occupies one beat, the same as a `<note>` in the same position. Inside a [`<group>`](/en/reference/elements/group/) it takes an equal share of the group's single beat.
+- A rest prints as a hyphen, though some notation styles leave it blank in a part that is not carrying the melody. See [Inside a measure](/en/reference/rendering/#inside-a-measure).
