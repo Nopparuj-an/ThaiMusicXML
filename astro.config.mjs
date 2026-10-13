@@ -2,6 +2,7 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
+import starlightVersions from "starlight-versions";
 import { lastmodForUrl } from "./scripts/doc-lastmod.mjs";
 
 const site = "https://thaimusicxml.anan.ovh";
@@ -9,8 +10,18 @@ const site = "https://thaimusicxml.anan.ovh";
 // https://astro.build/config
 export default defineConfig({
   site,
+  // The v1.0 landing page was the version introduction; keep that URL working.
+  redirects: {
+    "/en/v1_0": "/en/v1_0/introduction/",
+    "/th/v1_0": "/th/v1_0/introduction/",
+  },
   integrations: [
     starlight({
+      plugins: [
+        starlightVersions({
+          versions: [{ slug: "v1_0", label: "v1.0" }],
+        }),
+      ],
       title: "ThaiMusicXML",
       favicon: "/favicon.ico",
       logo: {

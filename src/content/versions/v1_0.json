@@ -1,0 +1,149 @@
+{
+  "sidebar": [
+    {
+      "label": "Home",
+      "translations": {
+        "th": "หน้าหลัก"
+      },
+      "link": "/"
+    },
+    {
+      "label": "Playground",
+      "translations": {
+        "th": "สนามทดลอง"
+      },
+      "link": "/playground/"
+    },
+    {
+      "label": "About",
+      "translations": {
+        "th": "เกี่ยวกับ"
+      },
+      "slug": "about"
+    },
+    {
+      "label": "Introduction",
+      "translations": {
+        "th": "บทนำ"
+      },
+      "slug": "introduction"
+    },
+    {
+      "label": "Tutorial",
+      "translations": {
+        "th": "บทช่วยสอน"
+      },
+      "items": [
+        {
+          "autogenerate": {
+            "directory": "tutorial"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Reference",
+      "translations": {
+        "th": "ข้อมูลอ้างอิง"
+      },
+      "items": [
+        {
+          "label": "Conformance",
+          "translations": {
+            "th": "ความสอดคล้อง"
+          },
+          "slug": "reference/conformance"
+        },
+        {
+          "label": "Rendering",
+          "translations": {
+            "th": "การแสดงผล"
+          },
+          "slug": "reference/rendering"
+        },
+        {
+          "label": "Schema and test suite",
+          "translations": {
+            "th": "Schema และชุดทดสอบ"
+          },
+          "slug": "reference/schema"
+        },
+        {
+          "label": "Conversion",
+          "translations": {
+            "th": "การแปลงไฟล์"
+          },
+          "slug": "reference/conversion"
+        },
+        {
+          "label": "Elements",
+          "translations": {
+            "th": "องค์ประกอบ"
+          },
+          "items": [
+            {
+              "autogenerate": {
+                "directory": "reference/elements"
+              }
+            }
+          ]
+        },
+        {
+          "label": "Examples",
+          "translations": {
+            "th": "ตัวอย่าง"
+          },
+          "items": [
+            {
+              "autogenerate": {
+                "directory": "reference/examples"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Updates",
+      "translations": {
+        "th": "การอัปเดต"
+      },
+      "items": [
+        {
+          "label": "Breaking Changes",
+          "translations": {
+            "th": "การเปลี่ยนแปลงสำคัญ"
+          },
+          "slug": "updates/breaking-changes"
+        },
+        {
+          "label": "Roadmap",
+          "translations": {
+            "th": "แผนงาน"
+          },
+          "items": [
+            {
+              "autogenerate": {
+                "directory": "updates/roadmap"
+              }
+            }
+          ]
+        },
+        {
+          "label": "Erratum",
+          "translations": {
+            "th": "ข้อผิดพลาด"
+          },
+          "items": [
+            {
+              "autogenerate": {
+                "directory": "updates/erratum"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "excluded": []
+}

@@ -1,0 +1,27 @@
+---
+title: <br>
+description: การตัดบรรทัดระหว่างหมายเหตุประกอบและทิศทางที่ประกอบกันเป็นโครงสร้างของโน้ต
+slug: th/v1_0/reference/elements/br
+---
+
+องค์ประกอบ `<br>` ระบุการตัดบรรทัด
+
+## องค์ประกอบแม่
+
+* [`<structure>`](/th/v1_0/reference/elements/structure/)
+* [`<repeat>`](/th/v1_0/reference/elements/repeat/)
+
+## ตัวอย่าง
+
+```xml
+<structure>
+  <annotation>Line 1</annotation>
+  <br/>
+  <annotation>Line 2</annotation>
+</structure>
+```
+
+## หมายเหตุ
+
+* องค์ประกอบปิดตัวเองไม่มีแอตทริบิวต์
+* `<br>` เพิ่มช่องว่างแนวตั้ง ณ จุดที่ปรากฏ ดันสิ่งที่ตามมาให้ลงไปต่ำกว่าเดิมในหน้า เหมือนบรรทัดว่างในเอกสารข้อความทั่วไป หาก `<br>` วางติดกันหลายตัวจะซ้อนกัน ดู [หมายเหตุประกอบ](/th/v1_0/reference/rendering/#หมายเหตุประกอบ)
