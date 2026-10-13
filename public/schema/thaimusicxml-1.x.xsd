@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ThaiMusicXML v1.x - RELAX NG schema
-
+  
   This file is rolling: it always holds the latest v1.x grammar, and every
   document valid under an earlier v1.x stays valid under it.
   thaimusicxml-1.0.rng is the frozen v1.0 grammar.
@@ -26,9 +26,9 @@
     - number attributes matching position
     - which children a measure may hold, since that depends on the part's
       type, declared elsewhere in the document
-    - a chord measure's item count against the measure's beat count
     - that a stack is shared by at least two parts, adjacent in <ensemble>
       and numbered from 1 up
+    - a chord measure's item count against the measure's beat count
     - at most one <text> per align value
     - ending line runs, pass ranges, and pass ordering
     - line-repeat ranges against the section's line count
@@ -210,8 +210,8 @@
       <xs:attribute name="type">
         <xs:simpleType>
           <xs:restriction base="xs:token">
-            <xs:enumeration value="chord"/>
             <xs:enumeration value="lyric"/>
+            <xs:enumeration value="chord"/>
             <xs:enumeration value="pitched"/>
             <xs:enumeration value="unpitched"/>
           </xs:restriction>
