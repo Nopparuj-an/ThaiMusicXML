@@ -23,6 +23,8 @@ import { DOMParser } from "@xmldom/xmldom";
 
 const NS = "https://thaimusicxml.anan.ovh/ns/1";
 const SCHEMA = "public/schema/thaimusicxml-1.x.rng";
+// The frozen v1.0 grammar. 1.x must accept everything it accepts.
+const FROZEN_SCHEMA = "public/schema/thaimusicxml-1.0.rng";
 const CORPUS = "public/corpus";
 
 const RECOMMENDED_NATHAP = ["ปรบไก่", "สองไม้", "ลาว", "เขมร", "มอญ"];
@@ -653,9 +655,9 @@ function checkRules(doc) {
 
 // ------------------------------------------------------------------ the runner
 
-function schemaCheck(file) {
+function schemaCheck(file, schema = SCHEMA) {
   try {
-    execFileSync("xmllint", ["--noout", "--relaxng", SCHEMA, file], {
+    execFileSync("xmllint", ["--noout", "--relaxng", schema, file], {
       stdio: ["ignore", "ignore", "pipe"],
     });
     return null;
@@ -671,7 +673,7 @@ function purpose(source) {
   return source.match(/<!--\s*INVALID:\s*([\s\S]*?)-->/)?.[1].replace(/\s+/g, " ").trim();
 }
 
-if (!existsSync(SCHEMA) || !existsSync(CORPUS)) {
+if (!existsSync(SCHEMA) || !existsSync(FROZEN_SCHEMA) || !existsSync(CORPUS)) {
   console.error("Run this from the repository root.");
   process.exit(1);
 }
@@ -704,6 +706,15 @@ for (const expectation of ["valid", "invalid"]) {
     checked++;
 
     const schemaError = schemaCheck(file);
+    // Rolling-schema guarantee: a document the frozen 1.0 grammar accepts is
+    // never rejected by 1.x, valid or invalid. Rules outside the grammar are
+    // checked separately.
+    if (schemaError && !schemaCheck(file, FROZEN_SCHEMA)) {
+      failures.push({
+        file,
+        reason: `schema: accepted by the frozen 1.0 grammar but rejected by 1.x (${schemaError})`,
+      });
+    }
     const doc = parser.parseFromString(source, "text/xml");
     const { errors, warnings } = doc?.documentElement
       ? checkRules(doc)

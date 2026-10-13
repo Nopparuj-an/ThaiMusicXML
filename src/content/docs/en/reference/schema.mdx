@@ -1,6 +1,6 @@
 ---
 title: Schema and test suite
-description: The RELAX NG schema for ThaiMusicXML v1.0 and the conformance corpus that goes with it
+description: The RELAX NG schema for ThaiMusicXML v1.x and the conformance corpus that goes with it
 ---
 
 import CorpusTable from "@/components/CorpusTable.astro";
@@ -14,6 +14,12 @@ xmllint --noout --relaxng thaimusicxml-1.x.rng score.txml
 ```
 
 <a href="/schema/thaimusicxml-1.x.xsd"><code>/schema/thaimusicxml-1.x.xsd</code></a> is the same schema translated to W3C XML Schema, for tools that read XSD and not RELAX NG. It's generated from the `.rng` file by [Trang](https://relaxng.org/jclark/trang.html) on every push; the RELAX NG file is the one actually hand-edited, so treat the XSD as downstream of it.
+
+## Schema versions
+
+`thaimusicxml-1.x.rng` is a rolling file. It always holds the latest 1.x grammar, so a tool that points at it picks up each release from this repository with no change on its side. 1.x releases only add to the grammar. A document that is valid under an earlier 1.x stays valid under a later one, and `npm run check:corpus` verifies that against the corpus.
+
+A release is frozen once a newer one ships, and the frozen file never changes. <a href="/schema/thaimusicxml-1.0.rng"><code>/schema/thaimusicxml-1.0.rng</code></a> (and its <a href="/schema/thaimusicxml-1.0.xsd">XSD</a>) is the v1.0 schema exactly as it was released. Point at a frozen file if you need a grammar that stays put.
 
 The corpus lives under `/corpus/`, split into files that must be accepted and files that must be rejected. Both are plain static files. Download them, point your own validator at them, and see whether it agrees.
 
