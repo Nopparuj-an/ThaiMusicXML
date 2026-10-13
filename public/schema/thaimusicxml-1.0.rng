@@ -24,7 +24,6 @@
       type, declared elsewhere in the document
     - that a stack is shared by at least two parts, adjacent in <ensemble>
       and numbered from 1 up
-    - a chord measure's item count against the measure's beat count
     - at most one <text> per align value
     - ending line runs, pass ranges, and pass ordering
     - line-repeat ranges against the section's line count
@@ -240,17 +239,12 @@
     <element name="part">
       <attribute name="id"><ref name="identifier"/></attribute>
       <!--
-        A lyric or chord part is one row of text and joins no stack, so it
-        takes neither stack nor row. A notated part may be one row of a
-        stacked instrument, where stack and row appear together or not at all.
+        A lyric part is one row of words and joins no stack, so it takes
+        neither stack nor row. A notated part may be one row of a stacked
+        instrument, where stack and row appear together or not at all.
       -->
       <choice>
-        <attribute name="type">
-          <choice>
-            <value>lyric</value>
-            <value>chord</value>
-          </choice>
-        </attribute>
+        <attribute name="type"><value>lyric</value></attribute>
         <group>
           <optional>
             <attribute name="type">
@@ -325,11 +319,10 @@
   </define>
 
   <!--
-    A measure holds either notated content or text content. Which one is
+    A measure holds either notated content or lyric content. Which one is
     legal depends on the containing part's type, which is declared in
     <ensemble> and so is out of this grammar's reach. Both are accepted
-    here, and so is a <syllable> beside a <chord>; the type match is checked
-    outside.
+    here; the type match is checked outside.
   -->
   <define name="el-measure">
     <element name="measure">
@@ -337,7 +330,7 @@
       <optional><attribute name="id"><ref name="identifier"/></attribute></optional>
       <choice>
         <ref name="notated-measure-content"/>
-        <ref name="text-measure-content"/>
+        <ref name="lyric-measure-content"/>
       </choice>
     </element>
   </define>
@@ -356,15 +349,11 @@
     </oneOrMore>
   </define>
 
-  <!--
-    A lyric or chord measure. Either may be empty: nothing is sung there, or
-    the chord already sounding carries on.
-  -->
-  <define name="text-measure-content">
+  <!-- A lyric measure may be empty, meaning nothing is sung there. -->
+  <define name="lyric-measure-content">
     <zeroOrMore>
       <choice>
         <ref name="el-syllable"/>
-        <ref name="el-chord"/>
         <ref name="el-rest"/>
       </choice>
     </zeroOrMore>
@@ -473,15 +462,6 @@
 
   <define name="el-syllable">
     <element name="syllable"><text/></element>
-  </define>
-
-  <!--
-    A chord symbol, as the arranger typed it. The grammar checks that it is
-    not empty and nothing else: no root, quality, or bass note is parsed out
-    of it here or anywhere else in v1.0.
-  -->
-  <define name="el-chord">
-    <element name="chord"><ref name="non-empty-string"/></element>
   </define>
 
   <!-- ==================================================================

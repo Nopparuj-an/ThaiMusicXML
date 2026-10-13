@@ -247,7 +247,7 @@ Astro at all, but the install still needs the flag to complete.
 Then run all three of these; each catches a different class of mistake:
 
 ```
-xmllint --noout --relaxng public/schema/thaimusicxml-1.0.rng renderer/examples/example-<slug>.txml
+xmllint --noout --relaxng public/schema/thaimusicxml-1.x.rng renderer/examples/example-<slug>.txml
 mkdir -p renderer/out
 node renderer/render.mjs renderer/examples/example-<slug>.txml renderer/out/example-<slug>.svg
 rsvg-convert -w 1240 -o renderer/out/example-<slug>.png renderer/out/example-<slug>.svg   # single-page piece

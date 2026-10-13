@@ -103,4 +103,4 @@ page; swap `/en/` for `/th/` for the Thai translation.
 - [Thai documentation](https://thaimusicxml.anan.ovh/th/): the same specification in Thai
 - [Sitemap](https://thaimusicxml.anan.ovh/sitemap-index.xml): every URL in both languages
 - [GitHub repository](https://github.com/Nopparuj-an/ThaiMusicXML): schema, source, issues, and edit history
-- [RELAX NG schema](https://thaimusicxml.anan.ovh/schema/thaimusicxml-1.0.rng): the normative grammar for v1.0
+- [RELAX NG schema](https://thaimusicxml.anan.ovh/schema/thaimusicxml-1.x.rng): the normative grammar for v1.x

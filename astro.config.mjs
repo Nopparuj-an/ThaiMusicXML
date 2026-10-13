@@ -19,6 +19,10 @@ export default defineConfig({
     starlight({
       plugins: [
         starlightVersions({
+          // Pages that did not exist in an archived version. The version
+          // selector is hidden on them instead of linking to a 404. Add a page
+          // here when it is new in the current version.
+          exclude: ["*/reference/elements/chord.md"],
           versions: [{ slug: "v1_0", label: "v1.0" }],
         }),
       ],

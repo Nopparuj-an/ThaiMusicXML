@@ -7,18 +7,18 @@ import CorpusTable from "@/components/CorpusTable.astro";
 
 สิ่งที่มาพร้อมข้อกำหนดนี้มีสามอย่าง: Schema ที่ตัวตรวจสอบอ่านได้ Schema เดียวกันในอีกรูปแบบ และชุดข้อมูลสำหรับทดสอบการนำไปใช้
 
-<a href="/schema/thaimusicxml-1.0.rng">
-  <code>/schema/thaimusicxml-1.0.rng</code>
+<a href="/schema/thaimusicxml-1.x.rng">
+  <code>/schema/thaimusicxml-1.x.rng</code>
 </a>
 คือ Schema เป็น RELAX NG ในรูปแบบ XML `xmllint` และเครื่องมืออื่นที่ใช้ libxml2
 อ่านได้โดยไม่ต้องแปลง:
 
 ```sh
-xmllint --noout --relaxng thaimusicxml-1.0.rng score.txml
+xmllint --noout --relaxng thaimusicxml-1.x.rng score.txml
 ```
 
-<a href="/schema/thaimusicxml-1.0.xsd">
-  <code>/schema/thaimusicxml-1.0.xsd</code>
+<a href="/schema/thaimusicxml-1.x.xsd">
+  <code>/schema/thaimusicxml-1.x.xsd</code>
 </a>
 คือ Schema เดียวกันที่แปลงเป็น W3C XML Schema สำหรับเครื่องมือที่อ่าน XSD แต่ไม่อ่าน RELAX NG
 สร้างจากไฟล์ `.rng` โดย [Trang](https://relaxng.org/jclark/trang.html) ทุกครั้งที่ push

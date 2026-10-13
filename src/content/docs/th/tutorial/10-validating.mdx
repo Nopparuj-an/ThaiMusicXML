@@ -9,10 +9,10 @@ sidebar:
 
 ## การตรวจสอบ Schema
 
-ThaiMusicXML มี Schema RELAX NG อยู่ที่ `public/schema/thaimusicxml-1.0.rng` จะตรวจไฟล์กับ Schema ด้วยตัวตรวจ RELAX NG ตัวไหนก็ได้ ตัวอย่างนี้ใช้ `xmllint`:
+ThaiMusicXML มี Schema RELAX NG อยู่ที่ `public/schema/thaimusicxml-1.x.rng` จะตรวจไฟล์กับ Schema ด้วยตัวตรวจ RELAX NG ตัวไหนก็ได้ ตัวอย่างนี้ใช้ `xmllint`:
 
 ```bash
-xmllint --noout --relaxng public/schema/thaimusicxml-1.0.rng your-file.txml
+xmllint --noout --relaxng public/schema/thaimusicxml-1.x.rng your-file.txml
 ```
 
 Schema ตรวจเรื่องโครงสร้าง ว่าองค์ประกอบไหนอยู่ตรงไหนได้ แอตทริบิวต์ไหนใช้ได้ และค่าแบบไหนที่รับ แต่ไม่ได้ตรวจกฎทางดนตรี

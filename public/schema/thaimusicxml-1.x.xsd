@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ThaiMusicXML v1.0 - RELAX NG schema
+  ThaiMusicXML v1.x - RELAX NG schema
+
+  This file is rolling: it always holds the latest v1.x grammar, and every
+  document valid under an earlier v1.x stays valid under it.
+  thaimusicxml-1.0.rng is the frozen v1.0 grammar.
   
   Validate a document by passing this file to xmllint's relaxng option:
-      xmllint (noout) (relaxng) thaimusicxml-1.0.rng score.txml
+      xmllint (noout) (relaxng) thaimusicxml-1.x.rng score.txml
   writing each option with its usual two leading hyphens, which cannot be
   reproduced literally inside an XML comment.
   
@@ -13,7 +17,7 @@
   
   Rules that reach across the document are not expressible here and are
   checked separately. See the Conformance reference:
-  https://thaimusicxml.anan.ovh/en/v1_0/reference/conformance/
+  https://thaimusicxml.anan.ovh/en/reference/conformance/
   
   Notably NOT enforced by this file:
     - id uniqueness, and IDREF resolution (xsd:ID is document-global, but
@@ -427,7 +431,7 @@
   <!--
     A chord symbol, as the arranger typed it. The grammar checks that it is
     not empty and nothing else: no root, quality, or bass note is parsed out
-    of it here or anywhere else in v1.0.
+    of it here or anywhere else in v1.x.
   -->
   <xs:element name="chord" type="ns1:non-empty-string"/>
   <!--

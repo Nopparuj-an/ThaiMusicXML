@@ -22,7 +22,7 @@ import { execFileSync } from "node:child_process";
 import { DOMParser } from "@xmldom/xmldom";
 
 const NS = "https://thaimusicxml.anan.ovh/ns/1";
-const SCHEMA = "public/schema/thaimusicxml-1.0.rng";
+const SCHEMA = "public/schema/thaimusicxml-1.x.rng";
 const CORPUS = "public/corpus";
 
 const RECOMMENDED_NATHAP = ["ปรบไก่", "สองไม้", "ลาว", "เขมร", "มอญ"];

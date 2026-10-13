@@ -9,10 +9,10 @@ You have a score, you understand the elements, and you know how the model works.
 
 ## Schema validation
 
-ThaiMusicXML provides a RELAX NG schema at `public/schema/thaimusicxml-1.0.rng`. Validate a file against it with any RELAX NG validator. Using `xmllint`:
+ThaiMusicXML provides a RELAX NG schema at `public/schema/thaimusicxml-1.x.rng`. Validate a file against it with any RELAX NG validator. Using `xmllint`:
 
 ```bash
-xmllint --noout --relaxng public/schema/thaimusicxml-1.0.rng your-file.txml
+xmllint --noout --relaxng public/schema/thaimusicxml-1.x.rng your-file.txml
 ```
 
 The schema checks structure: which elements go where, which attributes are allowed, and what values they accept. It does not check musical rules.

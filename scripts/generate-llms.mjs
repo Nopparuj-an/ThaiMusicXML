@@ -31,6 +31,9 @@ async function walk(dir) {
   const out = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
+    // Archived versions (v1_0, ...) live beside the current docs; llms.txt
+    // describes the current docs only.
+    if (entry.isDirectory() && dir === docsDir && /^v\d+_\d+$/.test(entry.name)) continue;
     if (entry.isDirectory()) out.push(...(await walk(full)));
     else if (/\.mdx?$/.test(entry.name)) out.push(full);
   }
@@ -151,7 +154,7 @@ lines.push(`## Optional
 - [Thai documentation](${site}/th/): the same specification in Thai
 - [Sitemap](${site}/sitemap-index.xml): every URL in both languages
 - [GitHub repository](https://github.com/Nopparuj-an/ThaiMusicXML): schema, source, issues, and edit history
-- [RELAX NG schema](${site}/schema/thaimusicxml-1.0.rng): the normative grammar for v1.0
+- [RELAX NG schema](${site}/schema/thaimusicxml-1.x.rng): the normative grammar for v1.x
 `);
 
 await writeFile(join(root, "public", "llms.txt"), lines.join("\n"), "utf8");
