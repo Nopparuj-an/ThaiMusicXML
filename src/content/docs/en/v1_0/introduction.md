@@ -6,10 +6,6 @@ description: ThaiMusicXML v1.0 covers pitched, unpitched, and lyric parts; ท�
 slug: en/v1_0/introduction
 ---
 
-:::caution[Work in progress]
-This version is under active development. Parts of the specification may be incomplete or change without notice.
-:::
-
 ## Abstract
 
 ThaiMusicXML is an open XML format for Thai traditional music (เพลงไทยเดิม/Phleng Thai Doem). One document holds one arrangement: its title and tuning, the ท่อน it is built from, the instruments in the ensemble, and what each of them plays, laid out in the same grid a musician reads on paper.
