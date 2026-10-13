@@ -23,8 +23,12 @@ import { DOMParser } from "@xmldom/xmldom";
 
 const NS = "https://thaimusicxml.anan.ovh/ns/1";
 const SCHEMA = "public/schema/thaimusicxml-1.x.rng";
-// The frozen v1.0 grammar. 1.x must accept everything it accepts.
-const FROZEN_SCHEMA = "public/schema/thaimusicxml-1.0.rng";
+// Every frozen release (thaimusicxml-1.0.rng, ...). The rolling 1.x grammar must
+// accept everything each of them accepts.
+const FROZEN_SCHEMAS = readdirSync("public/schema")
+  .filter((f) => /^thaimusicxml-\d+\.\d+\.rng$/.test(f))
+  .sort((a, b) => a.localeCompare(b, "en", { numeric: true }))
+  .map((f) => `public/schema/${f}`);
 const CORPUS = "public/corpus";
 
 const RECOMMENDED_NATHAP = ["ปรบไก่", "สองไม้", "ลาว", "เขมร", "มอญ"];
@@ -673,7 +677,7 @@ function purpose(source) {
   return source.match(/<!--\s*INVALID:\s*([\s\S]*?)-->/)?.[1].replace(/\s+/g, " ").trim();
 }
 
-if (!existsSync(SCHEMA) || !existsSync(FROZEN_SCHEMA) || !existsSync(CORPUS)) {
+if (!existsSync(SCHEMA) || FROZEN_SCHEMAS.length === 0 || !existsSync(CORPUS)) {
   console.error("Run this from the repository root.");
   process.exit(1);
 }
@@ -706,14 +710,18 @@ for (const expectation of ["valid", "invalid"]) {
     checked++;
 
     const schemaError = schemaCheck(file);
-    // Rolling-schema guarantee: a document the frozen 1.0 grammar accepts is
-    // never rejected by 1.x, valid or invalid. Rules outside the grammar are
-    // checked separately.
-    if (schemaError && !schemaCheck(file, FROZEN_SCHEMA)) {
-      failures.push({
-        file,
-        reason: `schema: accepted by the frozen 1.0 grammar but rejected by 1.x (${schemaError})`,
-      });
+    // Rolling-schema guarantee: a document a frozen grammar accepts is never
+    // rejected by 1.x, valid or invalid. Rules outside the grammar are checked
+    // separately.
+    if (schemaError) {
+      for (const frozen of FROZEN_SCHEMAS) {
+        if (!schemaCheck(file, frozen)) {
+          failures.push({
+            file,
+            reason: `schema: accepted by the frozen ${frozen.match(/-(\d+\.\d+)\.rng$/)[1]} grammar but rejected by 1.x (${schemaError})`,
+          });
+        }
+      }
     }
     const doc = parser.parseFromString(source, "text/xml");
     const { errors, warnings } = doc?.documentElement

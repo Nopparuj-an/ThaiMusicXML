@@ -4,27 +4,22 @@ import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import starlightVersions from "starlight-versions";
 import { lastmodForUrl } from "./scripts/doc-lastmod.mjs";
+import { versions } from "./versions.config.mjs";
+import { versionRedirects } from "./scripts/version-redirects.mjs";
 
 const site = "https://thaimusicxml.anan.ovh";
 
 // https://astro.build/config
 export default defineConfig({
   site,
-  // The v1.0 landing page was the version introduction; keep that URL working.
-  redirects: {
-    "/en/v1_0": "/en/v1_0/introduction/",
-    "/th/v1_0": "/th/v1_0/introduction/",
-  },
+  // Keeps the version selector from landing on a 404: a page missing from a
+  // version redirects to that version's introduction.
+  redirects: versionRedirects(),
   integrations: [
     starlight({
       plugins: [
-        starlightVersions({
-          // Pages that did not exist in an archived version. The version
-          // selector is hidden on them instead of linking to a 404. Add a page
-          // here when it is new in the current version.
-          exclude: ["*/reference/elements/chord.md"],
-          versions: [{ slug: "v1_0", label: "v1.0" }],
-        }),
+        // The list of archived versions lives in versions.config.mjs.
+        starlightVersions({ versions }),
       ],
       title: "ThaiMusicXML",
       favicon: "/favicon.ico",
