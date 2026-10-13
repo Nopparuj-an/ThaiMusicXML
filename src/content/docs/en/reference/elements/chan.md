@@ -13,8 +13,8 @@ The `<chan>` element sets the ชั้น (chan) rhythmic layer level.
 
 ## Attributes
 
-| Attribute | Required | Type        | Description                                    |
-| --------- | -------- | ----------- | ---------------------------------------------- |
+| Attribute | Required | Type        | Description                                   |
+| --------- | -------- | ----------- | --------------------------------------------- |
 | `value`   | Yes      | enumeration | The ชั้น level. One of the five values below. |
 
 ## Values
@@ -35,7 +35,7 @@ The `<chan>` element sets the ชั้น (chan) rhythmic layer level.
 
 ## What it does
 
-Nothing that a processor computes from, in v1.0. `<chan>` records the level and carries it to whatever reads the file.
+Nothing that a processor computes from, in v1.x. `<chan>` records the level and carries it to whatever reads the file.
 
 It changes no timing: [`<bpm>`](/en/reference/elements/bpm/) fixes the measure rate, the bpm beat is half a measure whatever the ชั้น, and so the notes keep their rate through a change of level. What moves is the ฉิ่ง, and the ฉิ่ง is written out by the arranger as an ordinary unpitched part rather than generated from this element. A player that ignored `<chan>` entirely would sound the score correctly.
 
