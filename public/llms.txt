@@ -15,82 +15,83 @@ page; swap `/en/` for `/th/` for the Thai translation.
 ## Getting started
 
 - [ThaiMusicXML](https://thaimusicxml.anan.ovh/en/): An open, royalty-free XML format for Thai traditional music (เพลงไทยเดิม). Records the 7-tone scale ด ร ม ฟ ซ ล ท, the beat grid, and what a musician reads.
-- [ThaiMusicXML v1.0](https://thaimusicxml.anan.ovh/en/v1_0/): ThaiMusicXML v1.0 covers pitched, unpitched, and lyric parts; ท่อน with repeats and endings; octave dots, subdivided beats, curves, and cued passages.
+- [ThaiMusicXML v1.0](https://thaimusicxml.anan.ovh/en/introduction/): ThaiMusicXML v1.0 covers pitched, unpitched, and lyric parts; ท่อน with repeats and endings; octave dots, subdivided beats, curves, and cued passages.
 - [Playground](https://thaimusicxml.anan.ovh/en/playground/): Write and validate ThaiMusicXML in the browser, with live score rendering
 
 ## Tutorial
 
-- [Hello World](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/1-hello_world/): Your first ThaiMusicXML file
-- [File Structure](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/2-file_structure/): How ThaiMusicXML files are organized
-- [The score model](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/3-the_score_model/): How ThaiMusicXML represents time, beats, and rests
-- [Notes, rests, and octaves](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/4-notes_and_octaves/): Pitch names, octave marks, and the rest element
-- [Beats and subdivision](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/5-beats_and_subdivision/): How groups split a beat into equal parts
-- [Sections, repeats, and endings](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/6-sections_repeats_endings/): How scores organize sections and handle repeats
-- [Ensembles and stacked instruments](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/7-ensembles_stacked/): Multiple parts, stacked rows, and parts that sit out
-- [Lyrics](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/8-lyrics/): Vocal parts, syllables, and the counting rule
-- [Marking the score](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/9-marking_the_score/): Spans, annotations, credits, and metadata
-- [Validating and going further](https://thaimusicxml.anan.ovh/en/v1_0/tutorial/10-validating/): Schema validation, the Playground, and where to go next
+- [Hello World](https://thaimusicxml.anan.ovh/en/tutorial/1-hello_world/): Your first ThaiMusicXML file
+- [File Structure](https://thaimusicxml.anan.ovh/en/tutorial/2-file_structure/): How ThaiMusicXML files are organized
+- [The score model](https://thaimusicxml.anan.ovh/en/tutorial/3-the_score_model/): How ThaiMusicXML represents time, beats, and rests
+- [Notes, rests, and octaves](https://thaimusicxml.anan.ovh/en/tutorial/4-notes_and_octaves/): Pitch names, octave marks, and the rest element
+- [Beats and subdivision](https://thaimusicxml.anan.ovh/en/tutorial/5-beats_and_subdivision/): How groups split a beat into equal parts
+- [Sections, repeats, and endings](https://thaimusicxml.anan.ovh/en/tutorial/6-sections_repeats_endings/): How scores organize sections and handle repeats
+- [Ensembles and stacked instruments](https://thaimusicxml.anan.ovh/en/tutorial/7-ensembles_stacked/): Multiple parts, stacked rows, and parts that sit out
+- [Lyrics and chords](https://thaimusicxml.anan.ovh/en/tutorial/8-lyrics/): Vocal parts, syllables, the counting rule, and chord symbols on their own row
+- [Marking the score](https://thaimusicxml.anan.ovh/en/tutorial/9-marking_the_score/): Spans, annotations, credits, and metadata
+- [Validating and going further](https://thaimusicxml.anan.ovh/en/tutorial/10-validating/): Schema validation, the Playground, and where to go next
 
 ## Elements
 
-- [Elements Reference](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/): Every element in a ThaiMusicXML v1.0 document and how they nest, from <thai-score> down through <header>, <structure>, <ensemble>, and <part-data>.
-- [<annotation>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/annotation/): A free-form comment ignored during playback. Its scope comes from where it sits: the whole score, one part's section, or a single line.
-- [<arranger>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/arranger/): Names whoever produced this setting of the piece. Much of the repertoire is traditional, so a score often has no composer but a known arranger.
-- [<bow>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/bow/): Marks a span of notes played with one continuous bow stroke, without changing direction. A span may cross measures and lines, but not sections.
-- [<bpm>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/bpm/): Sets the tempo in beats per minute, where one bpm beat is half a measure. Every measure lasts the same time whatever its beat count.
-- [<br>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/br/): A line break between the annotations and directions that make up a score's structure.
-- [<chan>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/chan/): Sets the ชั้น (chan) rhythmic layer, which determines rhythmic density. One of five levels, from ครึ่งชั้น through ชั้นเดียว, สองชั้น, สามชั้น, to สี่ชั้น.
-- [<composer>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/composer/): Identifies the composer or attribution of the piece. The text prints exactly as typed, centered, or split into up to three aligned runs.
-- [<direction>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/direction/): Carries performance directions for the score: the หน้าทับ cycle, the ชั้น layer, and the tempo in beats per minute.
-- [<ending>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/ending/): Replaces specific lines on specific passes of a repeated section, so one part can play a variation without restructuring its section.
-- [<ensemble>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/ensemble/): Lists the instruments in the score. Parts render in the order given here, with the rows of a stacked instrument kept together.
-- [<group>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/group/): Subdivides a single beat into two or more equal parts, for measures that pack more notes into a beat than usual.
-- [<header>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/header/): Score metadata: what the piece is called, who is behind it, what tuning it is written against, and the terms it is published under.
-- [<instrument-name>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/instrument-name/): Names an instrument, in English or Thai. On one row of a stacked instrument it names the hand too, as in ฆ้องวงใหญ่ มือขวา.
-- [<instrument-short-name>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/instrument-short-name/): A shortened form of the instrument name, for wherever the full name does not fit. Optional, and parts without one fall back to the full name.
-- [<license>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/license/): States the terms the score is published under. The terms cover the transcription as a document, not the traditional music it records.
-- [<line>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/line/): A musical line (บรรทัด) within one part's section, holding one to eight measures. Nine or more is a validation error.
-- [<line-repeat>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/line-repeat/): Repeats a consecutive range of lines within a section, without repeating the section as a whole.
-- [<link>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/link/): Marks a span of notes as one connected gesture, สะบัด, and asks for a curve drawn above the notation saying so.
-- [<lyricist>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/lyricist/): Names whoever wrote the words to the piece. The text prints exactly as typed, centered, or split into up to three aligned runs.
-- [<measure>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/measure/): A single measure (ห้อง) holding one part's notes and rests. Every part agrees on how many beats a given measure has.
-- [<nathap>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/nathap/): Names the หน้าทับ drum cycle the music is set against, which fixes the length of the cycle and the pattern of strokes inside it.
-- [<note>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/note/): One attack in a part. A pitched part writes a scale degree from ด ร ม ฟ ซ ล ท with an octave mark; an unpitched part writes a sound code.
-- [<parenthesis>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/parenthesis/): Marks a span of notes and rests as cued rather than played, where the part waits for another instrument to carry the passage.
-- [<part>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/part/): Declares that an instrument exists in the ensemble, with its type, name, and whether it stacks with another row. It holds no notes.
-- [<part-data>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/part-data/): Holds the music for a single instrument. A part declares that the instrument exists; part-data is where its notes actually live.
-- [<play>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/play/): Plays a section again later in the score, taking another place in the play order without a second copy of its music.
-- [<repeat>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/repeat/): Wraps a run of the score's structure and plays it more than once. Repeats nest, so a piece can be built from layers of them.
-- [<rest>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/rest/): One beat on which the instrument plays nothing new. Thai instruments have no notated sustain, so a rest is no attack rather than silence.
-- [<section>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/section/): Declares that a named section of the score exists and where it falls in the play order. It holds no notes.
-- [<section-ref>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/section-ref/): Holds one part's music for a section the score's structure declared, as lines of measures, plus any variant endings.
-- [<structure>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/structure/): Defines the score layout: which sections are played, in what order, how often, and with what directions along the way.
-- [<syllable>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/syllable/): One syllable of เนื้อร้อง, written the way it should be read, in a part whose type is lyric.
-- [<text>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/text/): One aligned run of text inside an annotation or a credit, claiming the left, center, or right of its parent's single line.
-- [<thai-score>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/thai-score/): The root element of every ThaiMusicXML document, carrying the namespace and the schema version the file follows.
-- [<title>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/title/): The title of the musical piece. Exactly one is required in every score header.
-- [<tuning>](https://thaimusicxml.anan.ovh/en/v1_0/reference/elements/tuning/): States what absolute pitch the scale degrees stand for. Without it a score says what to play relative to the ensemble, but not at what pitch.
+- [Elements Reference](https://thaimusicxml.anan.ovh/en/reference/elements/): Every element in a ThaiMusicXML v1.0 document and how they nest, from <thai-score> down through <header>, <structure>, <ensemble>, and <part-data>.
+- [<annotation>](https://thaimusicxml.anan.ovh/en/reference/elements/annotation/): A free-form comment ignored during playback. Its scope comes from where it sits: the whole score, one part's section, or a single line.
+- [<arranger>](https://thaimusicxml.anan.ovh/en/reference/elements/arranger/): Names whoever produced this setting of the piece. Much of the repertoire is traditional, so a score often has no composer but a known arranger.
+- [<bow>](https://thaimusicxml.anan.ovh/en/reference/elements/bow/): Marks a span of notes played with one continuous bow stroke, without changing direction. A span may cross measures and lines, but not sections.
+- [<bpm>](https://thaimusicxml.anan.ovh/en/reference/elements/bpm/): Sets the tempo in beats per minute, where one bpm beat is half a measure. Every measure lasts the same time whatever its beat count.
+- [<br>](https://thaimusicxml.anan.ovh/en/reference/elements/br/): A line break between the annotations and directions that make up a score's structure.
+- [<chan>](https://thaimusicxml.anan.ovh/en/reference/elements/chan/): Sets the ชั้น (chan) rhythmic layer, which determines rhythmic density. One of five levels, from ครึ่งชั้น through ชั้นเดียว, สองชั้น, สามชั้น, to สี่ชั้น.
+- [<chord>](https://thaimusicxml.anan.ovh/en/reference/elements/chord/): One chord symbol, written the way it should print, in a part whose type is chord. Symbols flush right against the end of the measure.
+- [<composer>](https://thaimusicxml.anan.ovh/en/reference/elements/composer/): Identifies the composer or attribution of the piece. The text prints exactly as typed, centered, or split into up to three aligned runs.
+- [<direction>](https://thaimusicxml.anan.ovh/en/reference/elements/direction/): Carries performance directions for the score: the หน้าทับ cycle, the ชั้น layer, and the tempo in beats per minute.
+- [<ending>](https://thaimusicxml.anan.ovh/en/reference/elements/ending/): Replaces specific lines on specific passes of a repeated section, so one part can play a variation without restructuring its section.
+- [<ensemble>](https://thaimusicxml.anan.ovh/en/reference/elements/ensemble/): Lists the instruments in the score. Parts render in the order given here, with the rows of a stacked instrument kept together.
+- [<group>](https://thaimusicxml.anan.ovh/en/reference/elements/group/): Subdivides a single beat into two or more equal parts, for measures that pack more notes into a beat than usual.
+- [<header>](https://thaimusicxml.anan.ovh/en/reference/elements/header/): Score metadata: what the piece is called, who is behind it, what tuning it is written against, and the terms it is published under.
+- [<instrument-name>](https://thaimusicxml.anan.ovh/en/reference/elements/instrument-name/): Names an instrument, in English or Thai. On one row of a stacked instrument it names the hand too, as in ฆ้องวงใหญ่ มือขวา.
+- [<instrument-short-name>](https://thaimusicxml.anan.ovh/en/reference/elements/instrument-short-name/): A shortened form of the instrument name, for wherever the full name does not fit. Optional, and parts without one fall back to the full name.
+- [<license>](https://thaimusicxml.anan.ovh/en/reference/elements/license/): States the terms the score is published under. The terms cover the transcription as a document, not the traditional music it records.
+- [<line>](https://thaimusicxml.anan.ovh/en/reference/elements/line/): A musical line (บรรทัด) within one part's section, holding one to eight measures. Nine or more is a validation error.
+- [<line-repeat>](https://thaimusicxml.anan.ovh/en/reference/elements/line-repeat/): Repeats a consecutive range of lines within a section, without repeating the section as a whole.
+- [<link>](https://thaimusicxml.anan.ovh/en/reference/elements/link/): Marks a span of notes as one connected gesture, สะบัด, and asks for a curve drawn above the notation saying so.
+- [<lyricist>](https://thaimusicxml.anan.ovh/en/reference/elements/lyricist/): Names whoever wrote the words to the piece. The text prints exactly as typed, centered, or split into up to three aligned runs.
+- [<measure>](https://thaimusicxml.anan.ovh/en/reference/elements/measure/): A single measure (ห้อง) holding one part's notes and rests, or its words or chord symbols. Every notated part agrees on how many beats a given measure has.
+- [<nathap>](https://thaimusicxml.anan.ovh/en/reference/elements/nathap/): Names the หน้าทับ drum cycle the music is set against, which fixes the length of the cycle and the pattern of strokes inside it.
+- [<note>](https://thaimusicxml.anan.ovh/en/reference/elements/note/): One attack in a part. A pitched part writes a scale degree from ด ร ม ฟ ซ ล ท with an octave mark; an unpitched part writes a sound code.
+- [<parenthesis>](https://thaimusicxml.anan.ovh/en/reference/elements/parenthesis/): Marks a span of notes and rests as cued rather than played, where the part waits for another instrument to carry the passage.
+- [<part>](https://thaimusicxml.anan.ovh/en/reference/elements/part/): Declares that a part exists in the ensemble, with its type, name, and whether it stacks with another row. It holds no notes.
+- [<part-data>](https://thaimusicxml.anan.ovh/en/reference/elements/part-data/): Holds the music for a single instrument. A part declares that the instrument exists; part-data is where its notes actually live.
+- [<play>](https://thaimusicxml.anan.ovh/en/reference/elements/play/): Plays a section again later in the score, taking another place in the play order without a second copy of its music.
+- [<repeat>](https://thaimusicxml.anan.ovh/en/reference/elements/repeat/): Wraps a run of the score's structure and plays it more than once. Repeats nest, so a piece can be built from layers of them.
+- [<rest>](https://thaimusicxml.anan.ovh/en/reference/elements/rest/): One beat on which the instrument plays nothing new. Thai instruments have no notated sustain, so a rest is no attack rather than silence.
+- [<section>](https://thaimusicxml.anan.ovh/en/reference/elements/section/): Declares that a named section of the score exists and where it falls in the play order. It holds no notes.
+- [<section-ref>](https://thaimusicxml.anan.ovh/en/reference/elements/section-ref/): Holds one part's music for a section the score's structure declared, as lines of measures, plus any variant endings.
+- [<structure>](https://thaimusicxml.anan.ovh/en/reference/elements/structure/): Defines the score layout: which sections are played, in what order, how often, and with what directions along the way.
+- [<syllable>](https://thaimusicxml.anan.ovh/en/reference/elements/syllable/): One syllable of เนื้อร้อง, written the way it should be read, in a part whose type is lyric.
+- [<text>](https://thaimusicxml.anan.ovh/en/reference/elements/text/): One aligned run of text inside an annotation or a credit, claiming the left, center, or right of its parent's single line.
+- [<thai-score>](https://thaimusicxml.anan.ovh/en/reference/elements/thai-score/): The root element of every ThaiMusicXML document, carrying the namespace and the schema version the file follows.
+- [<title>](https://thaimusicxml.anan.ovh/en/reference/elements/title/): The title of the musical piece. Exactly one is required in every score header.
+- [<tuning>](https://thaimusicxml.anan.ovh/en/reference/elements/tuning/): States what absolute pitch the scale degrees stand for. Without it a score says what to play relative to the ensemble, but not at what pitch.
 
 ## Examples
 
-- [Examples](https://thaimusicxml.anan.ovh/en/v1_0/reference/examples/): Complete ThaiMusicXML scores of real repertoire, each one annotated with the elements and concepts it demonstrates.
-- [Homrong Chom Surang](https://thaimusicxml.anan.ovh/en/v1_0/reference/examples/chomsurang/): A single-line score for the โหมโรง piece โหมโรงจอมสุรางค์
-- [Chuen Chumnum - Klum Dontri](https://thaimusicxml.anan.ovh/en/v1_0/reference/examples/chuen-chumnum/): A single-part ซออู้ score for two short สองชั้น pieces
-- [Khaek Borathes](https://thaimusicxml.anan.ovh/en/v1_0/reference/examples/khaek-borathes/): A three-instrument score for แขกบรเทศ ชั้นเดียว
-- [Sathukan](https://thaimusicxml.anan.ovh/en/v1_0/reference/examples/sathukan/): A two-row ฆ้องวงใหญ่ transcription of the หน้าพาทย์ piece สาธุการ
+- [Examples](https://thaimusicxml.anan.ovh/en/reference/examples/): Complete ThaiMusicXML scores of real repertoire, each one annotated with the elements and concepts it demonstrates.
+- [Homrong Chom Surang](https://thaimusicxml.anan.ovh/en/reference/examples/chomsurang/): A single-line score for the โหมโรง piece โหมโรงจอมสุรางค์
+- [Chuen Chumnum - Klum Dontri](https://thaimusicxml.anan.ovh/en/reference/examples/chuen-chumnum/): A single-part ซออู้ score for two short สองชั้น pieces
+- [Khaek Borathes](https://thaimusicxml.anan.ovh/en/reference/examples/khaek-borathes/): A three-instrument score for แขกบรเทศ ชั้นเดียว
+- [Sathukan](https://thaimusicxml.anan.ovh/en/reference/examples/sathukan/): A two-row ฆ้องวงใหญ่ transcription of the หน้าพาทย์ piece สาธุการ
 
 ## Reference
 
-- [Conformance](https://thaimusicxml.anan.ovh/en/v1_0/reference/conformance/): What it means for a document or a processor to conform to ThaiMusicXML v1.0
-- [Conversion](https://thaimusicxml.anan.ovh/en/v1_0/reference/conversion/): How a ThaiMusicXML document maps to other notation and playback formats
-- [Rendering](https://thaimusicxml.anan.ovh/en/v1_0/reference/rendering/): Non-normative guidance for laying out and displaying a ThaiMusicXML score
-- [Schema and test suite](https://thaimusicxml.anan.ovh/en/v1_0/reference/schema/): The RELAX NG schema for ThaiMusicXML v1.0 and the conformance corpus that goes with it
+- [Conformance](https://thaimusicxml.anan.ovh/en/reference/conformance/): What it means for a document or a processor to conform to ThaiMusicXML v1.0
+- [Conversion](https://thaimusicxml.anan.ovh/en/reference/conversion/): How a ThaiMusicXML document maps to other notation and playback formats
+- [Rendering](https://thaimusicxml.anan.ovh/en/reference/rendering/): Non-normative guidance for laying out and displaying a ThaiMusicXML score
+- [Schema and test suite](https://thaimusicxml.anan.ovh/en/reference/schema/): The RELAX NG schema for ThaiMusicXML v1.0 and the conformance corpus that goes with it
 
 ## Updates
 
-- [Breaking Changes](https://thaimusicxml.anan.ovh/en/v1_0/updates/breaking-changes/): Incompatible changes between ThaiMusicXML versions, and what a document or processor has to do about each one.
-- [Overview](https://thaimusicxml.anan.ovh/en/v1_0/updates/erratum/): Corrections published against the ThaiMusicXML v1.0 specification after its release.
-- [Overview](https://thaimusicxml.anan.ovh/en/v1_0/updates/roadmap/): What ThaiMusicXML v1.0 covers, what is deliberately out of scope, and what is planned for later versions.
+- [Breaking Changes](https://thaimusicxml.anan.ovh/en/updates/breaking-changes/): Incompatible changes between ThaiMusicXML versions, and what a document or processor has to do about each one.
+- [Overview](https://thaimusicxml.anan.ovh/en/updates/erratum/): Corrections published against the ThaiMusicXML v1.0 specification after its release.
+- [Overview](https://thaimusicxml.anan.ovh/en/updates/roadmap/): What ThaiMusicXML v1.0 covers, what is deliberately out of scope, and what is planned for later versions.
 
 ## Project
 

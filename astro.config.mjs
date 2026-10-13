@@ -86,10 +86,6 @@ export default defineConfig({
           ]),
         },
       ],
-      components: {
-        Sidebar: "./src/components/Sidebar.astro",
-        Pagination: "./src/components/Pagination.astro",
-      },
       defaultLocale: "en",
       locales: {
         en: {
@@ -110,86 +106,76 @@ export default defineConfig({
         },
         { label: "About", translations: { th: "เกี่ยวกับ" }, slug: "about" },
         {
-          label: "Versions",
-          translations: { th: "เวอร์ชัน" },
-          items: [{ label: "v1.0", slug: "v1_0" }],
+          label: "Introduction",
+          translations: { th: "บทนำ" },
+          slug: "introduction",
         },
         {
-          label: "v1.0",
+          label: "Tutorial",
+          translations: { th: "บทช่วยสอน" },
+          items: [{ autogenerate: { directory: "tutorial" } }],
+        },
+        {
+          label: "Reference",
+          translations: { th: "ข้อมูลอ้างอิง" },
           items: [
             {
-              label: "Introduction",
-              translations: { th: "บทนำ" },
-              slug: "v1_0",
+              label: "Conformance",
+              translations: { th: "ความสอดคล้อง" },
+              slug: "reference/conformance",
             },
             {
-              label: "Tutorial",
-              translations: { th: "บทช่วยสอน" },
-              items: [{ autogenerate: { directory: "v1_0/tutorial" } }],
+              label: "Rendering",
+              translations: { th: "การแสดงผล" },
+              slug: "reference/rendering",
             },
             {
-              label: "Reference",
-              translations: { th: "ข้อมูลอ้างอิง" },
+              label: "Schema and test suite",
+              translations: { th: "Schema และชุดทดสอบ" },
+              slug: "reference/schema",
+            },
+            {
+              label: "Conversion",
+              translations: { th: "การแปลงไฟล์" },
+              slug: "reference/conversion",
+            },
+            {
+              label: "Elements",
+              translations: { th: "องค์ประกอบ" },
               items: [
-                {
-                  label: "Conformance",
-                  translations: { th: "ความสอดคล้อง" },
-                  slug: "v1_0/reference/conformance",
-                },
-                {
-                  label: "Rendering",
-                  translations: { th: "การแสดงผล" },
-                  slug: "v1_0/reference/rendering",
-                },
-                {
-                  label: "Schema and test suite",
-                  translations: { th: "Schema และชุดทดสอบ" },
-                  slug: "v1_0/reference/schema",
-                },
-                {
-                  label: "Conversion",
-                  translations: { th: "การแปลงไฟล์" },
-                  slug: "v1_0/reference/conversion",
-                },
-                {
-                  label: "Elements",
-                  translations: { th: "องค์ประกอบ" },
-                  items: [
-                    { autogenerate: { directory: "v1_0/reference/elements" } },
-                  ],
-                },
-                {
-                  label: "Examples",
-                  translations: { th: "ตัวอย่าง" },
-                  items: [
-                    { autogenerate: { directory: "v1_0/reference/examples" } },
-                  ],
-                },
+                { autogenerate: { directory: "reference/elements" } },
               ],
             },
             {
-              label: "Updates",
-              translations: { th: "การอัปเดต" },
+              label: "Examples",
+              translations: { th: "ตัวอย่าง" },
               items: [
-                {
-                  label: "Breaking Changes",
-                  translations: { th: "การเปลี่ยนแปลงสำคัญ" },
-                  slug: "v1_0/updates/breaking-changes",
-                },
-                {
-                  label: "Roadmap",
-                  translations: { th: "แผนงาน" },
-                  items: [
-                    { autogenerate: { directory: "v1_0/updates/roadmap" } },
-                  ],
-                },
-                {
-                  label: "Erratum",
-                  translations: { th: "ข้อผิดพลาด" },
-                  items: [
-                    { autogenerate: { directory: "v1_0/updates/erratum" } },
-                  ],
-                },
+                { autogenerate: { directory: "reference/examples" } },
+              ],
+            },
+          ],
+        },
+        {
+          label: "Updates",
+          translations: { th: "การอัปเดต" },
+          items: [
+            {
+              label: "Breaking Changes",
+              translations: { th: "การเปลี่ยนแปลงสำคัญ" },
+              slug: "updates/breaking-changes",
+            },
+            {
+              label: "Roadmap",
+              translations: { th: "แผนงาน" },
+              items: [
+                { autogenerate: { directory: "updates/roadmap" } },
+              ],
+            },
+            {
+              label: "Erratum",
+              translations: { th: "ข้อผิดพลาด" },
+              items: [
+                { autogenerate: { directory: "updates/erratum" } },
               ],
             },
           ],

@@ -153,7 +153,7 @@ OCR pass just adds setup time without ever beating a careful visual read.
 
 ## Phase 2: work out the grid's structure
 
-Before writing any XML, read `src/content/docs/en/v1_0/reference/elements/note.md`,
+Before writing any XML, read `src/content/docs/en/reference/elements/note.md`,
 `part.md`, and `section-ref.md` (or the `th/` equivalents), and skim an
 existing file in `renderer/examples/` (`example-khaek-borathes.txml` is a good
 one: it has a stacked instrument, repeats, and octave modifiers all in one

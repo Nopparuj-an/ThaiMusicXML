@@ -1,0 +1,64 @@
+---
+title: <repeat>
+description: "Wraps a run of the score's structure and plays it more than once. Repeats nest, so a piece can be built from layers of them."
+---
+
+The `<repeat>` element wraps a run of `<structure>` content and plays it more than once. Repeats nest, so a piece can be built from layers of them.
+
+## Parents
+
+- [`<structure>`](/en/reference/elements/structure/)
+- [`<repeat>`](/en/reference/elements/repeat/) - a repeat may wrap another repeat
+
+## Attributes
+
+| Attribute | Required | Type    | Description                                        |
+| --------- | -------- | ------- | -------------------------------------------------- |
+| `times`   | No       | integer | How many times the wrapped content plays in total, `2` or more. Default: `2`. |
+
+## Children
+
+The same children `<structure>` takes, in any order and repeated freely:
+
+- [`<annotation>`](/en/reference/elements/annotation/)
+- [`<br>`](/en/reference/elements/br/)
+- [`<direction>`](/en/reference/elements/direction/)
+- [`<section>`](/en/reference/elements/section/)
+- [`<play>`](/en/reference/elements/play/)
+- [`<repeat>`](/en/reference/elements/repeat/)
+
+## Semantics
+
+Everything inside a `<repeat>` plays `times` times through before the score moves past it. The count is the total number of plays rather than the number of extra plays on top of the first, so `times="2"` plays the content twice. Two is also the default, since a `<repeat>` that played its content once would not be repeating anything: leave `times` off and the content plays twice. Wrapping two sections repeats the pair together, so `A B A B`, which is different from repeating each section on its own.
+
+Nested repeats multiply. A section wrapped in a `times="2"` inside another `times="2"` plays four times.
+
+```xml
+<structure>
+  <repeat times="2">
+    <repeat times="2">
+      <section id="s1" name="ท่อน 1" />
+    </repeat>
+    <section id="s2" name="ท่อน 2" />
+  </repeat>
+</structure>
+```
+
+That plays ท่อน 1 twice, then ท่อน 2 once, then repeats the whole pair again: four bars of ท่อน 1 and two of ท่อน 2 in total, in the order 1 1 2 1 1 2.
+
+### Total pass count
+
+A section's total pass count is what every play of it adds up to: for each `<section>` or [`<play>`](/en/reference/elements/play/) naming it, the product of the `times` values of every `<repeat>` enclosing that one, summed over all of them. A section played once where it is declared and again through a `<play>` therefore has two passes, and one declared inside no repeat at all has one. In the example above ท่อน 1 has a total pass count of 4 and ท่อน 2 has 2.
+
+Passes are counted absolutely, straight through from the first play to the last, ignoring which layer of repeat produced them. [`<ending>`](/en/reference/elements/ending/)'s `pass` attribute uses these absolute numbers, so `pass="4"` on ท่อน 1 above names the last of its four plays, and `pass="2,4"` names two of them.
+
+## Section order
+
+`<repeat>` does not change how section order is read. The order is still the document order of the `<section>` elements, walked depth first through any `<repeat>` wrappers. See [`<structure>`](/en/reference/elements/structure/#section-order).
+
+## Conformance
+
+- `times` must be an integer of `2` or greater, and defaults to `2` when absent. A `<repeat>` playing its content once is not a repeat; a score that plays a section once writes no `<repeat>` around it.
+- A `<repeat>` must contain at least one `<section>` or [`<play>`](/en/reference/elements/play/), directly or inside a nested `<repeat>`. A repeat wrapping only annotations and directions has nothing to play.
+- Repeats nest to any depth.
+- To repeat a range of lines within one section rather than the section as a whole, use [`<line-repeat>`](/en/reference/elements/line-repeat/).

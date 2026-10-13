@@ -37,7 +37,7 @@ export function docLastmod() {
   return cache;
 }
 
-// https://site/en/v1_0/reference/elements/note/ -> the file that produced it
+// https://site/en/reference/elements/note/ -> the file that produced it
 export function lastmodForUrl(url, site) {
   const map = docLastmod();
   const path = url.replace(site, "").replace(/^\/|\/$/g, "");

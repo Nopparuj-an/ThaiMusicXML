@@ -1,7 +1,7 @@
 # Converter handoff notes
 
 Working notes for picking this back up later. Not user-facing docs (those
-live in `src/content/docs/en/v1_0/reference/conversion/index.md`, which is
+live in `src/content/docs/en/reference/conversion/index.md`, which is
 the actual policy spec this code implements).
 
 ## Module map
