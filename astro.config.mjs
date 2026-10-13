@@ -12,9 +12,14 @@ const site = "https://thaimusicxml.anan.ovh";
 // https://astro.build/config
 export default defineConfig({
   site,
-  // Keeps the version selector from landing on a 404: a page missing from a
-  // version redirects to that version's introduction.
-  redirects: versionRedirects(),
+  redirects: {
+    // The same redirect for every visitor and crawler. /en/ links to /th/.
+    "/": "/en/",
+    // Keeps the version selector from landing on a 404: a page missing from a
+    // version redirects to that version's introduction. Also catches retired
+    // URL segments.
+    ...versionRedirects(),
+  },
   integrations: [
     starlight({
       plugins: [
@@ -62,40 +67,9 @@ export default defineConfig({
             content: "https://thaimusicxml.anan.ovh/ThaiMusicXMLOG.png",
           },
         },
-        {
-          tag: "script",
-          attrs: { type: "application/ld+json" },
-          content: JSON.stringify([
-            {
-              "@context": "https://schema.org",
-              "@type": "TechArticle",
-              name: "ThaiMusicXML Specification",
-              headline:
-                "ThaiMusicXML: An open digital notation standard for Thai Traditional Music",
-              description:
-                "ThaiMusicXML is an open, royalty-free XML file format for Thai traditional music (เพลงไทยเดิม). It records notation in a form software can validate, search, print, and exchange without tying scores to any single editor.",
-              url: "https://thaimusicxml.anan.ovh/en/",
-              inLanguage: ["en", "th"],
-              author: {
-                "@type": "Person",
-                name: "Nopparuj Ananvoranich",
-                url: "https://anan.ovh/",
-              },
-              license:
-                "https://github.com/Nopparuj-an/ThaiMusicXML/blob/main/LICENSE.txt",
-              codeRepository: "https://github.com/Nopparuj-an/ThaiMusicXML",
-            },
-            {
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              name: "ThaiMusicXML",
-              url: "https://thaimusicxml.anan.ovh/",
-              description:
-                "Documentation site for ThaiMusicXML, an open digital notation standard for Thai Traditional Music.",
-            },
-          ]),
-        },
       ],
+      // Archive noindex and home-page structured data.
+      routeMiddleware: "./src/routeData.ts",
       defaultLocale: "en",
       locales: {
         en: {
@@ -193,8 +167,12 @@ export default defineConfig({
       ],
     }),
     sitemap({
-      // The root is the language gateway; /en/ and /th/ are the real entries.
-      filter: (page) => page !== `${site}/`,
+      // The root redirects to /en/, and archived versions are noindex.
+      filter: (page) => {
+        // https://site/en/v1_0/... -> "v1_0"
+        const segment = page.replace(site, "").split("/")[2];
+        return page !== `${site}/` && !versions.some((v) => v.slug === segment);
+      },
       // Emits xhtml:link alternates so each URL declares its translation.
       i18n: {
         defaultLocale: "en",

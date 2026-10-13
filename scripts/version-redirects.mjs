@@ -11,7 +11,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { locales, versions } from "../versions.config.mjs";
+import { locales, retired, versions } from "../versions.config.mjs";
 
 const DOCS = fileURLToPath(new URL("../src/content/docs/", import.meta.url));
 const DOC_FILE = /\.mdx?$/;
@@ -63,6 +63,20 @@ export function versionRedirects() {
       for (const page of everything) {
         if (page === "" || pages.has(page)) continue;
         redirects[`${prefix}/${page}`] = landing;
+      }
+    }
+
+    // A retired segment points at the current docs, not at an archive: the
+    // archives are noindex, and the current page is the one worth ranking.
+    const current = trees[0].pages;
+    const currentLanding = current.has(LANDING) ? `/${locale}/${LANDING}/` : `/${locale}/`;
+    for (const { slug, pagesFrom } of retired) {
+      const dir = join(localeDir, pagesFrom);
+      if (!existsSync(dir)) continue;
+      redirects[`/${locale}/${slug}`] = currentLanding;
+      for (const page of pagesIn(dir)) {
+        if (page === "") continue;
+        redirects[`/${locale}/${slug}/${page}`] = current.has(page) ? `/${locale}/${page}/` : currentLanding;
       }
     }
   }
