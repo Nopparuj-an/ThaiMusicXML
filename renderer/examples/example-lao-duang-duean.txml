@@ -6,7 +6,7 @@
     <lyricist><text align="right">เนื้อร้อง: พระเจ้าบรมวงศ์เธอ กรมหมื่นพิไชยมหินทโรดม</text></lyricist>
     <arranger><text align="right">รวบรวมและดัดแปลงจากหลายแหล่ง</text></arranger>
     <license>PUBLIC DOMAIN</license>
-    <tuning reference="khrueang-sai"/>
+    <tuning reference="bb-major"/>
   </header>
   <structure>
     <br/>
@@ -45,6 +45,9 @@
     </repeat>
   </structure>
   <ensemble>
+    <part id="bb-major" type="chord">
+      <instrument-name>B♭ Maj.</instrument-name>
+    </part>
     <part id="lyric" type="lyric">
       <instrument-name>เนื้อร้อง</instrument-name>
     </part>
@@ -956,6 +959,63 @@
         <measure number="7"><rest/><rest/><rest/><rest/></measure>
         <measure number="8"><rest/><syllable>ละ -</syllable><rest/><syllable>หนอ</syllable></measure>
       </line>
+    </section-ref>
+  </part-data>
+  <part-data part="bb-major">
+    <section-ref section="s1">
+      <line number="1">
+        <measure number="1"></measure>
+        <measure number="2"></measure>
+        <measure number="3"></measure>
+        <measure number="4"><chord>Bb</chord></measure>
+        <measure number="5"></measure>
+        <measure number="6"></measure>
+        <measure number="7"></measure>
+        <measure number="8"><chord>Bb</chord></measure>
+      </line>
+      <line number="2">
+        <measure number="1"></measure>
+        <measure number="2"></measure>
+        <measure number="3"></measure>
+        <measure number="4"><chord>Gm</chord></measure>
+        <measure number="5"></measure>
+        <measure number="6"><chord>Dm</chord></measure>
+        <measure number="7"></measure>
+        <measure number="8"><chord>Fm</chord></measure>
+      </line>
+      <line number="3">
+        <measure number="1"></measure>
+        <measure number="2"></measure>
+        <measure number="3"></measure>
+        <measure number="4"><chord>Bb</chord></measure>
+        <measure number="5"></measure>
+        <measure number="6"><chord>Dm</chord></measure>
+        <measure number="7"></measure>
+        <measure number="8"><chord>Gm</chord></measure>
+      </line>
+      <line number="4">
+        <measure number="1"></measure>
+        <measure number="2"><chord>Dm</chord></measure>
+        <measure number="3"></measure>
+        <measure number="4"><chord>Gm</chord></measure>
+        <measure number="5"></measure>
+        <measure number="6"><chord>Cm</chord></measure>
+        <measure number="7"><chord>Fm</chord></measure>
+        <measure number="8"><chord>Bb</chord></measure>
+      </line>
+      <ending pass="2">
+        <annotation>ลงเที่ยว 2</annotation>
+        <line number="4">
+          <measure number="1"></measure>
+          <measure number="2"></measure>
+          <measure number="3"></measure>
+          <measure number="4"></measure>
+          <measure number="5"></measure>
+          <measure number="6"></measure>
+          <measure number="7"><chord>Fm</chord></measure>
+        <measure number="8"><chord>Bb</chord></measure>
+        </line>
+      </ending>
     </section-ref>
   </part-data>
 </thai-score>
