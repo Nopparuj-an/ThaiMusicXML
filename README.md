@@ -9,7 +9,7 @@
 
 ## What is ThaiMusicXML?
 
-ThaiMusicXML is a free, open file format for Thai traditional music (เพลงไทยเดิม). It records the notation the way Thai musicians expects (the 7-tone scale, the beat grid, curves, ornaments, and instrument parts) in a structured form that software can validate, search, and print without tying the score to any one editor.
+ThaiMusicXML is a free, open file format for Thai traditional music (เพลงไทยเดิม). It records notation the way Thai musicians expects (the 7-tone scale, the beat grid, curves, ornaments, and instrument parts) in a structured form that software can validate, search, and print without tying the score to any one editor.
 
 A ThaiMusicXML file is plain XML. It opens in a text editor, survives indefinitely without the program that created it, and can be processed by tools written in any language.
 
@@ -45,18 +45,43 @@ Full specification, tutorials, and an interactive playground are at **[thaimusic
 
 ## Development
 
-This repository contains the specification documentation, built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build/).
+This repository contains the specification site, schema, corpus, SVG renderer,
+and MusicXML and MIDI converter. The site uses [Astro](https://astro.build) and
+[Starlight](https://starlight.astro.build/).
+
+Use Node.js 24 and pnpm (the version is pinned in `package.json`). The corpus
+check also requires `xmllint`; `trang` is needed to regenerate the XSD from
+the RELAX NG schema.
 
 ```sh
 pnpm install
 pnpm dev
 ```
 
-The schema lives at `public/schema/thaimusicxml-1.x.rng` (RELAX NG, rolling: the latest v1.x; `thaimusicxml-1.0.rng` is the frozen v1.0 schema). Corpus examples are in `public/corpus/` and can be validated with:
+Run the checks and build with:
 
 ```sh
-npm run check:corpus
+pnpm run check
+pnpm run build
 ```
+
+`check` runs link, version and corpus validation, renderer and converter tests,
+and lint. The build regenerates `public/llms.txt` and `public/llms-full.txt`;
+commit those files if they change. See [RELEASING.md](RELEASING.md) for
+archiving releases. `astro check` currently does not support the installed
+TypeScript 7, so the build does not replace a type check.
+
+The rolling RELAX NG schema is `public/schema/thaimusicxml-1.x.rng`; the frozen
+v1.0 schema is `public/schema/thaimusicxml-1.0.rng`. Corpus fixtures are in
+`public/corpus/`. To render or convert an example:
+
+```sh
+pnpm run render renderer/examples/tutorial1-hello-world.txml out.svg
+node converter/convert.mjs renderer/examples/tutorial1-hello-world.txml --to musicxml --out out.musicxml
+```
+
+See [renderer/HANDOFF.md](renderer/HANDOFF.md) and
+[converter/HANDOFF.md](converter/HANDOFF.md) for implementation context.
 
 ---
 

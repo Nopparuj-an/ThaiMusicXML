@@ -57,7 +57,8 @@ lands on a 404 (`scripts/version-redirects.mjs`).
 - Keep `src/content/docs/<version>/.gitkeep`. The plugin treats a version as new
   when that folder is missing, and git drops an empty folder, so without the file
   every fresh clone archives the current docs again.
-- If the script fails partway, `git restore .` and remove the untracked
-  `versions`/archive folders it created (`git status` lists them), then run it again.
+- If the script fails partway, inspect `git status` and the diff. Restore only
+  files changed by the failed run and remove only the untracked archive files
+  it created, preserving any unrelated work, then run it again.
 - The archive is plain files after this. Fixing a typo in an old version means
   editing its folder; the script never regenerates one.

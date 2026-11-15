@@ -42,6 +42,9 @@ jobs:
       - name: Run renderer unit tests
         run: pnpm run check:layout
 
+      - name: Run converter unit tests
+        run: pnpm run check:convert
+
       - name: Lint
         run: pnpm run lint
 
@@ -63,5 +66,5 @@ jobs:
           commit_message: "chore: regenerate XSD from RNG schema [skip ci]"
           file_pattern: public/schema/thaimusicxml-1.x.xsd src/playground/thaimusicxml-1.x.xsd
 
-      # - name: Build
-      #   run: pnpm run build
+      - name: Build
+        run: pnpm run build

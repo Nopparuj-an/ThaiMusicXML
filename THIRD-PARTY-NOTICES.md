@@ -25,8 +25,7 @@ MIT License:
 - **Astro** — Copyright (c) 2021 Fred K. Schott — https://github.com/withastro/astro
 - **@astrojs/starlight** — Copyright (c) 2023 Astro contributors — https://github.com/withastro/starlight
 - **astro-expressive-code** — Copyright (c) 2023 Tibor Schiemann — https://github.com/expressive-code/expressive-code
-- **CodeMirror** (`codemirror`, `@codemirror/lang-xml`, `@codemirror/language`) — Copyright (C) 2018-2021 by Marijn Haverbeke and others — https://codemirror.net
-- **@lezer/highlight** — Copyright (C) 2018 by Marijn Haverbeke and others — https://lezer.codemirror.net
+- **Monaco Editor** — Copyright (c) 2016-present Microsoft Corporation — https://github.com/microsoft/monaco-editor
 - **opentype.js** — Copyright (c) 2020 Frederik De Bleser — https://github.com/opentypejs/opentype.js
 
 Each package's full MIT license text ships in its own npm distribution
@@ -49,6 +48,27 @@ Each package's full MIT license text ships in its own npm distribution
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
+
+### OpenSheetMusicDisplay
+
+The playground uses [OpenSheetMusicDisplay](https://github.com/opensheetmusicdisplay/opensheetmusicdisplay),
+licensed under the BSD 3-Clause License:
+
+> Copyright 2019 PhonicScore
+>
+> Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+>
+> 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+>
+> 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+>
+> 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+>
+> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+OpenSheetMusicDisplay's distributed bundle includes other libraries. Review their
+licenses and notices separately when distributing the bundle; this file is not
+a complete inventory of all transitive dependencies.
 
 ## Node.js CLI tooling (build-time only, not shipped to browsers)
 
