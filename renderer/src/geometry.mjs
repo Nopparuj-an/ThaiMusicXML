@@ -217,7 +217,7 @@ const THAI = /[฀-๿]/;
 /**
  * The text and octave-dot a single slot puts on the page.
  *
- * @returns {{text: string, dot: "above"|"below"|null}}
+ * @returns {{text: string, dot: "above"|"below"|null, dotCount?: number}}
  */
 export function glyph(slotValue, settings) {
   if (slotValue.kind === "rest")
@@ -228,6 +228,7 @@ export function glyph(slotValue, settings) {
 
   let pitch = slotValue.pitch ?? "";
   let dot = null;
+  let dotCount = 1;
 
   // A pitch may already spell its octave with a literal modifier character
   // (pitch="ดํ"), which wins over the octave attribute - "when pitch carries
@@ -241,13 +242,11 @@ export function glyph(slotValue, settings) {
     dot = "below";
     pitch = pitch.replace(PINTHU, "");
   } else if (slotValue.octave >= 1) {
-    // Outside -1..1 there is no Thai spelling to add, so the mark clamps to
-    // whichever side it is on rather than growing an extra symbol - the
-    // author's call, favoring a plain, readable page over flagging the
-    // display as capped. See "Octaves beyond the Thai spellings".
     dot = "above";
+    dotCount = Math.min(slotValue.octave, 2);
   } else if (slotValue.octave <= -1) {
     dot = "below";
+    dotCount = Math.min(-slotValue.octave, 2);
   }
 
   // Re-spell into settings.pitchSpelling's target spelling. "source" is the
@@ -259,5 +258,5 @@ export function glyph(slotValue, settings) {
 
   if (!THAI.test(pitch) && settings.pitchCase === "upper") pitch = pitch.toUpperCase();
 
-  return { text: pitch, dot };
+  return { text: pitch, dot, ...(dotCount > 1 ? { dotCount } : {}) };
 }

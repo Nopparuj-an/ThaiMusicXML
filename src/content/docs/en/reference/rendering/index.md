@@ -96,6 +96,8 @@ How thoroughly rests are printed is a house style choice, and printed scores dif
 
 An octave mark is a small dot beside the pitch letter: above for `octave="1"` (or a `pitch` spelled with นิคหิต), below for `octave="-1"` (or พินทุ), and no mark at all for `octave="0"`.
 
+This project's renderer draws two side-by-side dots above for `octave="2"` and below for `octave="-2"`. For octaves farther from zero, it caps the display at two dots.
+
 The dot is drawn as its own shape, not set as นิคหิต or พินทุ in the font. A Thai music sheet marks octave with a plain dot, not with either of those two characters: นิคหิต and พินทุ are combining characters with their own shape and meaning in running Thai text, and printing them literally where the sheet only means "up one octave" or "down one octave" does not match that convention. A file may still spell the octave with the literal modifier character (`pitch="ดํ"`, `pitch="ทฺ"`), documented at [Thai octave modifiers](/en/reference/elements/note/#thai-octave-modifiers). That spelling renders identically to the equivalent `octave` attribute: only the source syntax differs, not the mark on the page.
 
 ## Lyric rows

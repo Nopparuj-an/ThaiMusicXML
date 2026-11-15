@@ -131,10 +131,8 @@ test("a beat no part subdivides still counts as one", () => {
 
 // Octave marks.
 //
-// นิคหิต and พินทุ spell exactly three octaves. Outside that range the mark
-// clamps to whichever side it is on: octave 2 reads the same as octave 1.
-// The author's call, over a distinguishing mark that made the page harder to
-// read - see HANDOVER.md.
+// The mark uses two side-by-side dots for the second octave in either
+// direction, and clamps to two beyond that range.
 //
 // The mark itself is not drawn as the literal diacritic: glyph() strips
 // whichever modifier is present (embedded in pitch, or implied by octave)
@@ -149,11 +147,11 @@ test("an octave of -1, 0, or 1 gets a dot on the matching side, with the mark st
   assert.deepEqual(glyph(noteSlot(-1), defaults), { text: "ด", dot: "below" });
 });
 
-test("an octave beyond -1..1 clamps to the same side as the nearest exact octave", () => {
-  assert.deepEqual(glyph(noteSlot(2), defaults), glyph(noteSlot(1), defaults));
-  assert.deepEqual(glyph(noteSlot(5), defaults), glyph(noteSlot(1), defaults));
-  assert.deepEqual(glyph(noteSlot(-2), defaults), glyph(noteSlot(-1), defaults));
-  assert.deepEqual(glyph(noteSlot(-5), defaults), glyph(noteSlot(-1), defaults));
+test("extended octaves use two dots, clamped beyond two", () => {
+  assert.deepEqual(glyph(noteSlot(2), defaults), { text: "ด", dot: "above", dotCount: 2 });
+  assert.deepEqual(glyph(noteSlot(5), defaults), glyph(noteSlot(2), defaults));
+  assert.deepEqual(glyph(noteSlot(-2), defaults), { text: "ด", dot: "below", dotCount: 2 });
+  assert.deepEqual(glyph(noteSlot(-5), defaults), glyph(noteSlot(-2), defaults));
 });
 
 test("a pitch spelled with the literal nikhahit/pinthu modifier gets the same dot, with no octave attribute needed", () => {
@@ -167,6 +165,7 @@ test("a modifier embedded in pitch wins over a conflicting octave attribute", ()
   // is ignored." Validators should warn on this combination, but a renderer
   // still has to pick one, and the modifier wins.
   assert.deepEqual(glyph(noteSlot(-1, "ดํ"), defaults), { text: "ด", dot: "above" });
+  assert.deepEqual(glyph(noteSlot(2, "ทฺ"), defaults), { text: "ท", dot: "below" });
 });
 
 // Pitch spelling.
@@ -209,7 +208,7 @@ test("an octave mark renders as a drawn dot primitive, not text", () => {
   <part-data part="P1">
     <section-ref section="s1">
       <line number="1"><measure number="1">
-        <note pitch="ด" octave="1"/><note pitch="ด" octave="-1"/><note pitch="ด"/>
+        <note pitch="ด" octave="1"/><note pitch="ด" octave="-1"/><note pitch="ด"/><note pitch="ด" octave="2"/><note pitch="ด" octave="-2"/>
       </measure></line>
     </section-ref>
   </part-data>
@@ -218,13 +217,20 @@ test("an octave mark renders as a drawn dot primitive, not text", () => {
   const dots = pages[0].elements.filter((el) => el.kind === "dot");
   const symbols = pages[0].elements.filter((el) => el.role === "symbol");
 
-  assert.equal(dots.length, 2, "one dot for the raised note and one for the lowered note, none for the plain one");
+  assert.equal(dots.length, 6, "one dot per ordinary octave and two per extended octave");
   assert.ok(symbols.every((el) => el.text === "ด"), "the mark never ends up in the text itself");
 
   const [raised, lowered] = dots;
   assert.ok(raised.y < symbols[0].y, "the octave-1 dot sits above its letter's baseline");
   assert.ok(lowered.y > symbols[1].y, "the octave -1 dot sits below its letter's baseline");
   assert.equal(raised.x, symbols[0].x, "the dot centers on its letter");
+  for (const [pair, symbol, above] of [[dots.slice(2, 4), symbols[3], true], [dots.slice(4, 6), symbols[4], false]]) {
+    assert.ok(pair[0].x < pair[1].x, "the dots sit side by side");
+    assert.equal((pair[0].x + pair[1].x) / 2, symbol.x, "the pair centers on its letter");
+    assert.equal(pair[0].y, pair[1].y);
+    assert.ok(above ? pair[0].y < symbol.y : pair[0].y > symbol.y);
+    assert.ok(pair[1].x - pair[0].x > pair[0].r + pair[1].r, "the dots do not touch");
+  }
 });
 
 // Link spans.

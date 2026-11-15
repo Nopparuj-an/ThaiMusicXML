@@ -353,7 +353,7 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
           beat.slots.forEach((slotValue, slotIndex) => {
             const symbolX = x(row.columns[beatIndex][slotIndex]);
             if (notePos) notePos.set(posKey(row.part.id, { lineIndex, measureIndex: m, beatIndex, slotIndex }), symbolX);
-            const { text, dot } = glyph(slotValue, s);
+            const { text, dot, dotCount = 1 } = glyph(slotValue, s);
             if (!text) return;
             const dim = dimmed?.(row.part.id, { lineIndex, measureIndex: m, beatIndex, slotIndex });
             pager.push({
@@ -371,11 +371,12 @@ export function createGridRenderer({ pager, settings: s, score, instrumentOf, ga
             // marks" in reference/rendering.
             if (dot) {
               const gap = (dot === "above" ? s.octaveDotGapAbove : s.octaveDotGapBelow) * s.pitchSize;
-              pager.push({
+              const radius = s.octaveDotRadius * s.pitchSize;
+              for (let i = 0; i < dotCount; i++) pager.push({
                 kind: "dot",
-                x: symbolX,
+                x: symbolX + (i - (dotCount - 1) / 2) * radius * 3,
                 y: row.baseline + (dot === "above" ? -gap : gap),
-                r: s.octaveDotRadius * s.pitchSize,
+                r: radius,
                 role: "octave-dot",
                 ...(dim ? { dim: true } : {}),
               });
